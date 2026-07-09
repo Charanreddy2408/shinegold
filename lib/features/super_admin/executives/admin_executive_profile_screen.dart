@@ -1,0 +1,538 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
+
+import '../../../core/animations/staggered_list.dart';
+import '../../../core/router/app_router.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../data/models/enums.dart';
+import '../../../data/models/executive.dart';
+import '../../../data/models/visit.dart';
+import '../../../shared/providers/repository_providers.dart';
+import '../../../shared/widgets/animated_loading.dart';
+import '../../../shared/widgets/app_background.dart';
+import '../../../shared/widgets/shine_empty_state.dart';
+import '../../../shared/widgets/status_chip.dart';
+import '../../../shared/widgets/ux_components.dart';
+
+class AdminExecutiveProfileScreen extends ConsumerStatefulWidget {
+  const AdminExecutiveProfileScreen({
+    super.key,
+    required this.executive,
+  });
+
+  final Executive executive;
+
+  @override
+  ConsumerState<AdminExecutiveProfileScreen> createState() =>
+      _AdminExecutiveProfileScreenState();
+}
+
+class _AdminExecutiveProfileScreenState
+    extends ConsumerState<AdminExecutiveProfileScreen> {
+  late Executive _executive;
+  final _searchController = TextEditingController();
+  VisitStatus? _visitFilter;
+  List<Visit> _visits = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _executive = widget.executive;
+    _searchController.addListener(_load);
+    _load();
+  }
+
+  @override
+  void dispose() {
+    _searchController.removeListener(_load);
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _load() async {
+    setState(() => _loading = true);
+    final visits = await ref.read(visitRepositoryProvider).getMyVisits(
+          _executive.id,
+          VisitFilter(
+            search: _searchController.text,
+            status: _visitFilter,
+          ),
+        );
+    if (mounted) {
+      setState(() {
+        _visits = visits;
+        _loading = false;
+      });
+    }
+  }
+
+  Future<void> _toggleBlock() async {
+    final updated = await ref
+        .read(executiveRepositoryProvider)
+        .toggleBlock(_executive.id);
+    if (mounted) setState(() => _executive = updated);
+  }
+
+  int get _ongoingCount =>
+      _visits.where((v) => v.status == VisitStatus.ongoing).length;
+
+  int get _completedCount =>
+      _visits.where((v) => v.status == VisitStatus.completed).length;
+
+  @override
+  Widget build(BuildContext context) {
+    final photo = _executive.profilePhotoUrl ??
+        'https://i.pravatar.cc/150?u=${_executive.employeeId}';
+    final dateFormat = DateFormat('dd MMM yyyy · hh:mm a');
+
+    return Scaffold(
+      backgroundColor: AppColors.canvasDeep,
+      body: AppBackground(
+        header: GradientHeader(
+          title: _executive.name.split(' ').first,
+          subtitle: 'Field Executive · ${_executive.employeeId}',
+          compact: true,
+          leading: IconButton(
+            onPressed: () => Navigator.of(context).pop(),
+            icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+          ),
+          trailing: CircleAvatar(
+            radius: 20,
+            backgroundColor: Colors.white.withValues(alpha: 0.25),
+            backgroundImage: CachedNetworkImageProvider(photo),
+          ),
+        ),
+        child: Column(
+          children: [
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: _load,
+                color: AppColors.primary,
+                child: CustomScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(
+                    parent: BouncingScrollPhysics(),
+                  ),
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                        child: _ProfileHeader(
+                          executive: _executive,
+                          photo: photo,
+                          onToggleBlock: _toggleBlock,
+                        )
+                            .animate()
+                            .fadeIn(duration: 400.ms)
+                            .slideY(begin: 0.05, end: 0),
+                      ),
+                    ),
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                        child: Row(
+                          children: [
+                            _StatPill(
+                              label: 'Total',
+                              value: '${_visits.length}',
+                              color: AppColors.primary,
+                            ),
+                            const SizedBox(width: 8),
+                            _StatPill(
+                              label: 'Ongoing',
+                              value: '$_ongoingCount',
+                              color: AppColors.info,
+                            ),
+                            const SizedBox(width: 8),
+                            _StatPill(
+                              label: 'Done',
+                              value: '$_completedCount',
+                              color: AppColors.secondary,
+                            ),
+                            const SizedBox(width: 8),
+                            _StatPill(
+                              label: 'Farms',
+                              value: '${_executive.farmsAssigned}',
+                              color: AppColors.secondarySoft,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'Visit History',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontWeight: FontWeight.w700),
+                              ),
+                            ),
+                            Text(
+                              '${_visits.length} records',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(color: AppColors.textMuted),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                        child: ShineSearchBar(
+                          controller: _searchController,
+                          hint: 'Search visits by farm name...',
+                        ),
+                      ),
+                    ),
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: SegmentedButton<VisitStatus?>(
+                          segments: const [
+                            ButtonSegment(value: null, label: Text('All')),
+                            ButtonSegment(
+                              value: VisitStatus.ongoing,
+                              label: Text('Ongoing'),
+                            ),
+                            ButtonSegment(
+                              value: VisitStatus.completed,
+                              label: Text('Completed'),
+                            ),
+                          ],
+                          selected: {_visitFilter},
+                          onSelectionChanged: (s) {
+                            setState(() => _visitFilter = s.first);
+                            _load();
+                          },
+                        ),
+                      ),
+                    ),
+                    const SliverToBoxAdapter(child: SizedBox(height: 8)),
+                    if (_loading)
+                      const SliverToBoxAdapter(
+                        child: ListLoadingSkeleton(itemCount: 4, itemHeight: 72),
+                      )
+                    else if (_visits.isEmpty)
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: ShineEmptyState(
+                          icon: Icons.search_off_rounded,
+                          title: _searchController.text.isEmpty
+                              ? 'No visits yet'
+                              : 'No matches',
+                          subtitle: _searchController.text.isEmpty
+                              ? 'This executive has no visit records'
+                              : 'Try a different farm name',
+                        ),
+                      )
+                    else
+                      SliverPadding(
+                        padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+                        sliver: SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                              final visit = _visits[index];
+                              final isLast = index == _visits.length - 1;
+                              return StaggeredListItem(
+                                index: index,
+                                child: _VisitTimelineTile(
+                                  visit: visit,
+                                  dateLabel: dateFormat.format(visit.startedAt),
+                                  isLast: isLast,
+                                  onTap: () => context.push(
+                                    AppRoutes.farmDetail.replaceFirst(
+                                      ':id',
+                                      visit.farmId,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                            childCount: _visits.length,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ProfileHeader extends StatelessWidget {
+  const _ProfileHeader({
+    required this.executive,
+    required this.photo,
+    required this.onToggleBlock,
+  });
+
+  final Executive executive;
+  final String photo;
+  final VoidCallback onToggleBlock;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceCard,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.borderSubtle),
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 32,
+            backgroundImage: CachedNetworkImageProvider(photo),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  executive.name,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  executive.employeeId,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    StatusChip(status: executive.status),
+                    const SizedBox(width: 8),
+                    Icon(
+                      Icons.phone_rounded,
+                      size: 14,
+                      color: AppColors.textMuted,
+                    ),
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                        executive.mobile,
+                        style: Theme.of(context).textTheme.bodySmall,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            onPressed: onToggleBlock,
+            tooltip: executive.status == ExecutiveStatus.active
+                ? 'Block executive'
+                : 'Unblock executive',
+            icon: Icon(
+              executive.status == ExecutiveStatus.active
+                  ? Icons.block_rounded
+                  : Icons.check_circle_outline,
+              color: executive.status == ExecutiveStatus.active
+                  ? AppColors.error
+                  : AppColors.secondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatPill extends StatelessWidget {
+  const _StatPill({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  final String label;
+  final String value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 6),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: color.withValues(alpha: 0.25)),
+        ),
+        child: Column(
+          children: [
+            Text(
+              value,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: color,
+                  ),
+            ),
+            Text(
+              label,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _VisitTimelineTile extends StatelessWidget {
+  const _VisitTimelineTile({
+    required this.visit,
+    required this.dateLabel,
+    required this.isLast,
+    required this.onTap,
+  });
+
+  final Visit visit;
+  final String dateLabel;
+  final bool isLast;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = visit.status == VisitStatus.ongoing
+        ? AppColors.info
+        : AppColors.secondary;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SizedBox(
+              width: 28,
+              child: Column(
+                children: [
+                  Container(
+                    width: 12,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: accent,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: accent.withValues(alpha: 0.3),
+                        width: 3,
+                      ),
+                    ),
+                  ),
+                  if (!isLast)
+                    Expanded(
+                      child: Container(
+                        width: 2,
+                        color: AppColors.borderSubtle,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceCard,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: AppColors.borderSubtle),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              visit.farmName,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleSmall
+                                  ?.copyWith(fontWeight: FontWeight.w700),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              dateLabel,
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                            if (visit.durationMinutes != null) ...[
+                              const SizedBox(height: 2),
+                              Text(
+                                '${visit.durationMinutes} min on site',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .labelSmall
+                                    ?.copyWith(color: AppColors.textMuted),
+                              ),
+                            ],
+                            if (visit.textNote != null &&
+                                visit.textNote!.isNotEmpty) ...[
+                              const SizedBox(height: 6),
+                              Text(
+                                visit.textNote!,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(
+                                      color: AppColors.textSecondary,
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          StatusChip(status: visit.status),
+                          const SizedBox(height: 6),
+                          SyncStatusChip(status: visit.syncStatus),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
