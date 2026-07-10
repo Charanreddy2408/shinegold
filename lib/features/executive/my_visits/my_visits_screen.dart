@@ -8,6 +8,9 @@ import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../data/models/enums.dart';
 import '../../../data/models/visit.dart';
+import '../../../core/network/api_exception.dart';
+import '../../../shared/widgets/ux_components.dart';
+import '../../../shared/providers/app_refresh_provider.dart';
 import '../../../shared/providers/auth_provider.dart';
 import '../../../shared/providers/repository_providers.dart';
 import '../../../shared/widgets/animated_loading.dart';
@@ -15,7 +18,6 @@ import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/shine_card.dart';
 import '../../../shared/widgets/shine_empty_state.dart';
 import '../../../shared/widgets/status_chip.dart';
-import '../../../shared/widgets/ux_components.dart';
 
 class MyVisitsScreen extends ConsumerStatefulWidget {
   const MyVisitsScreen({super.key});
@@ -29,6 +31,7 @@ class _MyVisitsScreenState extends ConsumerState<MyVisitsScreen> {
   final _searchController = TextEditingController();
   List<Visit> _visits = [];
   bool _loading = true;
+  String? _error;
 
   @override
   void initState() {
@@ -43,22 +46,38 @@ class _MyVisitsScreenState extends ConsumerState<MyVisitsScreen> {
   }
 
   Future<void> _load() async {
-    setState(() => _loading = true);
-    final user = ref.read(currentUserProvider)!;
-    final visits = await ref.read(visitRepositoryProvider).getMyVisits(
-          user.id,
-          VisitFilter(search: _searchController.text, status: _tab),
-        );
-    if (mounted) {
-      setState(() {
-        _visits = visits;
-        _loading = false;
-      });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final user = ref.read(currentUserProvider)!;
+      final visits = await ref.read(visitRepositoryProvider).getMyVisits(
+            user.id,
+            VisitFilter(search: _searchController.text, status: _tab),
+          );
+      if (mounted) {
+        setState(() {
+          _visits = visits;
+          _loading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _error = formatApiError(e);
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<int>(appRefreshProvider, (previous, next) {
+      if (previous != null && previous != next) _load();
+    });
+
     final dateFormat = DateFormat('dd MMM yyyy, hh:mm a');
 
     return AppBackground(
@@ -105,6 +124,16 @@ class _MyVisitsScreenState extends ConsumerState<MyVisitsScreen> {
           Expanded(
             child: _loading
                 ? const ListLoadingSkeleton(itemCount: 4, itemHeight: 88)
+                : _error != null
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: FriendlyErrorBanner(
+                            message: _error!,
+                            onRetry: _load,
+                          ),
+                        ),
+                      )
                 : _visits.isEmpty
                     ? const ShineEmptyState(
                         icon: Icons.history_rounded,
@@ -128,12 +157,24 @@ class _MyVisitsScreenState extends ConsumerState<MyVisitsScreen> {
                               child: Padding(
                                 padding: const EdgeInsets.only(bottom: 10),
                                 child: ShineCard(
-                                  onTap: () => context.push(
-                                    AppRoutes.farmDetail.replaceFirst(
-                                      ':id',
-                                      visit.farmId,
-                                    ),
-                                  ),
+                                  onTap: () {
+                                    if (visit.status == VisitStatus.completed &&
+                                        visit.id.isNotEmpty) {
+                                      context.push(
+                                        AppRoutes.visitDetail.replaceFirst(
+                                          ':id',
+                                          visit.id,
+                                        ),
+                                      );
+                                    } else {
+                                      context.push(
+                                        AppRoutes.farmDetail.replaceFirst(
+                                          ':id',
+                                          visit.farmId,
+                                        ),
+                                      );
+                                    }
+                                  },
                                   accentColor: visit.status == VisitStatus.ongoing
                                       ? AppColors.info
                                       : AppColors.secondary,
@@ -157,6 +198,44 @@ class _MyVisitsScreenState extends ConsumerState<MyVisitsScreen> {
                                                   .textTheme
                                                   .bodyMedium,
                                             ),
+                                            if (visit.formAnswers.isNotEmpty) ...[
+                                              const SizedBox(height: 6),
+                                              Text(
+                                                visit.formAnswers
+                                                    .take(2)
+                                                    .map(
+                                                      (a) =>
+                                                          '${a.questionLabel}: ${a.displayValue()}',
+                                                    )
+                                                    .join(' · '),
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodySmall
+                                                    ?.copyWith(
+                                                      color: AppColors
+                                                          .textSecondary,
+                                                    ),
+                                              ),
+                                            ] else if (visit.textNote != null &&
+                                                visit.textNote!.isNotEmpty) ...[
+                                              const SizedBox(height: 6),
+                                              Text(
+                                                visit.textNote!,
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodySmall
+                                                    ?.copyWith(
+                                                      color: AppColors
+                                                          .textSecondary,
+                                                      fontStyle:
+                                                          FontStyle.italic,
+                                                    ),
+                                              ),
+                                            ],
                                           ],
                                         ),
                                       ),

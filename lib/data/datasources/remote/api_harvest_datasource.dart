@@ -22,9 +22,21 @@ class ApiHarvestDataSource implements HarvestDataSource {
 
   @override
   Future<List<Harvest>> getAll() async {
-    final response = await _client.dio.get(ApiEndpoints.harvestsCalendar);
+    final now = DateTime.now();
+    final from = DateTime(now.year, now.month, 1);
+    final to = DateTime(now.year, now.month + 12, 0);
+    final response = await _client.dio.get(
+      ApiEndpoints.harvestsCalendar,
+      queryParameters: {
+        'date_from': _formatDate(from),
+        'date_to': _formatDate(to),
+      },
+    );
     return _parseCalendar(response.data);
   }
+
+  static String _formatDate(DateTime d) =>
+      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
   List<Harvest> _parseCalendar(dynamic data) {
     if (data is! Map<String, dynamic>) return [];

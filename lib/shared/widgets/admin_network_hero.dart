@@ -113,35 +113,9 @@ class AdminNetworkHero extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          SegmentedButton<DashboardFilter>(
-            style: ButtonStyle(
-              backgroundColor: WidgetStateProperty.resolveWith((states) {
-                if (states.contains(WidgetState.selected)) {
-                  return Colors.white;
-                }
-                return Colors.white.withValues(alpha: 0.12);
-              }),
-              foregroundColor: WidgetStateProperty.resolveWith((states) {
-                if (states.contains(WidgetState.selected)) {
-                  return AppColors.primaryDark;
-                }
-                return Colors.white;
-              }),
-              side: WidgetStateProperty.all(BorderSide.none),
-            ),
-            segments: const [
-              ButtonSegment(value: DashboardFilter.all, label: Text('All')),
-              ButtonSegment(
-                value: DashboardFilter.visits,
-                label: Text('Visits'),
-              ),
-              ButtonSegment(
-                value: DashboardFilter.onboarded,
-                label: Text('Onboarded'),
-              ),
-            ],
-            selected: {filter},
-            onSelectionChanged: (s) => onFilterChanged(s.first),
+          _FilterBar(
+            filter: filter,
+            onFilterChanged: onFilterChanged,
           ),
         ],
       ),
@@ -178,6 +152,84 @@ class AdminNetworkHero extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _FilterBar extends StatelessWidget {
+  const _FilterBar({
+    required this.filter,
+    required this.onFilterChanged,
+  });
+
+  final DashboardFilter filter;
+  final ValueChanged<DashboardFilter> onFilterChanged;
+
+  static const _labels = {
+    DashboardFilter.all: 'All',
+    DashboardFilter.visits: 'Visits',
+    DashboardFilter.onboarded: 'Onboarded',
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 40,
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+      ),
+      child: Row(
+        children: DashboardFilter.values.map((value) {
+          final selected = filter == value;
+          return Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => onFilterChanged(value),
+                  borderRadius: BorderRadius.circular(9),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeOut,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: selected ? Colors.white : Colors.transparent,
+                      borderRadius: BorderRadius.circular(9),
+                      boxShadow: selected
+                          ? [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.08),
+                                blurRadius: 4,
+                                offset: const Offset(0, 1),
+                              ),
+                            ]
+                          : null,
+                    ),
+                    child: Text(
+                      _labels[value]!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight:
+                            selected ? FontWeight.w700 : FontWeight.w600,
+                        color: selected
+                            ? AppColors.primaryDark
+                            : Colors.white.withValues(alpha: 0.92),
+                        letterSpacing: 0.1,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        }).toList(),
       ),
     );
   }

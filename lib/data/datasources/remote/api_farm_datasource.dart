@@ -4,6 +4,7 @@ import '../../../core/network/json_helpers.dart';
 import '../../../core/network/upload_service.dart';
 import '../../models/enums.dart';
 import '../../models/farm.dart';
+import '../../models/visit_form.dart';
 import '../contracts.dart';
 
 class ApiFarmDataSource implements FarmDataSource {
@@ -94,5 +95,74 @@ class ApiFarmDataSource implements FarmDataSource {
       return (await getFarmById(farmId))!;
     }
     return Farm.fromJson(data);
+  }
+
+  @override
+  Future<List<FarmInvitation>> getFarmInvitations({
+    double? lat,
+    double? lng,
+    int page = 1,
+    int pageSize = 50,
+  }) async {
+    final response = await _client.dio.get(
+      ApiEndpoints.farmInvitations,
+      queryParameters: queryParams({
+        if (lat != null) 'lat': lat,
+        if (lng != null) 'lng': lng,
+        'page': page,
+        'page_size': pageSize,
+      }),
+    );
+    return parseList(response.data, FarmInvitation.fromJson);
+  }
+
+  @override
+  Future<void> acceptFarmInvitation(String farmId) async {
+    await _client.dio.post(ApiEndpoints.acceptFarm(farmId));
+  }
+
+  @override
+  Future<Farm> createFarmAsAdmin(
+    OnboardFarmRequest request, {
+    List<String> executiveIds = const [],
+  }) async {
+    List<String>? uploadedPhotos;
+    if (request.photoPaths.isNotEmpty) {
+      uploadedPhotos = await _uploads.uploadFiles(
+        localPaths: request.photoPaths,
+        context: 'farm_photo',
+      );
+    }
+
+    final body = request.toJson(uploadedPhotos: uploadedPhotos);
+    if (executiveIds.isNotEmpty) {
+      body['executive_ids'] = executiveIds;
+    }
+
+    final response = await _client.dio.post(ApiEndpoints.farmsAdmin, data: body);
+    final data = response.data as Map<String, dynamic>;
+    final farmId = data['id']?.toString();
+    if (farmId != null) {
+      return (await getFarmById(farmId))!;
+    }
+    return Farm.fromJson(data);
+  }
+
+  @override
+  Future<List<String>> assignFarmExecutives(
+    String farmId, {
+    required List<String> executiveIds,
+    String mode = 'replace',
+  }) async {
+    final response = await _client.dio.patch(
+      ApiEndpoints.assignFarm(farmId),
+      data: {
+        'executive_ids': executiveIds,
+        'mode': mode,
+      },
+    );
+    final data = response.data as Map<String, dynamic>;
+    final ids = data['assigned_executive_ids'] as List<dynamic>?;
+    return ids?.map((e) => e.toString()).toList() ?? executiveIds;
   }
 }

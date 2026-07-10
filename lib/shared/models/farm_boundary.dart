@@ -25,9 +25,13 @@ class BoundaryPickerArgs {
     this.initialCenter,
     this.initialPins = const [],
     this.initialAddress,
+    this.userLocation,
   });
 
   final LatLng? initialCenter;
   final List<LatLng> initialPins;
   final String? initialAddress;
+
+  /// Employee GPS at open time — map centers here and shows a location marker.
+  final LatLng? userLocation;
 }

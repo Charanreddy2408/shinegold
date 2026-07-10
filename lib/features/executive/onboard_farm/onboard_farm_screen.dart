@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
@@ -10,13 +13,19 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../data/models/enums.dart';
 import '../../../data/models/farm.dart';
 import '../../../shared/models/farm_boundary.dart';
+import '../../../shared/providers/app_refresh_provider.dart';
 import '../../../shared/providers/auth_provider.dart';
 import '../../../shared/providers/location_provider.dart';
 import '../../../shared/providers/repository_providers.dart';
+import '../../../shared/utils/geo_area.dart';
+import '../../../shared/utils/india_map_bounds.dart';
+import '../../../shared/widgets/farm_boundary_map_view.dart';
 import '../../../shared/widgets/shine_buttons.dart';
 
 class OnboardFarmScreen extends ConsumerStatefulWidget {
-  const OnboardFarmScreen({super.key});
+  const OnboardFarmScreen({super.key, this.isAdminCreate = false});
+
+  final bool isAdminCreate;
 
   @override
   ConsumerState<OnboardFarmScreen> createState() => _OnboardFarmScreenState();
@@ -26,7 +35,11 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
   int _step = 0;
   bool _loading = false;
   bool _success = false;
+  bool _openingBoundary = false;
+  bool _previewMapCentered = false;
   FarmBoundarySelection? _boundary;
+  final _previewMapController = MapController();
+  late final MapOptions _previewMapOptions;
 
   final _farmName = TextEditingController();
   final _location = TextEditingController();
@@ -40,7 +53,28 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
   Gender? _gender;
 
   @override
+  void initState() {
+    super.initState();
+    _previewMapOptions = MapOptions(
+      initialCenter: IndiaMapBounds.center,
+      initialZoom: IndiaMapBounds.pickerZoom,
+      minZoom: 4.5,
+      maxZoom: 18,
+      cameraConstraint: CameraConstraint.containCenter(
+        bounds: IndiaMapBounds.bounds,
+      ),
+      interactionOptions: const InteractionOptions(
+        flags: InteractiveFlag.none,
+      ),
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(ref.read(locationProvider.notifier).requestLocation());
+    });
+  }
+
+  @override
   void dispose() {
+    _previewMapController.dispose();
     _farmName.dispose();
     _location.dispose();
     _crop.dispose();
@@ -65,31 +99,75 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
     _farmerMobile.clear();
     _farmerAge.clear();
     _gender = null;
+    _previewMapCentered = false;
   }
 
   Future<void> _openBoundaryPicker() async {
-    final loc = ref.read(locationProvider).position;
-    final initialCenter = loc != null
-        ? LatLng(loc.latitude, loc.longitude)
-        : const LatLng(17.385, 78.4867);
+    setState(() => _openingBoundary = true);
+    try {
+      await ref.read(locationProvider.notifier).requestLocation();
+      await ref.read(locationProvider.notifier).refreshLocation();
 
-    final result = await context.push<FarmBoundarySelection>(
-      AppRoutes.boundaryPicker,
-      extra: BoundaryPickerArgs(
-        initialCenter: initialCenter,
-        initialPins: _boundary?.pins ?? const [],
-        initialAddress: _boundary?.address,
-      ),
-    );
+      if (!mounted) return;
 
-    if (result == null || !mounted) return;
-
-    setState(() {
-      _boundary = result;
-      if (result.address != null && result.address!.isNotEmpty) {
-        _location.text = result.address!;
+      final loc = ref.read(locationProvider).position;
+      if (loc == null) {
+        _showError(
+          'Turn on location to open the map at your current position.',
+        );
+        return;
       }
-      _acres.text = result.totalAcres.toStringAsFixed(2);
+
+      final employeeLocation = LatLng(loc.latitude, loc.longitude);
+      final initialCenter = _boundary != null && _boundary!.pins.isNotEmpty
+          ? GeoArea.centroid(_boundary!.pins)
+          : employeeLocation;
+
+      final result = await context.push<FarmBoundarySelection>(
+        AppRoutes.boundaryPicker,
+        extra: BoundaryPickerArgs(
+          userLocation: employeeLocation,
+          initialCenter: initialCenter,
+          initialPins: _boundary?.pins ?? const [],
+          initialAddress: _boundary?.address,
+        ),
+      );
+
+      if (result == null || !mounted) return;
+
+      setState(() {
+        _boundary = result;
+        if (result.address != null && result.address!.isNotEmpty) {
+          _location.text = result.address!;
+        }
+        _acres.text = result.totalAcres.toStringAsFixed(2);
+      });
+      if (result.pins.isNotEmpty) {
+        centerFarmMapOn(
+          _previewMapController,
+          GeoArea.centroid(result.pins),
+          zoom: 15.5,
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _openingBoundary = false);
+    }
+  }
+
+  LatLng? _employeeLocationFromState(LocationState locationState) {
+    final pos = locationState.position;
+    if (pos == null) return null;
+    return LatLng(pos.latitude, pos.longitude);
+  }
+
+  void _centerPreviewMap(LatLng employeeLocation) {
+    if (!IndiaMapBounds.contains(employeeLocation)) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      centerFarmMapOn(
+        _previewMapController,
+        employeeLocation,
+        zoom: 15.5,
+      );
     });
   }
 
@@ -129,28 +207,42 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
     final user = ref.read(currentUserProvider)!;
     final boundary = _boundary!;
     try {
-      await ref.read(farmRepositoryProvider).onboardFarm(
-            OnboardFarmRequest(
-              farmName: _farmName.text.trim(),
-              location: _location.text.trim().isNotEmpty
-                  ? _location.text.trim()
-                  : (boundary.address ?? 'Farm location'),
-              latitude: boundary.latitude,
-              longitude: boundary.longitude,
-              crop: _crop.text.trim(),
-              harvestDate: _harvestDate,
-              harvestType: _harvestType.text.trim(),
-              totalAcres: boundary.totalAcres,
-              boundaryGeojson: boundary.boundaryGeojson,
-              farmerName: _farmerName.text.trim(),
-              farmerMobile: _farmerMobile.text.trim(),
-              farmerGender: _gender!,
-              farmerAge: int.parse(_farmerAge.text),
-            ),
-            user.id,
-            user.name,
+      final request = OnboardFarmRequest(
+        farmName: _farmName.text.trim(),
+        location: _location.text.trim().isNotEmpty
+            ? _location.text.trim()
+            : (boundary.address ?? 'Farm location'),
+        latitude: boundary.latitude,
+        longitude: boundary.longitude,
+        crop: _crop.text.trim(),
+        harvestDate: _harvestDate,
+        harvestType: _harvestType.text.trim(),
+        totalAcres: boundary.totalAcres,
+        boundaryGeojson: boundary.boundaryGeojson,
+        farmerName: _farmerName.text.trim(),
+        farmerMobile: _farmerMobile.text.trim(),
+        farmerGender: _gender!,
+        farmerAge: int.parse(_farmerAge.text),
+      );
+
+      if (widget.isAdminCreate) {
+        await ref.read(farmRepositoryProvider).createFarmAsAdmin(request);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Farm created successfully')),
           );
-      if (mounted) setState(() => _success = true);
+          context.pop();
+        }
+      } else {
+        await ref.read(farmRepositoryProvider).onboardFarm(
+              request,
+              user.id,
+              user.name,
+            );
+        if (mounted) setState(() => _success = true);
+        bumpAppRefresh(ref);
+        unawaited(ref.read(authProvider.notifier).refreshUser());
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -158,6 +250,15 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<LocationState>(locationProvider, (prev, next) {
+      if (_step != 0 || _previewMapCentered) return;
+      final loc = _employeeLocationFromState(next);
+      if (loc != null && IndiaMapBounds.contains(loc)) {
+        _previewMapCentered = true;
+        _centerPreviewMap(loc);
+      }
+    });
+
     if (_success) {
       return Scaffold(
         body: Center(
@@ -169,8 +270,10 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
                   .animate()
                   .scale(duration: 500.ms, curve: Curves.easeOutBack),
               const SizedBox(height: AppSpacing.xxl),
-              Text('Farm Onboarded!',
-                  style: Theme.of(context).textTheme.headlineMedium),
+              Text(
+                widget.isAdminCreate ? 'Farm Created!' : 'Farm Onboarded!',
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
               const SizedBox(height: AppSpacing.md),
               Text('The farm has been added successfully.',
                   style: Theme.of(context).textTheme.bodyMedium),
@@ -234,6 +337,8 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
   }
 
   Widget _farmStep() {
+    final locationState = ref.watch(locationProvider);
+    final employeeLocation = _employeeLocationFromState(locationState);
     final hasBoundary = _boundary != null && _boundary!.pins.length >= 3;
 
     return Column(
@@ -243,70 +348,86 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
           decoration: const InputDecoration(labelText: 'Farm Name'),
         ),
         const SizedBox(height: AppSpacing.md),
-        Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: _openBoundaryPicker,
-            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-            child: Ink(
-              decoration: AppColors.cardDecoration(
-                borderColor: hasBoundary
-                    ? AppColors.secondary.withValues(alpha: 0.5)
-                    : AppColors.borderSubtle,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.lg),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: hasBoundary
-                            ? AppColors.secondaryMuted
-                            : AppColors.surfaceElevated,
-                        borderRadius:
-                            BorderRadius.circular(AppSpacing.radiusMd),
-                      ),
-                      child: Icon(
-                        hasBoundary
-                            ? Icons.check_circle_rounded
-                            : Icons.map_outlined,
-                        color: hasBoundary
-                            ? AppColors.secondary
-                            : AppColors.primary,
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.md),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            hasBoundary
-                                ? 'Boundary selected'
-                                : 'Pin farm boundary on map',
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                          const SizedBox(height: AppSpacing.xs),
-                          Text(
-                            hasBoundary
-                                ? '${_boundary!.pins.length} pins · ${_boundary!.totalAcres.toStringAsFixed(2)} acres'
-                                : 'Tap to search your land and drop boundary pins',
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Icon(
-                      Icons.chevron_right_rounded,
-                      color: AppColors.textMuted,
-                    ),
-                  ],
+        ClipRRect(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+          child: SizedBox(
+            height: 220,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                FarmBoundaryMapView(
+                  mapController: _previewMapController,
+                  mapOptions: _previewMapOptions,
+                  employeeLocation: employeeLocation,
+                  boundaryPins: _boundary?.pins ?? const [],
+                  showIndiaBadge: false,
                 ),
-              ),
+                if (locationState.loading)
+                  const ColoredBox(
+                    color: Color(0x66FFFFFF),
+                    child: Center(
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
+                Positioned(
+                  left: 12,
+                  right: 12,
+                  bottom: 12,
+                  child: FilledButton.icon(
+                    onPressed:
+                        _openingBoundary ? null : () => _openBoundaryPicker(),
+                    icon: _openingBoundary
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : Icon(
+                            hasBoundary
+                                ? Icons.edit_location_alt_rounded
+                                : Icons.add_location_alt_rounded,
+                          ),
+                    label: Text(
+                      hasBoundary
+                          ? 'Edit farm boundary'
+                          : 'Mark farm boundary on map',
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        Row(
+          children: [
+            Icon(
+              employeeLocation != null
+                  ? Icons.gps_fixed_rounded
+                  : Icons.gps_off_rounded,
+              size: 16,
+              color: employeeLocation != null
+                  ? AppColors.info
+                  : AppColors.textMuted,
+            ),
+            const SizedBox(width: AppSpacing.xs),
+            Expanded(
+              child: Text(
+                employeeLocation != null
+                    ? hasBoundary
+                        ? 'Your location shown on map · ${_boundary!.pins.length} boundary pins · ${_boundary!.totalAcres.toStringAsFixed(2)} acres'
+                        : 'Your current GPS is shown on the map — tap the button to mark boundary pins'
+                    : 'Waiting for GPS… enable location to center the map on you',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w600,
+                    ),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: AppSpacing.md),
         TextField(

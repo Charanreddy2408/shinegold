@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
+import '../../core/network/api_exception.dart';
 import '../../core/theme/app_colors.dart';
 import 'shine_buttons.dart';
 
@@ -56,12 +57,22 @@ class _AdminFormSheetState extends State<_AdminFormSheet> {
   bool _submitting = false;
 
   Future<void> _handleSubmit() async {
+    if (_submitting) return;
     setState(() => _submitting = true);
     try {
       await widget.onSubmit();
-      if (mounted) Navigator.of(context).pop();
-    } finally {
-      if (mounted) setState(() => _submitting = false);
+      if (!mounted) return;
+      Navigator.of(context).pop(true);
+    } catch (e) {
+      if (mounted) {
+        setState(() => _submitting = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(formatApiError(e)),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
     }
   }
 

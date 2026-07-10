@@ -18,6 +18,7 @@ import '../../../shared/widgets/admin_ui.dart';
 
 import '../farmers/farmers_screen.dart';
 
+import '../nearby/admin_nearby_farms_section.dart';
 import '../profile/admin_profile_screen.dart';
 
 
@@ -167,6 +168,32 @@ class AdminMoreSheet extends ConsumerWidget {
                   .slideY(begin: 0.06, end: 0),
 
               const SizedBox(height: 20),
+
+              AdminMenuTile(
+
+                icon: Icons.near_me_rounded,
+
+                title: 'Nearby Farms',
+
+                subtitle: 'Farms within 5 km while travelling',
+
+                color: AppColors.info,
+
+                delay: 30.ms,
+
+                onTap: () {
+
+                  Navigator.pop(context);
+
+                  Navigator.of(context).push(
+
+                    adminPageRoute(const AdminNearbyFarmsScreen()),
+
+                  );
+
+                },
+
+              ),
 
               AdminMenuTile(
 

@@ -7,6 +7,7 @@ import 'api_exception.dart';
 import 'json_helpers.dart';
 
 typedef TokenRefreshCallback = Future<String?> Function();
+typedef AuthFailureCallback = Future<void> Function();
 
 class DioClient {
   DioClient({String? token}) {
@@ -44,7 +45,9 @@ class DioClient {
               refresh != null &&
               !path.contains('/auth/login') &&
               !path.contains('/auth/refresh') &&
-              error.requestOptions.extra['_authRetried'] != true) {
+              error.requestOptions.extra['_authRetried'] != true &&
+              !_refreshing) {
+            _refreshing = true;
             try {
               final newToken = await refresh();
               if (newToken != null && newToken.isNotEmpty) {
@@ -57,17 +60,33 @@ class DioClient {
               }
             } catch (_) {
               // Fall through.
+            } finally {
+              _refreshing = false;
             }
           }
 
-          final message = apiErrorMessage(error.response?.data) ??
-              error.message ??
-              'Network error';
+          if (status == 401 &&
+              onAuthFailure != null &&
+              !_authFailureHandled) {
+            _authFailureHandled = true;
+            await onAuthFailure!();
+            _authFailureHandled = false;
+          }
+
+          final message = apiErrorMessage(error.response?.data);
+          final apiEx = ApiException(
+            message != null && message.isNotEmpty
+                ? message
+                : (error.response?.statusCode != null
+                    ? 'Request failed (${error.response!.statusCode})'
+                    : 'Network error'),
+            statusCode: status,
+          );
           handler.reject(
             DioException(
               requestOptions: error.requestOptions,
               response: error.response,
-              error: ApiException(message, statusCode: status),
+              error: apiEx,
             ),
           );
         },
@@ -77,6 +96,9 @@ class DioClient {
 
   late final Dio _dio;
   TokenRefreshCallback? onRefreshToken;
+  AuthFailureCallback? onAuthFailure;
+  bool _refreshing = false;
+  bool _authFailureHandled = false;
 
   Dio get dio => _dio;
 

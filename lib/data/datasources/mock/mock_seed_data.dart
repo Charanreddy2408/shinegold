@@ -3,6 +3,7 @@ import '../../models/executive.dart';
 import '../../models/farm.dart';
 import '../../models/user.dart';
 import '../../models/visit.dart';
+import '../../models/visit_form.dart';
 
 class MockSeedData {
   MockSeedData._();
@@ -350,4 +351,159 @@ class MockSeedData {
   ];
 
   static const demoPassword = 'password123';
+
+  static VisitFormTemplate get visitFormTemplate => VisitFormTemplate(
+        id: 'mock-template',
+        name: 'Jackfruit Farmer Field Visit Report',
+        description: 'Mock template matching backend seed',
+        questions: [
+          const FormQuestion(
+            id: 'q-meta',
+            questionKey: 'visit_metadata',
+            label: 'Visit Information',
+            questionType: FormQuestionType.sectionHeader,
+            sortOrder: 0,
+            isRequired: false,
+          ),
+          FormQuestion(
+            id: 'q-tree',
+            questionKey: 'tree_health',
+            label: 'General Health Assessment of Trees',
+            questionType: FormQuestionType.singleChoice,
+            sortOrder: 10,
+            isRequired: true,
+            options: [
+              const FormQuestionOption(
+                id: 'o1',
+                value: 'excellent',
+                label: 'Excellent',
+              ),
+              const FormQuestionOption(
+                id: 'o2',
+                value: 'good',
+                label: 'Good',
+              ),
+              const FormQuestionOption(
+                id: 'o3',
+                value: 'fair',
+                label: 'Fair',
+              ),
+              const FormQuestionOption(
+                id: 'o4',
+                value: 'poor',
+                label: 'Poor',
+              ),
+            ],
+          ),
+          FormQuestion(
+            id: 'q-pests',
+            questionKey: 'pests_diseases',
+            label: 'Observed Pest or Disease Presence',
+            questionType: FormQuestionType.multiChoice,
+            sortOrder: 20,
+            isRequired: true,
+            options: [
+              const FormQuestionOption(
+                id: 'p1',
+                value: 'no_major_issues',
+                label: 'No major issues',
+              ),
+              const FormQuestionOption(
+                id: 'p2',
+                value: 'aphids',
+                label: 'Aphids',
+              ),
+            ],
+          ),
+          FormQuestion(
+            id: 'q-matrix',
+            questionKey: 'infrastructure_matrix',
+            label: 'Farm Infrastructure Condition',
+            questionType: FormQuestionType.matrix,
+            sortOrder: 30,
+            isRequired: true,
+            config: {
+              'rows': [
+                {'key': 'irrigation_system', 'label': 'Irrigation System'},
+                {'key': 'field_fencing', 'label': 'Field Fencing'},
+                {'key': 'weed_management', 'label': 'Weed Management'},
+                {'key': 'fertigation_system', 'label': 'Fertigation System'},
+              ],
+              'columns': [
+                {'key': 'excellent', 'label': 'Excellent'},
+                {'key': 'good', 'label': 'Good'},
+                {'key': 'fair', 'label': 'Fair'},
+                {'key': 'poor', 'label': 'Poor'},
+              ],
+            },
+          ),
+          FormQuestion(
+            id: 'q-rating',
+            questionKey: 'agronomic_adoption',
+            label: 'Farmer adoption of agronomic practices',
+            questionType: FormQuestionType.ratingScale,
+            sortOrder: 40,
+            isRequired: true,
+            config: {
+              'min': 1,
+              'max': 5,
+              'min_label': 'Poor',
+              'max_label': 'Excellent',
+            },
+          ),
+          FormQuestion(
+            id: 'q-assist',
+            questionKey: 'assistance_needed',
+            label: 'Does the farmer require immediate assistance?',
+            questionType: FormQuestionType.singleChoice,
+            sortOrder: 50,
+            isRequired: true,
+            options: [
+              const FormQuestionOption(
+                id: 'a1',
+                value: 'none',
+                label: 'No assistance needed',
+              ),
+              const FormQuestionOption(
+                id: 'a2',
+                value: 'follow_up_training',
+                label: 'Follow-up training',
+              ),
+            ],
+          ),
+          const FormQuestion(
+            id: 'q-harvest',
+            questionKey: 'harvest_schedule_expectations',
+            label: 'Harvest schedule and yield expectations',
+            questionType: FormQuestionType.textarea,
+            sortOrder: 60,
+            isRequired: false,
+          ),
+          const FormQuestion(
+            id: 'q-action',
+            questionKey: 'action_plan',
+            label: 'Action plan / recommendations',
+            questionType: FormQuestionType.textarea,
+            sortOrder: 80,
+            isRequired: false,
+          ),
+        ],
+      );
+
+  static VisitFormContext mockVisitFormContext({
+    required String executiveName,
+    required String farmLocation,
+    required String farmerName,
+    DateTime? checkinTime,
+  }) =>
+      VisitFormContext(
+        template: visitFormTemplate,
+        prefill: VisitFormPrefill(
+          executiveName: executiveName,
+          visitDate: DateTime.now().toIso8601String().split('T').first,
+          farmLocation: farmLocation,
+          farmerContactName: farmerName,
+          checkinTime: checkinTime ?? DateTime.now(),
+        ),
+      );
 }

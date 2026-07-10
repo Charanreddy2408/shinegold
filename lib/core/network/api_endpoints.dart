@@ -12,6 +12,7 @@ class ApiEndpoints {
   static const changePassword = '$_v1/auth/change-password';
   static const forgotPassword = '$_v1/auth/forgot-password';
   static const passwordResetRequests = '$_v1/auth/password-reset-requests';
+  static const passwordResetStatus = '$_v1/auth/password-reset-requests/status';
   static String approvePasswordReset(String id) =>
       '$_v1/auth/password-reset-requests/$id/approve';
 
@@ -27,12 +28,16 @@ class ApiEndpoints {
   static const usersMe = '$_v1/users/me';
   static const usersMeSetupLocation = '$_v1/users/me/setup-location';
   static String userById(String id) => '$_v1/users/$id';
+  static String userVisits(String id) => '$_v1/users/$id/visits';
   static String blockUser(String id) => '$_v1/users/$id/block';
 
   // Farms
   static const farms = '$_v1/farms';
+  static const farmsAdmin = '$_v1/farms/admin';
+  static const farmInvitations = '$_v1/farms/invitations';
   static String farmById(String id) => '$_v1/farms/$id';
   static String assignFarm(String id) => '$_v1/farms/$id/assign';
+  static String acceptFarm(String id) => '$_v1/farms/$id/accept';
 
   // Visits
   static const visitCheckin = '$_v1/visits/checkin';
@@ -40,6 +45,13 @@ class ApiEndpoints {
   static String visitById(String id) => '$_v1/visits/$id';
   static String visitForm(String id) => '$_v1/visits/$id/form';
   static String visitSubmit(String id) => '$_v1/visits/$id/submit';
+  static String visitCancel(String id) => '$_v1/visits/$id/cancel';
+
+  // Visit forms
+  static const visitFormsActive = '$_v1/visit-forms/active';
+  static String visitFormContext(String visitId) =>
+      '$_v1/visit-forms/visits/$visitId/context';
+  static const visitFormTemplates = '$_v1/visit-forms/templates';
 
   // Farmers
   static const farmers = '$_v1/farmers';

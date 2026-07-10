@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../core/assets/app_assets.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
+import 'shine_logo.dart';
 
 /// Warm brand canvas used behind main screens.
 class AppBackground extends StatelessWidget {
@@ -109,19 +109,7 @@ class GradientHeader extends StatelessWidget {
             if (trailing != null)
               trailing!
             else if (brandLogoSize != null || compact)
-              Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Image.asset(
-                  AppAssets.logo,
-                  width: brandLogoSize ?? 32,
-                  height: brandLogoSize ?? 32,
-                  fit: BoxFit.contain,
-                ),
-              ),
+              ShineLogo(size: brandLogoSize ?? 32),
           ],
         ),
       ),

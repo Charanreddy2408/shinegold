@@ -3,24 +3,43 @@ import 'package:intl/intl.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../data/models/farm.dart';
+import 'shine_buttons.dart';
 
 class VisitLogTile extends StatelessWidget {
-  const VisitLogTile({super.key, required this.log});
+  const VisitLogTile({
+    super.key,
+    required this.log,
+    this.onViewReport,
+  });
 
   final VisitLog log;
+  final VoidCallback? onViewReport;
+
+  static String formatDuration(int minutes) {
+    if (minutes <= 0) return '—';
+    if (minutes < 60) return '$minutes min';
+    final hours = minutes ~/ 60;
+    final mins = minutes % 60;
+    if (mins == 0) return '${hours}h';
+    return '${hours}h ${mins}m';
+  }
 
   @override
   Widget build(BuildContext context) {
-    final dateFormat = DateFormat('dd MMM yyyy, hh:mm a');
+    final dateOnlyFormat = DateFormat('dd MMM yyyy');
+    final dateLabel = dateOnlyFormat.format(log.date);
+    final durationLabel = formatDuration(log.durationMinutes);
+    final canViewReport = onViewReport != null && log.id.isNotEmpty;
+
     final events = <_TimelineEvent>[
-      _TimelineEvent('Visit completed', dateFormat.format(log.date)),
+      _TimelineEvent('Visit completed', dateLabel),
       if (log.photoUrls.isNotEmpty)
         _TimelineEvent('${log.photoUrls.length} photo(s) added', null),
-      if (log.voiceNoteUrl != null)
-        _TimelineEvent('Voice note added', null),
-      if (log.report != null) _TimelineEvent('Report submitted', log.report),
-      _TimelineEvent('Duration: ${log.durationMinutes} min', null),
-      _TimelineEvent('Visited by ${log.visitedBy}', null),
+      if (log.voiceNoteUrl != null) _TimelineEvent('Voice note added', null),
+      if (log.report != null && log.report!.isNotEmpty)
+        _TimelineEvent('Notes', log.report),
+      _TimelineEvent('Duration', durationLabel),
+      _TimelineEvent('Visited by', log.visitedBy),
     ];
 
     return Padding(
@@ -36,7 +55,7 @@ class VisitLogTile extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              dateFormat.format(log.date),
+              dateLabel,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 16),
@@ -49,6 +68,13 @@ class VisitLogTile extends StatelessWidget {
                 isLast: isLast,
               );
             }),
+            if (canViewReport) ...[
+              const SizedBox(height: 16),
+              ShineSecondaryButton(
+                label: 'View full report',
+                onPressed: onViewReport,
+              ),
+            ],
           ],
         ),
       ),
@@ -105,10 +131,21 @@ class _TimelineRow extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: Theme.of(context).textTheme.bodyLarge),
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppColors.textMuted,
+                          fontWeight: FontWeight.w600,
+                        ),
+                  ),
                   if (subtitle != null) ...[
                     const SizedBox(height: 4),
-                    Text(subtitle!, style: Theme.of(context).textTheme.bodyMedium),
+                    Text(
+                      subtitle!,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
                   ],
                 ],
               ),

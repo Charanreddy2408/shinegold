@@ -2,34 +2,42 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../shared/models/farm_boundary.dart';
+import '../../../shared/providers/location_provider.dart';
 import '../../../shared/utils/geo_area.dart';
 import '../../../shared/utils/geocoding_service.dart';
 import '../../../shared/utils/india_map_bounds.dart';
+import '../../../shared/widgets/farm_boundary_map_view.dart';
 
-/// Full-screen map for searching land and pinning a farm boundary polygon.
-class FarmBoundaryPickerScreen extends StatefulWidget {
+/// Full-screen map — opens at employee GPS, then pins farm boundary polygon.
+class FarmBoundaryPickerScreen extends ConsumerStatefulWidget {
   const FarmBoundaryPickerScreen({
     super.key,
     this.initialCenter,
     this.initialPins = const [],
     this.initialAddress,
+    this.userLocation,
   });
 
   final LatLng? initialCenter;
   final List<LatLng> initialPins;
   final String? initialAddress;
 
+  /// Employee GPS — map opens here and shows a "you are here" marker.
+  final LatLng? userLocation;
+
   @override
-  State<FarmBoundaryPickerScreen> createState() =>
+  ConsumerState<FarmBoundaryPickerScreen> createState() =>
       _FarmBoundaryPickerScreenState();
 }
 
-class _FarmBoundaryPickerScreenState extends State<FarmBoundaryPickerScreen> {
+class _FarmBoundaryPickerScreenState
+    extends ConsumerState<FarmBoundaryPickerScreen> {
   final _mapController = MapController();
   final _searchController = TextEditingController();
   final _geocoding = GeocodingService();
@@ -39,24 +47,44 @@ class _FarmBoundaryPickerScreenState extends State<FarmBoundaryPickerScreen> {
   Timer? _searchDebounce;
   bool _searching = false;
   bool _showClear = false;
+  bool _locating = false;
+  bool _centeredOnEmployee = false;
   String? _selectedAddress;
+  LatLng? _employeeLocation;
 
-  late final LatLng _mapCenter;
-  late final double _mapZoom;
   late final MapOptions _mapOptions;
+
+  static const _employeeZoom = 16.0;
 
   double get _areaAcres => GeoArea.polygonAreaAcres(_pins);
 
   bool get _canConfirm => _pins.length >= 3;
 
+  bool get _employeeInIndia =>
+      _employeeLocation != null && IndiaMapBounds.contains(_employeeLocation!);
+
   @override
   void initState() {
     super.initState();
-    _mapCenter = _resolveInitialCenter();
-    _mapZoom = widget.initialPins.isNotEmpty ? 15.0 : IndiaMapBounds.pickerZoom;
+    _employeeLocation = widget.userLocation;
+    _pins.addAll(widget.initialPins.where(IndiaMapBounds.contains));
+    _selectedAddress = widget.initialAddress;
+    if (widget.initialAddress != null) {
+      _searchController.text = widget.initialAddress!.split(',').first;
+      _showClear = _searchController.text.isNotEmpty;
+    }
+
     _mapOptions = MapOptions(
-      initialCenter: _mapCenter,
-      initialZoom: _mapZoom,
+      initialCenter: resolveFarmMapCenter(
+        employeeLocation: _employeeLocation,
+        initialCenter: widget.initialCenter,
+        pins: _pins,
+      ),
+      initialZoom: resolveFarmMapZoom(
+        employeeLocation: _employeeLocation,
+        pins: _pins,
+        employeeZoom: _employeeZoom,
+      ),
       minZoom: 4.5,
       maxZoom: 18,
       cameraConstraint: CameraConstraint.containCenter(
@@ -70,30 +98,74 @@ class _FarmBoundaryPickerScreenState extends State<FarmBoundaryPickerScreen> {
       ),
       onTap: _onMapTap,
     );
-    _pins.addAll(widget.initialPins.where(IndiaMapBounds.contains));
-    _selectedAddress = widget.initialAddress;
-    if (widget.initialAddress != null) {
-      _searchController.text = widget.initialAddress!.split(',').first;
-      _showClear = _searchController.text.isNotEmpty;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(_bootstrapEmployeeLocation());
+    });
+  }
+
+  Future<void> _bootstrapEmployeeLocation() async {
+    if (_employeeLocation == null) {
+      setState(() => _locating = true);
+      await ref.read(locationProvider.notifier).requestLocation();
+    } else {
+      await ref.read(locationProvider.notifier).refreshLocation();
+    }
+
+    final pos = ref.read(locationProvider).position;
+    if (pos != null) {
+      _employeeLocation = LatLng(pos.latitude, pos.longitude);
+    }
+
+    if (!mounted) return;
+    setState(() => _locating = false);
+
+    if (_employeeLocation == null) {
+      _showMessage(
+        'Could not get GPS. Search for the farm area or enable location.',
+      );
+      return;
+    }
+
+    _centerOnEmployee(animate: false);
+    if (_selectedAddress == null || _selectedAddress!.isEmpty) {
+      unawaited(_fillAddressFromLocation(_employeeLocation!));
     }
   }
 
-  LatLng _resolveInitialCenter() {
-    if (widget.initialCenter != null &&
-        IndiaMapBounds.contains(widget.initialCenter!)) {
-      return widget.initialCenter!;
-    }
-    if (widget.initialPins.isNotEmpty) {
-      final centroid = GeoArea.centroid(widget.initialPins);
-      if (IndiaMapBounds.contains(centroid)) return centroid;
-    }
-    return IndiaMapBounds.center;
+  Future<void> _fillAddressFromLocation(LatLng point) async {
+    if (!IndiaMapBounds.contains(point)) return;
+    final address = await _geocoding.reverseGeocode(point);
+    if (!mounted || address == null || address.isEmpty) return;
+    setState(() {
+      _selectedAddress = address;
+      if (_searchController.text.isEmpty) {
+        _searchController.text = address.split(',').first;
+        _showClear = true;
+      }
+    });
   }
 
   void _onMapTap(TapPosition _, LatLng point) => _addPin(point);
 
   void _fitIndia() {
     _mapController.move(IndiaMapBounds.center, IndiaMapBounds.overviewZoom);
+  }
+
+  void _centerOnEmployee({bool animate = true}) {
+    final loc = _employeeLocation;
+    if (loc == null) return;
+
+    if (!IndiaMapBounds.contains(loc)) {
+      _showMessage(
+        'Your GPS is outside India. Search for the farm village or pan the map.',
+      );
+      _moveMap(IndiaMapBounds.center, IndiaMapBounds.pickerZoom);
+      return;
+    }
+
+    _centeredOnEmployee = true;
+    centerFarmMapOn(_mapController, loc, zoom: _employeeZoom, animate: animate);
   }
 
   @override
@@ -143,12 +215,7 @@ class _FarmBoundaryPickerScreenState extends State<FarmBoundaryPickerScreen> {
   }
 
   void _moveMap(LatLng point, double zoom) {
-    final target = IndiaMapBounds.clamp(point);
-    try {
-      _mapController.move(target, zoom.clamp(4.5, 18));
-    } catch (_) {
-      // Map may not be ready on first frame; ignore.
-    }
+    centerFarmMapOn(_mapController, point, zoom: zoom);
   }
 
   void _selectSearchResult(GeocodingResult result) {
@@ -215,6 +282,22 @@ class _FarmBoundaryPickerScreenState extends State<FarmBoundaryPickerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<LocationState>(locationProvider, (prev, next) {
+      final pos = next.position;
+      if (pos == null) return;
+      final updated = LatLng(pos.latitude, pos.longitude);
+      if (_employeeLocation == updated) return;
+      _employeeLocation = updated;
+      if (mounted) {
+        setState(() {});
+        if (_employeeInIndia && !_centeredOnEmployee) {
+          _centerOnEmployee(animate: false);
+        }
+      }
+    });
+
+    final locationState = ref.watch(locationProvider);
+
     return Scaffold(
       backgroundColor: AppColors.canvasDeep,
       appBar: AppBar(
@@ -224,6 +307,12 @@ class _FarmBoundaryPickerScreenState extends State<FarmBoundaryPickerScreen> {
         elevation: 0,
         actions: [
           IconButton(
+            onPressed:
+                _locating ? null : () => unawaited(_bootstrapEmployeeLocation()),
+            icon: const Icon(Icons.my_location_rounded),
+            tooltip: 'Refresh my location',
+          ),
+          IconButton(
             onPressed: _fitIndia,
             icon: const Icon(Icons.public_rounded),
             tooltip: 'Show India',
@@ -232,6 +321,8 @@ class _FarmBoundaryPickerScreenState extends State<FarmBoundaryPickerScreen> {
       ),
       body: Column(
         children: [
+          if (_locating || locationState.loading)
+            const LinearProgressIndicator(minHeight: 2),
           Padding(
             padding: const EdgeInsets.fromLTRB(
               AppSpacing.lg,
@@ -264,6 +355,55 @@ class _FarmBoundaryPickerScreenState extends State<FarmBoundaryPickerScreen> {
               ),
             ),
           ),
+          if (_employeeLocation != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                0,
+                AppSpacing.lg,
+                AppSpacing.sm,
+              ),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.sm,
+                ),
+                decoration: BoxDecoration(
+                  color: (_employeeInIndia ? AppColors.info : AppColors.warning)
+                      .withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                  border: Border.all(
+                    color: (_employeeInIndia ? AppColors.info : AppColors.warning)
+                        .withValues(alpha: 0.35),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      _employeeInIndia
+                          ? Icons.gps_fixed_rounded
+                          : Icons.gps_not_fixed_rounded,
+                      size: 18,
+                      color:
+                          _employeeInIndia ? AppColors.info : AppColors.warning,
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: Text(
+                        _employeeInIndia
+                            ? 'You are on the map (blue pin). Tap around your position to mark the farm boundary.'
+                            : 'GPS is outside India — search the farm village, then mark boundary pins.',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: AppColors.textSecondary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           if (_searchResults.isNotEmpty)
             Container(
               margin: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
@@ -297,90 +437,13 @@ class _FarmBoundaryPickerScreenState extends State<FarmBoundaryPickerScreen> {
               padding: const EdgeInsets.all(AppSpacing.lg),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                child: Stack(
-                  children: [
-                    FlutterMap(
-                      key: const ValueKey('farm-boundary-india-map'),
-                      mapController: _mapController,
-                      options: _mapOptions,
-                      children: [
-                        TileLayer(
-                          urlTemplate:
-                              'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-                          subdomains: const ['a', 'b', 'c', 'd'],
-                          userAgentPackageName: 'com.shinegold.shine_gold',
-                        ),
-                        if (_pins.length >= 3)
-                          PolygonLayer(
-                            polygons: [
-                              Polygon(
-                                points: _pins,
-                                color: AppColors.secondary
-                                    .withValues(alpha: 0.22),
-                                borderColor: AppColors.secondary,
-                                borderStrokeWidth: 2.5,
-                              ),
-                            ],
-                          ),
-                        if (_pins.length >= 2)
-                          PolylineLayer(
-                            polylines: [
-                              Polyline(
-                                points: _pins,
-                                color: AppColors.primary,
-                                strokeWidth: 2,
-                              ),
-                            ],
-                          ),
-                        CircleLayer(
-                          circles: [
-                            for (final pin in _pins)
-                              CircleMarker(
-                                point: pin,
-                                radius: 10,
-                                color: AppColors.primary,
-                                borderColor: Colors.white,
-                                borderStrokeWidth: 2,
-                              ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    Positioned(
-                      left: 10,
-                      top: 10,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.92),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: AppColors.borderSubtle),
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.flag_rounded,
-                              size: 14,
-                              color: AppColors.primaryDark,
-                            ),
-                            SizedBox(width: 5),
-                            Text(
-                              'India only',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
+                child: FarmBoundaryMapView(
+                  mapController: _mapController,
+                  mapOptions: _mapOptions,
+                  employeeLocation: _employeeLocation,
+                  boundaryPins: _pins,
+                  showRecenterFab: _employeeInIndia,
+                  onRecenterEmployee: _centerOnEmployee,
                 ),
               ),
             ),
@@ -403,7 +466,9 @@ class _FarmBoundaryPickerScreenState extends State<FarmBoundaryPickerScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Text(
-                    'Tap the map to drop pins around your farm boundary (India only)',
+                    _employeeInIndia
+                        ? 'Blue pin = your GPS. Tap the map to drop boundary corners around the farm.'
+                        : 'Tap the map to drop pins around your farm boundary (India only)',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   const SizedBox(height: AppSpacing.md),

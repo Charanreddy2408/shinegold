@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/network/api_exception.dart';
 import '../../../core/animations/fade_slide_in.dart';
 import '../../../core/animations/staggered_list.dart';
 import '../../../core/router/app_router.dart';
@@ -10,6 +11,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../data/models/enums.dart';
 import '../../../data/models/executive.dart';
 import '../../../data/models/farm.dart';
+import '../../../shared/providers/app_refresh_provider.dart';
 import '../../../shared/providers/repository_providers.dart';
 import '../../../shared/widgets/admin_farm_map.dart';
 import '../../../shared/widgets/admin_network_hero.dart';
@@ -17,6 +19,7 @@ import '../../../shared/widgets/animated_loading.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/admin_ui.dart';
 import '../executives/admin_executive_profile_screen.dart';
+import '../nearby/admin_nearby_farms_section.dart';
 class AdminDashboardScreen extends ConsumerStatefulWidget {
   const AdminDashboardScreen({super.key});
 
@@ -31,6 +34,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   List<Executive> _executives = [];
   List<Farm> _farms = [];
   bool _loading = true;
+  String? _error;
 
   @override
   void initState() {
@@ -39,22 +43,34 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   }
 
   Future<void> _load() async {
-    setState(() => _loading = true);
-    final dashboard = ref.read(dashboardRepositoryProvider);
-    final executiveRepo = ref.read(executiveRepositoryProvider);
-    final farmRepo = ref.read(farmRepositoryProvider);
-    final results = await Future.wait([
-      dashboard.getStats(_filter),
-      executiveRepo.list(),
-      farmRepo.getFarms(const FarmFilter()),
-    ]);
-    if (mounted) {
-      setState(() {
-        _stats = results[0];
-        _executives = results[1] as List<Executive>;
-        _farms = results[2] as List<Farm>;
-        _loading = false;
-      });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final dashboard = ref.read(dashboardRepositoryProvider);
+      final executiveRepo = ref.read(executiveRepositoryProvider);
+      final farmRepo = ref.read(farmRepositoryProvider);
+      final results = await Future.wait([
+        dashboard.getStats(_filter),
+        executiveRepo.list(),
+        farmRepo.getFarms(const FarmFilter()),
+      ]);
+      if (mounted) {
+        setState(() {
+          _stats = results[0];
+          _executives = results[1] as List<Executive>;
+          _farms = results[2] as List<Farm>;
+          _loading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _error = formatApiError(e);
+        });
+      }
     }
   }
 
@@ -66,6 +82,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<int>(appRefreshProvider, (previous, next) {
+      if (previous != null && previous != next) _load();
+    });
+
     return AppBackground(
       header: GradientHeader(
         title: 'Dashboard',
@@ -81,7 +101,28 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       ),
       child: _loading
           ? const DashboardLoadingSkeleton()
-          : RefreshIndicator(
+          : _error != null
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          _error!,
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodyLarge,
+                        ),
+                        const SizedBox(height: 16),
+                        FilledButton(
+                          onPressed: _load,
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              : RefreshIndicator(
               onRefresh: _load,
               color: AppColors.primary,
               child: CustomScrollView(
@@ -102,11 +143,13 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       },
                     ),
                   ),
+                  const SliverToBoxAdapter(
+                    child: AdminNearbyFarmsSection(),
+                  ),
                   SliverToBoxAdapter(
                     child: AdminIndiaFarmMap(
                       key: ValueKey('admin-dashboard-india-map-${_farms.length}'),
                       farms: _farms,
-                      height: 280,
                       onFarmTap: (farm) => context.push(
                         AppRoutes.farmDetail.replaceFirst(':id', farm.id),
                       ),

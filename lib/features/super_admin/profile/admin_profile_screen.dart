@@ -9,6 +9,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/auth_provider.dart';
 import '../../../shared/widgets/admin_ui.dart';
 import '../../../shared/widgets/app_background.dart';
+import '../../../shared/widgets/profile_photo_editor.dart';
 import '../../../shared/widgets/shine_buttons.dart';
 
 class AdminProfileScreen extends ConsumerWidget {
@@ -44,7 +45,17 @@ class AdminProfileScreen extends ConsumerWidget {
             children: [
               _ProfileHero(
                 name: user.name,
+                employeeId: user.employeeId,
                 photoUrl: photoUrl,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Tap your photo above to update it',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppColors.textMuted,
+                      fontWeight: FontWeight.w600,
+                    ),
               ),
               const SizedBox(height: 20),
               AdminContactHub(
@@ -72,10 +83,12 @@ class AdminProfileScreen extends ConsumerWidget {
 class _ProfileHero extends StatelessWidget {
   const _ProfileHero({
     required this.name,
+    required this.employeeId,
     required this.photoUrl,
   });
 
   final String name;
+  final String employeeId;
   final String photoUrl;
 
   @override
@@ -95,25 +108,11 @@ class _ProfileHero extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.5),
-                width: 2.5,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.15),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: CircleAvatar(
-              radius: 38,
-              backgroundImage: CachedNetworkImageProvider(photoUrl),
-            ),
+          ProfilePhotoEditor(
+            photoUrl: photoUrl,
+            fallbackSeed: employeeId,
+            radius: 38,
+            showLabel: false,
           ),
           const SizedBox(width: 16),
           Expanded(

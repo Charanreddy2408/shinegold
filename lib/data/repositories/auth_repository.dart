@@ -47,4 +47,17 @@ class AuthRepository {
         newPassword: newPassword,
         confirmPassword: confirmPassword,
       );
+
+  Future<User> updateProfile({
+    String? name,
+    String? address,
+    String? mobileNumber,
+    String? profilePhotoUrl,
+  }) =>
+      _dataSource.updateProfile(
+        name: name,
+        address: address,
+        mobileNumber: mobileNumber,
+        profilePhotoUrl: profilePhotoUrl,
+      );
 }

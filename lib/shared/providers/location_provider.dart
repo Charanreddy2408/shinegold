@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -31,6 +33,8 @@ class LocationState {
 
 class LocationNotifier extends StateNotifier<LocationState> {
   LocationNotifier() : super(const LocationState());
+
+  Timer? _trackingTimer;
 
   Future<void> requestLocation() async {
     if (state.loading) return;
@@ -128,6 +132,60 @@ class LocationNotifier extends StateNotifier<LocationState> {
         loading: false,
       );
     }
+  }
+
+  /// Lightweight GPS refresh — no permission prompts if already granted.
+  Future<void> refreshLocation() async {
+    final permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
+      return;
+    }
+    if (!await Geolocator.isLocationServiceEnabled()) return;
+
+    try {
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 20),
+        ),
+      );
+      state = LocationState(
+        position: position,
+        permissionGranted: true,
+        loading: false,
+      );
+    } catch (_) {
+      final lastKnown = await Geolocator.getLastKnownPosition();
+      if (lastKnown != null && state.position == null) {
+        state = LocationState(
+          position: lastKnown,
+          permissionGranted: true,
+          loading: false,
+        );
+      }
+    }
+  }
+
+  Future<void> startPeriodicTracking({
+    Duration interval = const Duration(minutes: 3),
+  }) async {
+    stopPeriodicTracking();
+    await requestLocation();
+    _trackingTimer = Timer.periodic(interval, (_) {
+      unawaited(refreshLocation());
+    });
+  }
+
+  void stopPeriodicTracking() {
+    _trackingTimer?.cancel();
+    _trackingTimer = null;
+  }
+
+  @override
+  void dispose() {
+    stopPeriodicTracking();
+    super.dispose();
   }
 }
 

@@ -122,6 +122,8 @@ class DashboardStats {
 
 class ExecutiveDashboard {
   const ExecutiveDashboard({
+    required this.greetingName,
+    required this.dashboardDate,
     required this.totalFarms,
     required this.visitedCount,
     required this.pendingCount,
@@ -129,6 +131,8 @@ class ExecutiveDashboard {
     this.priorityFarms = const [],
   });
 
+  final String greetingName;
+  final DateTime dashboardDate;
   final int totalFarms;
   final int visitedCount;
   final int pendingCount;
@@ -154,10 +158,20 @@ class ExecutiveDashboard {
             .toList()
         : const <Farm>[];
 
+    final dateRaw = json['date'] as String?;
+    final dashboardDate = dateRaw != null
+        ? DateTime.tryParse(dateRaw) ?? DateTime.now()
+        : DateTime.now();
+
+    // Backend sets total_farms_to_visit = pending only; UI needs assigned workload.
+    final assignedTotal = pending + visited;
+
     return ExecutiveDashboard(
-      totalFarms: json['total_farms_to_visit'] as int? ??
-          json['total_farms'] as int? ??
-          (pending + visited),
+      greetingName: json['greeting_name'] as String? ?? '',
+      dashboardDate: dashboardDate,
+      totalFarms: assignedTotal > 0
+          ? assignedTotal
+          : (json['total_farms_to_visit'] as int? ?? pending),
       visitedCount: visited,
       pendingCount: pending,
       harvestSoonCount: json['harvest_soon_count'] as int? ?? harvestSoon,

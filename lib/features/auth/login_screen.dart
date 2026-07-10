@@ -87,7 +87,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               children: [
                 const SizedBox(height: AppSpacing.sm),
                 Center(
-                  child: const ShineLogo(size: 88, inCard: true),
+                  child: const ShineLogo(size: 88),
                 ),
                 const SizedBox(height: AppSpacing.xxl),
                 Container(

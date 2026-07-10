@@ -9,6 +9,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../data/models/enums.dart';
 import '../../../data/models/farm.dart';
+import '../../../shared/providers/app_refresh_provider.dart';
 import '../../../shared/providers/auth_provider.dart';
 import '../../../shared/providers/location_provider.dart';
 import '../../../shared/providers/repository_providers.dart';
@@ -35,6 +36,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool _loading = true;
   String? _error;
   String _firstName = '';
+  DateTime _dashboardDate = DateTime.now();
 
   @override
   void initState() {
@@ -59,8 +61,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             user: user,
           );
           priorityFarms = (await ref.read(farmRepositoryProvider).getFarms(
-                FarmFilter(
-                  assignedExecutiveId: user.id,
+                const FarmFilter(
                   quickFilter: QuickFarmFilter.pending,
                   sortOrder: SortOrder.nameAsc,
                 ),
@@ -74,7 +75,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         }
       }
       if (!mounted) return;
+      final greeting = dashboard.greetingName.isNotEmpty
+          ? dashboard.greetingName.split(' ').first
+          : user?.name.split(' ').first ?? '';
       setState(() {
+        _firstName = greeting;
+        _dashboardDate = dashboard.dashboardDate;
         _total = dashboard.totalFarms;
         _visited = dashboard.visitedCount;
         _pending = dashboard.pendingCount;
@@ -101,7 +107,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final dateStr = DateFormat('EEEE, dd MMM').format(DateTime.now());
+    ref.listen<int>(appRefreshProvider, (previous, next) {
+      if (previous != null && previous != next) _load();
+    });
+
+    final dateStr = DateFormat('EEEE, dd MMM').format(_dashboardDate);
 
     return AppBackground(
       header: GradientHeader(

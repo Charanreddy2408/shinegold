@@ -9,7 +9,9 @@ import '../../../core/network/api_exception.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../data/models/enums.dart';
+import '../../../features/super_admin/farms/admin_farm_assign_sheet.dart';
 import '../../../data/models/farm.dart';
+import '../../../shared/providers/app_refresh_provider.dart';
 import '../../../shared/providers/auth_provider.dart';
 import '../../../shared/providers/repository_providers.dart';
 import '../../../shared/widgets/animated_loading.dart';
@@ -70,6 +72,10 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<int>(appRefreshProvider, (previous, next) {
+      if (previous != null && previous != next) _load();
+    });
+
     if (_loading) {
       return Scaffold(
         backgroundColor: AppColors.canvasDeep,
@@ -93,6 +99,8 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
         'https://i.pravatar.cc/120?u=${farm.farmer.id}';
     final isExecutive =
         ref.watch(currentUserProvider)?.role == UserRole.executive;
+    final isAdmin =
+        ref.watch(currentUserProvider)?.role == UserRole.superAdmin;
 
     return Scaffold(
       backgroundColor: AppColors.canvasDeep,
@@ -109,6 +117,21 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
         elevation: 0,
+        actions: [
+          if (isAdmin)
+            IconButton(
+              tooltip: 'Assign executives',
+              onPressed: () async {
+                final updated = await showAdminFarmAssignSheet(
+                  context,
+                  ref,
+                  farm,
+                );
+                if (updated == true) _load();
+              },
+              icon: const Icon(Icons.group_add_outlined),
+            ),
+        ],
       ),
       body: ListView(
         physics: const BouncingScrollPhysics(),
@@ -191,8 +214,12 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
               ),
               InfoMetricTile(
                 icon: Icons.person_rounded,
-                label: 'Executive',
-                value: farm.assignedExecutiveName,
+                label: farm.assignedExecutives.length > 1
+                    ? 'Executives'
+                    : 'Executive',
+                value: farm.assignedExecutives.length > 1
+                    ? farm.assignedExecutives.map((e) => e.name).join(', ')
+                    : farm.assignedExecutiveName,
                 color: AppColors.warning,
               ),
             ],
@@ -239,8 +266,21 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
                     style: Theme.of(context).textTheme.bodyMedium,
                   )
                 : Column(
-                    children:
-                        farm.visitLogs.map((l) => VisitLogTile(log: l)).toList(),
+                    children: farm.visitLogs
+                        .map(
+                          (l) => VisitLogTile(
+                            log: l,
+                            onViewReport: l.id.isNotEmpty
+                                ? () => context.push(
+                                      AppRoutes.visitDetail.replaceFirst(
+                                        ':id',
+                                        l.id,
+                                      ),
+                                    )
+                                : null,
+                          ),
+                        )
+                        .toList(),
                   ),
           ),
           SizedBox(height: isExecutive ? 80 : 24),
@@ -255,9 +295,12 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
                       ? 'Continue Visit'
                       : 'Start Visit',
                   icon: Icons.play_arrow_rounded,
-                  onPressed: () => context.push(
-                    AppRoutes.checkin.replaceFirst(':farmId', farm.id),
-                  ),
+                  onPressed: () async {
+                    final done = await context.push<bool>(
+                      AppRoutes.checkin.replaceFirst(':farmId', farm.id),
+                    );
+                    if (done == true && mounted) _load();
+                  },
                 ),
               ),
             )

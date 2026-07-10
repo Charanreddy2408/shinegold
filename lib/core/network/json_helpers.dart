@@ -2,7 +2,10 @@ import '../../data/models/enums.dart';
 
 String? apiErrorMessage(dynamic data) {
   if (data == null) return null;
-  if (data is String) return data;
+  if (data is String) {
+    final trimmed = data.trim();
+    return trimmed.isEmpty ? null : trimmed;
+  }
   if (data is Map<String, dynamic>) {
     final detail = data['detail'];
     if (detail is String) return detail;

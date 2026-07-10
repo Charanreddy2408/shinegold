@@ -5,12 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/assets/app_assets.dart';
 import '../../core/router/app_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../data/models/enums.dart';
 import '../../shared/providers/auth_provider.dart';
+import '../../shared/widgets/shine_logo.dart';
 
 class WelcomeScreen extends ConsumerStatefulWidget {
   const WelcomeScreen({super.key});
@@ -134,7 +134,13 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
     }
     if (!mounted) return;
 
-    final session = ref.read(authProvider).valueOrNull;
+    final auth = ref.read(authProvider);
+    if (auth.hasError) {
+      context.go(AppRoutes.login);
+      return;
+    }
+
+    final session = auth.valueOrNull;
     if (session != null) {
       context.go(
         session.user.role == UserRole.superAdmin
@@ -304,37 +310,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
                                         ],
                                       ),
                                     ),
-                                    // Soft plate behind logo
-                                    Container(
-                                      width: 196,
-                                      height: 196,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        gradient: RadialGradient(
-                                          colors: [
-                                            Colors.white
-                                                .withValues(alpha: 0.95),
-                                            Colors.white
-                                                .withValues(alpha: 0.55),
-                                            Colors.transparent,
-                                          ],
-                                          stops: const [0.0, 0.55, 1.0],
-                                        ),
-                                      ),
-                                    ),
-                                    // Logo
-                                    Image.asset(
-                                      AppAssets.logo,
-                                      width: 168,
-                                      height: 168,
-                                      fit: BoxFit.contain,
-                                      filterQuality: FilterQuality.high,
-                                      errorBuilder: (_, __, ___) => const Icon(
-                                        Icons.eco_rounded,
-                                        size: 110,
-                                        color: AppColors.secondary,
-                                      ),
-                                    ),
+                                    const ShineLogo(size: 168),
                                   ],
                                 ),
                               ),

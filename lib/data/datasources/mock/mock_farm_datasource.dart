@@ -3,6 +3,7 @@ import 'dart:math';
 import '../../../core/config/app_config.dart';
 import '../../models/enums.dart';
 import '../../models/farm.dart';
+import '../../models/visit_form.dart';
 import '../contracts.dart';
 import 'mock_seed_data.dart';
 
@@ -142,6 +143,83 @@ class MockFarmDataSource implements FarmDataSource {
 
     _farms.add(farm);
     return farm;
+  }
+
+  @override
+  Future<List<FarmInvitation>> getFarmInvitations({
+    double? lat,
+    double? lng,
+    int page = 1,
+    int pageSize = 50,
+  }) async {
+    await Future<void>.delayed(AppConfig.mockNetworkDelay);
+    return _farms
+        .where((f) => f.assignedExecutiveId.isEmpty)
+        .map(
+          (f) => FarmInvitation(
+            id: f.id,
+            name: f.name,
+            latitude: f.latitude,
+            longitude: f.longitude,
+            locationAddress: f.location,
+            distanceKm: lat != null && lng != null
+                ? _haversine(lat, lng, f.latitude, f.longitude)
+                : null,
+            farmerName: f.farmer.name,
+            farmerMobile: f.farmer.mobile,
+          ),
+        )
+        .toList();
+  }
+
+  @override
+  Future<void> acceptFarmInvitation(String farmId) async {
+    await Future<void>.delayed(AppConfig.mockNetworkDelay);
+    final index = _farms.indexWhere((f) => f.id == farmId);
+    if (index < 0) return;
+    final farm = _farms[index];
+    _farms[index] = Farm(
+      id: farm.id,
+      name: farm.name,
+      location: farm.location,
+      latitude: farm.latitude,
+      longitude: farm.longitude,
+      crop: farm.crop,
+      harvestDate: farm.harvestDate,
+      harvestType: farm.harvestType,
+      totalAcres: farm.totalAcres,
+      assignedExecutiveId: 'exec-1',
+      assignedExecutiveName: 'Rahul Sharma',
+      assignedExecutives: const [
+        AssignedExecutive(id: 'exec-1', name: 'Rahul Sharma'),
+      ],
+      farmer: farm.farmer,
+      status: farm.status,
+      healthStatus: farm.healthStatus,
+      lastVisited: farm.lastVisited,
+      harvestStatus: farm.harvestStatus,
+      visitLogs: farm.visitLogs,
+      distanceKm: farm.distanceKm,
+      photoUrls: farm.photoUrls,
+    );
+  }
+
+  @override
+  Future<Farm> createFarmAsAdmin(
+    OnboardFarmRequest request, {
+    List<String> executiveIds = const [],
+  }) async {
+    return onboardFarm(request, executiveIds.firstOrNull ?? '', 'Admin');
+  }
+
+  @override
+  Future<List<String>> assignFarmExecutives(
+    String farmId, {
+    required List<String> executiveIds,
+    String mode = 'replace',
+  }) async {
+    await Future<void>.delayed(AppConfig.mockNetworkDelay);
+    return executiveIds;
   }
 
   Future<void> updateFarmStatus(String farmId, FarmVisitStatus status) async {

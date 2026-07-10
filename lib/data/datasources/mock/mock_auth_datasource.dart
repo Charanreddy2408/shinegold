@@ -97,4 +97,29 @@ class MockAuthDataSource implements AuthDataSource {
       throw Exception('Current password is incorrect');
     }
   }
+
+  @override
+  Future<User> updateProfile({
+    String? name,
+    String? address,
+    String? mobileNumber,
+    String? profilePhotoUrl,
+  }) async {
+    await Future<void>.delayed(AppConfig.mockNetworkDelay);
+    final user = MockSeedData.executiveUser;
+    return User(
+      id: user.id,
+      employeeId: user.employeeId,
+      name: name ?? user.name,
+      role: user.role,
+      profilePhotoUrl: profilePhotoUrl ?? user.profilePhotoUrl,
+      address: address ?? user.address,
+      mobile: mobileNumber ?? user.mobile,
+      homeLat: user.homeLat,
+      homeLng: user.homeLng,
+      farmsVisitedCount: user.farmsVisitedCount,
+      onboardingCount: user.onboardingCount,
+      requiresLocationSetup: user.requiresLocationSetup,
+    );
+  }
 }

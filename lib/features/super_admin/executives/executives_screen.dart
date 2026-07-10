@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/network/api_exception.dart';
 import '../../../core/animations/staggered_list.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../data/models/executive.dart';
 import '../../../shared/providers/repository_providers.dart';
 import '../../../shared/utils/list_search.dart';
+import '../../../shared/widgets/ux_components.dart';
 import '../../../shared/widgets/admin_ui.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/gold_shimmer.dart';
@@ -23,6 +25,7 @@ class _ExecutivesScreenState extends ConsumerState<ExecutivesScreen> {
   final _searchController = TextEditingController();
   List<Executive> _executives = [];
   bool _loading = true;
+  String? _error;
 
   @override
   void initState() {
@@ -46,13 +49,25 @@ class _ExecutivesScreenState extends ConsumerState<ExecutivesScreen> {
       }).toList();
 
   Future<void> _load() async {
-    setState(() => _loading = true);
-    final list = await ref.read(executiveRepositoryProvider).list();
-    if (mounted) {
-      setState(() {
-        _executives = list;
-        _loading = false;
-      });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final list = await ref.read(executiveRepositoryProvider).list();
+      if (mounted) {
+        setState(() {
+          _executives = list;
+          _loading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _error = formatApiError(e);
+        });
+      }
     }
   }
 
@@ -63,7 +78,7 @@ class _ExecutivesScreenState extends ConsumerState<ExecutivesScreen> {
     final address = TextEditingController();
     final password = TextEditingController();
 
-    await showAdminFormSheet(
+    final created = await showAdminFormSheet<bool>(
       context: context,
       title: 'Add Executive',
       subtitle: 'Onboard a new field team member',
@@ -113,7 +128,6 @@ class _ExecutivesScreenState extends ConsumerState<ExecutivesScreen> {
                     : address.text.trim(),
               ),
             );
-        if (mounted) _load();
       },
     );
 
@@ -122,6 +136,14 @@ class _ExecutivesScreenState extends ConsumerState<ExecutivesScreen> {
     mobile.dispose();
     address.dispose();
     password.dispose();
+
+    if (created == true && mounted) {
+      await _load();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Executive created successfully')),
+      );
+    }
   }
 
   Future<void> _openProfile(Executive exec) async {
@@ -171,6 +193,16 @@ class _ExecutivesScreenState extends ConsumerState<ExecutivesScreen> {
                       child: ShimmerBox(height: 88),
                     ),
                   )
+                : _error != null
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: FriendlyErrorBanner(
+                            message: _error!,
+                            onRetry: _load,
+                          ),
+                        ),
+                      )
                 : filtered.isEmpty
                     ? ShineEmptyState(
                         icon: Icons.search_off_rounded,

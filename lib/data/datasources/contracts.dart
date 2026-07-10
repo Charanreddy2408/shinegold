@@ -3,6 +3,7 @@ import '../models/executive.dart';
 import '../models/farm.dart';
 import '../models/user.dart';
 import '../models/visit.dart';
+import '../models/visit_form.dart';
 
 abstract class AuthDataSource {
   Future<AuthSession> login(String employeeId, String password);
@@ -22,6 +23,12 @@ abstract class AuthDataSource {
     required String newPassword,
     required String confirmPassword,
   });
+  Future<User> updateProfile({
+    String? name,
+    String? address,
+    String? mobileNumber,
+    String? profilePhotoUrl,
+  });
 }
 
 abstract class FarmDataSource {
@@ -38,6 +45,26 @@ abstract class FarmDataSource {
     String executiveId,
     String executiveName,
   );
+
+  Future<List<FarmInvitation>> getFarmInvitations({
+    double? lat,
+    double? lng,
+    int page = 1,
+    int pageSize = 50,
+  });
+
+  Future<void> acceptFarmInvitation(String farmId);
+
+  Future<Farm> createFarmAsAdmin(
+    OnboardFarmRequest request, {
+    List<String> executiveIds = const [],
+  });
+
+  Future<List<String>> assignFarmExecutives(
+    String farmId, {
+    required List<String> executiveIds,
+    String mode = 'replace',
+  });
 }
 
 abstract class VisitDataSource {
@@ -58,12 +85,33 @@ abstract class VisitDataSource {
     String? voiceNotePath,
     String? textNote,
     Map<String, String>? mcqAnswers,
+    List<FormAnswerEntry>? formAnswers,
     FarmHealthStatus? condition,
   });
 
+  Future<void> saveVisitForm({
+    required String visitId,
+    List<FormAnswerEntry>? formAnswers,
+    List<String>? photoPaths,
+    String? voiceNotePath,
+    double? capturedLat,
+    double? capturedLng,
+  });
+
+  Future<Visit?> getVisitById(String visitId);
+
+  Future<VisitFormContext> getVisitFormContext(String visitId);
+
   Future<List<Visit>> getMyVisits(String executiveId, VisitFilter filter);
 
+  Future<List<Visit>> getExecutiveVisits(
+    String userId,
+    VisitFilter filter,
+  );
+
   Future<Visit?> getOngoingVisit(String executiveId);
+
+  Future<void> cancelVisit(String visitId);
 }
 
 abstract class ExecutiveDataSource {

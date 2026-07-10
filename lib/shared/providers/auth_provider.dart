@@ -23,23 +23,60 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthSession?>> {
     try {
       final prefs = await SharedPreferences.getInstance();
       final json = prefs.getString(_sessionKey);
-      if (json != null) {
-        final session = AuthSession.fromJson(
-          jsonDecode(json) as Map<String, dynamic>,
-        );
-        if (session.token.startsWith('mock-token')) {
-          await prefs.remove(_sessionKey);
-          state = const AsyncValue.data(null);
-          return;
-        }
-        _dio.updateToken(session.token);
-        state = AsyncValue.data(session);
-      } else {
+      if (json == null) {
         state = const AsyncValue.data(null);
+        return;
       }
+
+      final session = AuthSession.fromJson(
+        jsonDecode(json) as Map<String, dynamic>,
+      );
+      if (session.token.startsWith('mock-token')) {
+        await prefs.remove(_sessionKey);
+        state = const AsyncValue.data(null);
+        return;
+      }
+
+      _dio.updateToken(session.token);
+
+      // Validate stored credentials; stale tokens cause blank screens after splash.
+      try {
+        final user = await _repository.getMe();
+        final valid = AuthSession(
+          token: session.token,
+          refreshToken: session.refreshToken,
+          user: user,
+        );
+        await _persistSession(valid);
+        state = AsyncValue.data(valid);
+        return;
+      } catch (_) {
+        final refresh = session.refreshToken;
+        if (refresh != null && refresh.isNotEmpty) {
+          try {
+            final refreshed = await _repository.refreshSession(refresh);
+            await _persistSession(refreshed);
+            state = AsyncValue.data(refreshed);
+            return;
+          } catch (_) {
+            // Fall through to clear session.
+          }
+        }
+      }
+
+      await prefs.remove(_sessionKey);
+      _dio.updateToken(null);
+      state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }
+  }
+
+  Future<void> clearSession() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_sessionKey);
+    _dio.updateToken(null);
+    state = const AsyncValue.data(null);
   }
 
   Future<void> _persistSession(AuthSession session) async {
@@ -52,7 +89,15 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthSession?>> {
     try {
       final session = await _repository.login(employeeId, password);
       await _persistSession(session);
-      state = AsyncValue.data(session);
+      // Login user payload lacks stats — refresh from /users/me.
+      final user = await _repository.getMe();
+      final updated = AuthSession(
+        token: session.token,
+        refreshToken: session.refreshToken,
+        user: user,
+      );
+      await _persistSession(updated);
+      state = AsyncValue.data(updated);
     } catch (e) {
       // Keep auth unauthenticated; don't set global loading/error — that
       // redirects away from the login screen via go_router.
@@ -139,6 +184,7 @@ final authProvider =
       return null;
     }
   };
+  dio.onAuthFailure = () => notifier.clearSession();
   return notifier;
 });
 

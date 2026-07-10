@@ -1,4 +1,5 @@
 import 'enums.dart';
+import 'visit_form.dart';
 
 class Farmer {
   const Farmer({
@@ -8,6 +9,7 @@ class Farmer {
     this.gender,
     this.age,
     this.photoUrl,
+    this.farmsCount = 0,
   });
 
   final String id;
@@ -16,6 +18,9 @@ class Farmer {
   final Gender? gender;
   final int? age;
   final String? photoUrl;
+  final int farmsCount;
+
+  String get displayName => name.trim().isNotEmpty ? name.trim() : 'Unnamed farmer';
 
   factory Farmer.fromJson(Map<String, dynamic> json) => Farmer(
         id: json['id']?.toString() ?? '',
@@ -23,12 +28,20 @@ class Farmer {
         mobile: json['mobile'] as String? ??
             json['mobile_number'] as String? ??
             '',
-        gender: json['gender'] is String
-            ? Gender.values.byName(json['gender'] as String)
-            : null,
+        gender: _parseGender(json['gender']),
         age: json['age'] as int?,
         photoUrl: json['photo_url'] as String?,
+        farmsCount: json['farms_count'] as int? ?? 0,
       );
+
+  static Gender? _parseGender(dynamic raw) {
+    if (raw is! String || raw.isEmpty) return null;
+    try {
+      return Gender.values.byName(raw);
+    } catch (_) {
+      return null;
+    }
+  }
 
   Map<String, dynamic> toJson() => {
         if (id.isNotEmpty) 'id': id,
@@ -110,6 +123,7 @@ class Farm {
     required this.assignedExecutiveName,
     required this.farmer,
     required this.status,
+    this.assignedExecutives = const [],
     this.healthStatus = FarmHealthStatus.healthy,
     this.lastVisited,
     this.harvestStatus = HarvestStatus.upcoming,
@@ -129,6 +143,7 @@ class Farm {
   final double totalAcres;
   final String assignedExecutiveId;
   final String assignedExecutiveName;
+  final List<AssignedExecutive> assignedExecutives;
   final Farmer farmer;
   final FarmVisitStatus status;
   final FarmHealthStatus healthStatus;
@@ -140,16 +155,20 @@ class Farm {
 
   factory Farm.fromUpcomingHarvest(Map<String, dynamic> json) {
     final harvestDateRaw = json['harvest_date'];
+    final harvestDate = harvestDateRaw is String
+        ? DateTime.parse(harvestDateRaw)
+        : DateTime.now();
+  final harvestLabel = harvestDateRaw is String
+        ? 'Harvest: ${harvestDateRaw.split('T').first}'
+        : '';
     return Farm(
       id: json['farm_id']?.toString() ?? json['id']?.toString() ?? '',
       name: json['farm_name'] as String? ?? json['name'] as String? ?? '',
-      location: '',
+      location: harvestLabel,
       latitude: 0,
       longitude: 0,
       crop: json['crop'] as String? ?? '',
-      harvestDate: harvestDateRaw is String
-          ? DateTime.parse(harvestDateRaw)
-          : DateTime.now(),
+      harvestDate: harvestDate,
       harvestType: json['harvest_type'] as String? ?? '',
       totalAcres: 0,
       assignedExecutiveId: '',
@@ -200,12 +219,26 @@ class Farm {
     }
 
     final assignedExecutive = json['assigned_executive'];
+    final assignedExecutivesRaw = json['assigned_executives'] as List<dynamic>?;
+    final assignedExecutives = assignedExecutivesRaw
+            ?.map((e) => AssignedExecutive.fromJson(e as Map<String, dynamic>))
+            .toList() ??
+        (assignedExecutive is Map
+            ? [
+                AssignedExecutive.fromJson(
+                  assignedExecutive as Map<String, dynamic>,
+                ),
+              ]
+            : <AssignedExecutive>[]);
+
     final assignedExecutiveId = json['assigned_executive_id']?.toString() ??
+        assignedExecutives.firstOrNull?.id ??
         (assignedExecutive is Map
             ? assignedExecutive['id']?.toString()
             : null) ??
         '';
     final assignedExecutiveName = json['assigned_executive_name'] as String? ??
+        assignedExecutives.firstOrNull?.name ??
         (assignedExecutive is Map
             ? assignedExecutive['name'] as String?
             : null) ??
@@ -233,6 +266,7 @@ class Farm {
       totalAcres: (json['total_acres'] as num?)?.toDouble() ?? 0,
       assignedExecutiveId: assignedExecutiveId,
       assignedExecutiveName: assignedExecutiveName,
+      assignedExecutives: assignedExecutives,
       farmer: farmer,
       status: json['status'] is String
           ? _parseFarmVisitStatus(json['status'] as String)
@@ -298,6 +332,7 @@ class Farm {
         totalAcres: totalAcres,
         assignedExecutiveId: assignedExecutiveId,
         assignedExecutiveName: assignedExecutiveName,
+        assignedExecutives: assignedExecutives,
         farmer: farmer,
         status: status ?? this.status,
         healthStatus: healthStatus ?? this.healthStatus,

@@ -1,20 +1,26 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:record/record.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
-import '../../../data/models/enums.dart';
 import '../../../data/models/visit.dart';
+import '../../../data/models/visit_form.dart';
+import '../../../shared/providers/app_refresh_provider.dart';
 import '../../../shared/providers/auth_provider.dart';
 import '../../../shared/providers/location_provider.dart';
 import '../../../shared/providers/repository_providers.dart';
 import '../../../shared/widgets/shine_buttons.dart';
 import '../../../shared/widgets/ux_components.dart';
+import '../../visits/presentation/widgets/dynamic_visit_form.dart';
+import '../../visits/presentation/widgets/visit_form_prefill_card.dart';
 
 class CheckinScreen extends ConsumerStatefulWidget {
   const CheckinScreen({super.key, required this.farmId});
@@ -29,44 +35,122 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
   final _pageController = PageController();
   int _step = 0;
   Visit? _visit;
+  VisitFormContext? _formContext;
+  FormAnswersMap _answers = {};
+  Map<String, String> _fieldErrors = {};
   bool _loading = false;
   bool _recording = false;
   bool _voiceMarked = false;
+  bool _submitted = false;
+  bool _cancelling = false;
   String? _voicePath;
-  String? _errorMessage;
+  String? _uploadedVoiceUrl;
+  final _audioRecorder = AudioRecorder();
+  String? _apiErrorMessage;
   final List<String> _photos = [];
-  FarmHealthStatus? _condition;
   String? _farmName;
+  Timer? _saveDebounce;
 
-  static const _stepLabels = [
-    'Start',
-    'Photos',
-    'Voice',
-    'Condition',
-    'Submit',
-  ];
+  static const _stepLabels = ['Start', 'Report', 'Media', 'Submit'];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _cleanupStaleVisits());
+  }
+
+  Future<void> _cleanupStaleVisits() async {
+    final user = ref.read(currentUserProvider);
+    if (user == null) return;
+    try {
+      final ongoing =
+          await ref.read(visitRepositoryProvider).getOngoingVisit(user.id);
+      if (ongoing == null) return;
+
+      final now = DateTime.now();
+      final started = ongoing.startedAt.toLocal();
+      final sameDay = started.year == now.year &&
+          started.month == now.month &&
+          started.day == now.day;
+      if (!sameDay) {
+        await ref.read(visitRepositoryProvider).cancelVisit(ongoing.id);
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _cancelActiveVisit() async {
+    if (_submitted || _visit == null || _cancelling) return;
+    _cancelling = true;
+    try {
+      await ref.read(visitRepositoryProvider).cancelVisit(_visit!.id);
+    } catch (_) {}
+    _cancelling = false;
+  }
+
+  Future<void> _handleExit() async {
+    if (_recording) {
+      await _audioRecorder.stop();
+      if (mounted) setState(() => _recording = false);
+    }
+    await _cancelActiveVisit();
+    if (mounted) context.pop();
+  }
 
   @override
   void dispose() {
+    _saveDebounce?.cancel();
     _pageController.dispose();
+    unawaited(_audioRecorder.dispose());
     super.dispose();
   }
 
-  void _clearError() {
-    if (_errorMessage != null) setState(() => _errorMessage = null);
+  void _clearApiError() {
+    if (_apiErrorMessage != null) setState(() => _apiErrorMessage = null);
+  }
+
+  void _showValidationFeedback(int missingCount) {
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          missingCount == 1
+              ? '1 required field still needs your answer'
+              : '$missingCount required fields still need your answers',
+        ),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: AppColors.primaryDark,
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  bool _runFormValidation({bool showFeedback = true}) {
+    if (_formContext == null) return true;
+    final errors = DynamicVisitForm.validateRequired(
+      _formContext!.template,
+      _answers,
+    );
+    setState(() {
+      _fieldErrors = errors;
+      _apiErrorMessage = null;
+    });
+    if (errors.isNotEmpty && showFeedback) {
+      _showValidationFeedback(errors.length);
+    }
+    return errors.isEmpty;
   }
 
   Future<void> _startVisit() async {
     setState(() {
       _loading = true;
-      _errorMessage = null;
+      _apiErrorMessage = null;
     });
     try {
       final user = ref.read(currentUserProvider)!;
       final farm =
           await ref.read(farmRepositoryProvider).getFarmById(widget.farmId);
       if (farm == null) {
-        setState(() => _errorMessage = 'Farm not found.');
+        setState(() => _apiErrorMessage = 'Farm not found.');
         return;
       }
 
@@ -77,34 +161,140 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
 
       final ongoing =
           await ref.read(visitRepositoryProvider).getOngoingVisit(user.id);
-      if (ongoing != null && ongoing.farmId == widget.farmId) {
-        _visit = ongoing;
-      } else if (ongoing != null) {
-        setState(() {
-          _errorMessage =
-              'You already have a visit in progress at ${ongoing.farmName}. Finish that visit first.';
-        });
-        return;
-      } else {
-        _visit = await ref.read(visitRepositoryProvider).startVisit(
-              farmId: farm.id,
-              farmName: farm.name,
-              executiveId: user.id,
-              executiveName: user.name,
-              latitude: lat,
-              longitude: lng,
-            );
+      if (ongoing != null) {
+        await ref.read(visitRepositoryProvider).cancelVisit(ongoing.id);
       }
+
+      _visit = await ref.read(visitRepositoryProvider).startVisit(
+            farmId: farm.id,
+            farmName: farm.name,
+            executiveId: user.id,
+            executiveName: user.name,
+            latitude: lat,
+            longitude: lng,
+          );
+
+      _formContext = await ref
+          .read(visitRepositoryProvider)
+          .getVisitFormContext(_visit!.id);
       _goToStep(1);
     } catch (e) {
-      setState(() => _errorMessage = formatApiError(e));
+      setState(() => _apiErrorMessage = formatApiError(e));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
   }
 
+  void _onAnswersChanged(FormAnswersMap answers) {
+    setState(() {
+      _answers = answers;
+      if (_fieldErrors.isNotEmpty) {
+        _fieldErrors = Map.fromEntries(
+          _fieldErrors.entries.where((e) {
+            final raw = answers[e.key];
+            if (raw == null) return true;
+            if (raw is String && raw.trim().isEmpty) return true;
+            if (raw is List && raw.isEmpty) return true;
+            return false;
+          }),
+        );
+      }
+    });
+    _scheduleSave();
+  }
+
+  void _scheduleSave() {
+    _saveDebounce?.cancel();
+    _saveDebounce = Timer(const Duration(milliseconds: 800), _saveFormProgress);
+  }
+
+  Future<void> _saveFormProgress() async {
+    if (_visit == null || _formContext == null) return;
+    try {
+      final entries = DynamicVisitForm.toFormAnswers(
+        _formContext!.template,
+        _answers,
+      );
+      if (entries.isEmpty) return;
+      await ref.read(visitRepositoryProvider).saveVisitForm(
+            visitId: _visit!.id,
+            formAnswers: entries,
+          );
+    } catch (_) {}
+  }
+
+  Future<void> _toggleVoiceRecording() async {
+    if (_recording) {
+      final path = await _audioRecorder.stop();
+      if (!mounted) return;
+      setState(() {
+        _recording = false;
+        _voicePath = path;
+        _voiceMarked = path != null && path.isNotEmpty;
+      });
+      if (path != null && path.isNotEmpty && _visit != null) {
+        await _uploadVoiceNote(path);
+      }
+      return;
+    }
+
+    final hasPermission = await _audioRecorder.hasPermission();
+    if (!hasPermission) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Microphone permission is required to record'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    final path =
+        '${Directory.systemTemp.path}/visit_voice_${const Uuid().v4()}.m4a';
+    await _audioRecorder.start(
+      const RecordConfig(
+        encoder: AudioEncoder.aacLc,
+        sampleRate: 44100,
+        bitRate: 128000,
+        numChannels: 1,
+      ),
+      path: path,
+    );
+    if (!mounted) return;
+    setState(() {
+      _recording = true;
+      _voicePath = path;
+      _voiceMarked = false;
+    });
+  }
+
+  Future<void> _uploadVoiceNote(String path) async {
+    if (_visit == null) return;
+    try {
+      final url = await ref.read(uploadServiceProvider).uploadFile(
+            localPath: path,
+            context: 'visit_voice',
+          );
+      await ref.read(visitRepositoryProvider).saveVisitForm(
+            visitId: _visit!.id,
+            voiceNotePath: url,
+          );
+      if (mounted) setState(() => _uploadedVoiceUrl = url);
+    } catch (_) {}
+  }
+
   Future<void> _pickPhoto() async {
-    _clearError();
+    _clearApiError();
+    if (_photos.length >= 5) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Maximum 5 photos allowed'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
     final image = await ImagePicker().pickImage(source: ImageSource.camera);
     if (image != null) setState(() => _photos.add(image.path));
   }
@@ -112,7 +302,7 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
   void _goToStep(int step) {
     setState(() {
       _step = step;
-      _errorMessage = null;
+      if (step != 1) _apiErrorMessage = null;
     });
     _pageController.animateToPage(
       step,
@@ -122,16 +312,15 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
   }
 
   Future<void> _submit() async {
-    if (_visit == null || _condition == null) {
-      setState(() {
-        _errorMessage = 'Select a farm condition before submitting.';
-      });
+    if (_visit == null) return;
+    if (!_runFormValidation()) {
+      _goToStep(1);
       return;
     }
 
     setState(() {
       _loading = true;
-      _errorMessage = null;
+      _apiErrorMessage = null;
     });
 
     try {
@@ -141,17 +330,25 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
       final checkoutLng =
           loc.position?.longitude ?? _visit!.longitude ?? 78.4867;
 
+      final formAnswers = _formContext != null
+          ? DynamicVisitForm.toFormAnswers(_formContext!.template, _answers)
+          : null;
+      final actionPlan = _answers['action_plan']?.toString();
+
       await ref.read(visitRepositoryProvider).submitVisit(
             visitId: _visit!.id,
             photos: _photos,
             checkoutLat: checkoutLat,
             checkoutLng: checkoutLng,
-            voiceNotePath: _voicePath,
-            mcqAnswers: {'farm_condition': _condition!.name},
-            condition: _condition,
+            voiceNotePath: _uploadedVoiceUrl ?? _voicePath,
+            textNote: actionPlan,
+            formAnswers: formAnswers,
           );
 
       if (!mounted) return;
+      setState(() => _submitted = true);
+      bumpAppRefresh(ref);
+      unawaited(ref.read(authProvider.notifier).refreshUser());
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Visit submitted successfully'),
@@ -162,7 +359,7 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
       context.pop(true);
     } catch (e) {
       if (!mounted) return;
-      setState(() => _errorMessage = formatApiError(e));
+      setState(() => _apiErrorMessage = formatApiError(e));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -170,9 +367,19 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+      canPop: _submitted,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        await _handleExit();
+      },
+      child: Scaffold(
       backgroundColor: AppColors.canvasDeep,
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: _loading ? null : _handleExit,
+        ),
         title: Text(
           _farmName ?? 'Farm Visit',
           style: const TextStyle(fontWeight: FontWeight.w700),
@@ -196,7 +403,7 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
                     children: [
                       Container(
                         height: 4,
-                        margin: EdgeInsets.only(right: i < 4 ? 4 : 0),
+                        margin: EdgeInsets.only(right: i < 3 ? 4 : 0),
                         decoration: BoxDecoration(
                           color: done
                               ? AppColors.secondary
@@ -228,12 +435,12 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
       ),
       body: Column(
         children: [
-          if (_errorMessage != null)
+          if (_apiErrorMessage != null)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
               child: FriendlyErrorBanner(
-                message: _errorMessage!,
-                icon: Icons.error_outline_rounded,
+                message: _apiErrorMessage!,
+                icon: Icons.wifi_off_rounded,
                 onRetry: _step == 0 ? _startVisit : _submit,
               ),
             ),
@@ -243,31 +450,29 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
               physics: const NeverScrollableScrollPhysics(),
               children: [
                 _StartStep(loading: _loading, onStart: _startVisit),
-                _PhotosStep(
-                  photos: _photos,
-                  onAdd: _pickPhoto,
-                  onNext: () => _goToStep(2),
+                _FormStep(
+                  formContext: _formContext,
+                  answers: _answers,
+                  fieldErrors: _fieldErrors,
+                  onChanged: _onAnswersChanged,
+                  onNext: () {
+                    if (_runFormValidation()) {
+                      _goToStep(2);
+                    }
+                  },
                 ),
-                _VoiceStep(
+                _MediaStep(
+                  photos: _photos,
                   isRecording: _recording,
                   hasVoice: _voiceMarked,
-                  onToggle: () => setState(() {
-                    _recording = !_recording;
-                    if (!_recording) {
-                      _voiceMarked = true;
-                      _voicePath = null;
-                    }
-                  }),
+                  onAddPhoto: _pickPhoto,
+                  onToggleVoice: _toggleVoiceRecording,
                   onNext: () => _goToStep(3),
                 ),
-                _ConditionStep(
-                  selected: _condition,
-                  onSelected: (c) => setState(() => _condition = c),
-                  onNext: () => _goToStep(4),
-                ),
                 _SubmitStep(
+                  formContext: _formContext,
+                  answers: _answers,
                   photos: _photos,
-                  condition: _condition,
                   hasVoice: _voiceMarked,
                   loading: _loading,
                   onSubmit: _submit,
@@ -276,6 +481,7 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
             ),
           ),
         ],
+      ),
       ),
     );
   }
@@ -315,7 +521,7 @@ class _StartStep extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            'Your check-in time and location will be recorded automatically.',
+            'Check-in records your time and location. You will then complete the field visit report.',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.textSecondary,
@@ -334,15 +540,148 @@ class _StartStep extends StatelessWidget {
   }
 }
 
-class _PhotosStep extends StatelessWidget {
-  const _PhotosStep({
+class _FormStep extends StatefulWidget {
+  const _FormStep({
+    required this.formContext,
+    required this.answers,
+    required this.fieldErrors,
+    required this.onChanged,
+    required this.onNext,
+  });
+
+  final VisitFormContext? formContext;
+  final FormAnswersMap answers;
+  final Map<String, String> fieldErrors;
+  final ValueChanged<FormAnswersMap> onChanged;
+  final VoidCallback onNext;
+
+  @override
+  State<_FormStep> createState() => _FormStepState();
+}
+
+class _FormStepState extends State<_FormStep> {
+  final _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(covariant _FormStep oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.fieldErrors.isNotEmpty &&
+        oldWidget.fieldErrors.isEmpty &&
+        _scrollController.hasClients) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollController.animateTo(
+          0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.formContext == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    final missingCount = widget.fieldErrors.length;
+
+    return Column(
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
+            controller: _scrollController,
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (missingCount > 0)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.warning.withValues(alpha: 0.12),
+                        borderRadius:
+                            BorderRadius.circular(AppSpacing.radiusMd),
+                        border: Border.all(
+                          color: AppColors.warning.withValues(alpha: 0.35),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.info_outline_rounded,
+                            size: 18,
+                            color: AppColors.warning,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              missingCount == 1
+                                  ? '1 required field needs your answer below'
+                                  : '$missingCount required fields need your answers below',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    color: AppColors.primaryDark,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                VisitFormPrefillCard(prefill: widget.formContext!.prefill),
+                const SizedBox(height: AppSpacing.lg),
+                DynamicVisitForm(
+                  template: widget.formContext!.template,
+                  answers: widget.answers,
+                  fieldErrors: widget.fieldErrors,
+                  onChanged: widget.onChanged,
+                ),
+              ],
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: ShinePrimaryButton(
+            label: 'Continue to Media',
+            onPressed: widget.onNext,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _MediaStep extends StatelessWidget {
+  const _MediaStep({
     required this.photos,
-    required this.onAdd,
+    required this.isRecording,
+    required this.hasVoice,
+    required this.onAddPhoto,
+    required this.onToggleVoice,
     required this.onNext,
   });
 
   final List<String> photos;
-  final VoidCallback onAdd;
+  final bool isRecording;
+  final bool hasVoice;
+  final VoidCallback onAddPhoto;
+  final VoidCallback onToggleVoice;
   final VoidCallback onNext;
 
   @override
@@ -353,14 +692,14 @@ class _PhotosStep extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Capture Photos',
+            'Photos & Voice',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w800,
                 ),
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(
-            'Optional — add photos of the farm condition',
+            'Optional — up to 5 geotagged photos and a voice note',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.textSecondary,
                 ),
@@ -377,7 +716,7 @@ class _PhotosStep extends StatelessWidget {
               itemBuilder: (context, i) {
                 if (i == photos.length) {
                   return InkWell(
-                    onTap: onAdd,
+                    onTap: onAddPhoto,
                     borderRadius: BorderRadius.circular(14),
                     child: Ink(
                       decoration: AppColors.cardDecoration(radius: 14),
@@ -403,94 +742,28 @@ class _PhotosStep extends StatelessWidget {
               },
             ),
           ),
-          ShinePrimaryButton(label: 'Continue', onPressed: onNext),
-        ],
-      ),
-    );
-  }
-}
-
-class _VoiceStep extends StatelessWidget {
-  const _VoiceStep({
-    required this.isRecording,
-    required this.hasVoice,
-    required this.onToggle,
-    required this.onNext,
-  });
-
-  final bool isRecording;
-  final bool hasVoice;
-  final VoidCallback onToggle;
-  final VoidCallback onNext;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      child: Column(
-        children: [
-          const Spacer(),
-          Text(
-            'Voice Note',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w800,
-                ),
+          const SizedBox(height: AppSpacing.md),
+          Center(
+            child: VoiceRecorderButton(
+              isRecording: isRecording,
+              onToggle: onToggleVoice,
+            ),
           ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            hasVoice ? 'Voice note marked' : 'Optional — tap to mark voice note',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
+          if (hasVoice)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Center(
+                child: Text(
+                  'Voice note marked',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppColors.secondary,
+                        fontWeight: FontWeight.w600,
+                      ),
                 ),
-          ),
-          const SizedBox(height: AppSpacing.xxl),
-          VoiceRecorderButton(isRecording: isRecording, onToggle: onToggle),
-          const Spacer(),
-          ShinePrimaryButton(label: 'Continue', onPressed: onNext),
-        ],
-      ),
-    );
-  }
-}
-
-class _ConditionStep extends StatelessWidget {
-  const _ConditionStep({
-    required this.selected,
-    required this.onSelected,
-    required this.onNext,
-  });
-
-  final FarmHealthStatus? selected;
-  final ValueChanged<FarmHealthStatus> onSelected;
-  final VoidCallback onNext;
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Farm Condition',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w800,
-                ),
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            'Select the current health of the crop',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-          ),
+              ),
+            ),
           const SizedBox(height: AppSpacing.lg),
-          ConditionSelector(selected: selected, onSelected: onSelected),
-          const SizedBox(height: AppSpacing.xl),
-          ShinePrimaryButton(
-            label: 'Review & Submit',
-            onPressed: selected != null ? onNext : null,
-          ),
+          ShinePrimaryButton(label: 'Review & Submit', onPressed: onNext),
         ],
       ),
     );
@@ -499,21 +772,32 @@ class _ConditionStep extends StatelessWidget {
 
 class _SubmitStep extends StatelessWidget {
   const _SubmitStep({
+    required this.formContext,
+    required this.answers,
     required this.photos,
-    required this.condition,
     required this.hasVoice,
     required this.loading,
     required this.onSubmit,
   });
 
+  final VisitFormContext? formContext;
+  final FormAnswersMap answers;
   final List<String> photos;
-  final FarmHealthStatus? condition;
   final bool hasVoice;
   final bool loading;
   final VoidCallback onSubmit;
 
   @override
   Widget build(BuildContext context) {
+    final requiredCount = formContext?.template.inputQuestions
+            .where((q) => q.isRequired)
+            .length ??
+        0;
+    final answeredRequired = formContext?.template.inputQuestions
+            .where((q) => q.isRequired && answers.containsKey(q.questionKey))
+            .length ??
+        0;
+
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Column(
@@ -534,6 +818,13 @@ class _SubmitStep extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _ReviewRow(
+                    icon: Icons.assignment_outlined,
+                    label: 'Report fields',
+                    value: '$answeredRequired / $requiredCount required',
+                    highlight: answeredRequired == requiredCount,
+                  ),
+                  const Divider(height: 24),
+                  _ReviewRow(
                     icon: Icons.photo_outlined,
                     label: 'Photos',
                     value: '${photos.length} attached',
@@ -543,13 +834,6 @@ class _SubmitStep extends StatelessWidget {
                     icon: Icons.mic_none_rounded,
                     label: 'Voice note',
                     value: hasVoice ? 'Marked' : 'Skipped',
-                  ),
-                  const Divider(height: 24),
-                  _ReviewRow(
-                    icon: Icons.eco_outlined,
-                    label: 'Condition',
-                    value: condition?.label ?? 'Not selected',
-                    highlight: condition != null,
                   ),
                 ],
               ),

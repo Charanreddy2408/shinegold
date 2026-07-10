@@ -8,6 +8,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../data/models/enums.dart';
 import '../../../data/models/farm.dart';
+import '../../../shared/providers/app_refresh_provider.dart';
 import '../../../shared/providers/auth_provider.dart';
 import '../../../shared/providers/location_provider.dart';
 import '../../../shared/providers/repository_providers.dart';
@@ -67,9 +68,6 @@ class _FarmsScreenState extends ConsumerState<FarmsScreen> {
         user: user,
       );
       var filter = _filter.copyWith(search: _searchController.text);
-      if (user?.role == UserRole.executive) {
-        filter = filter.copyWith(assignedExecutiveId: user!.id);
-      }
       final farms = await ref.read(farmRepositoryProvider).getFarms(
             filter,
             userLat: coords.latitude,
@@ -202,6 +200,10 @@ class _FarmsScreenState extends ConsumerState<FarmsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<int>(appRefreshProvider, (previous, next) {
+      if (previous != null && previous != next) _loadFarms();
+    });
+
     final loc = ref.watch(locationProvider);
     final user = ref.watch(currentUserProvider);
     final coords = resolveLocationCoords(
@@ -216,6 +218,11 @@ class _FarmsScreenState extends ConsumerState<FarmsScreen> {
         title: 'Farms',
         subtitle: _loading ? 'Loading...' : '${_farms.length} assigned farms',
         compact: true,
+        trailing: IconButton(
+          tooltip: 'Nearby unassigned farms',
+          onPressed: () => context.push(AppRoutes.farmInvitations),
+          icon: const Icon(Icons.explore_outlined, color: Colors.white),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

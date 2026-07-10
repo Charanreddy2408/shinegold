@@ -8,6 +8,8 @@ import 'package:table_calendar/table_calendar.dart';
 
 
 
+import '../../../core/network/api_exception.dart';
+
 import '../../../core/animations/staggered_list.dart';
 
 import '../../../core/theme/app_colors.dart';
@@ -21,6 +23,8 @@ import '../../../shared/widgets/admin_ui.dart';
 import '../../../shared/widgets/animated_loading.dart';
 
 import '../../../shared/widgets/app_background.dart';
+
+import '../../../shared/widgets/ux_components.dart';
 
 import '../../../shared/widgets/shine_empty_state.dart';
 
@@ -46,6 +50,7 @@ class _HarvestsScreenState extends ConsumerState<HarvestsScreen> {
   DateTime? _selectedDay;
   List<Harvest> _harvests = [];
   bool _loading = true;
+  String? _error;
 
   @override
   void initState() {
@@ -63,21 +68,37 @@ class _HarvestsScreenState extends ConsumerState<HarvestsScreen> {
 
 
   Future<void> _load() async {
+    await _loadMonth(_focusedDay);
+  }
 
-    setState(() => _loading = true);
+  Future<void> _loadMonth(DateTime month) async {
 
-    final harvests = await ref.read(harvestRepositoryProvider).getAll();
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
 
-    if (mounted) {
+    try {
+      final harvests = await ref.read(harvestRepositoryProvider).getByMonth(month);
 
-      setState(() {
+      if (mounted) {
 
-        _harvests = harvests;
+        setState(() {
 
-        _loading = false;
+          _harvests = harvests;
 
-      });
+          _loading = false;
 
+        });
+
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _error = formatApiError(e);
+        });
+      }
     }
 
   }
@@ -137,6 +158,16 @@ class _HarvestsScreenState extends ConsumerState<HarvestsScreen> {
 
           ? const ListLoadingSkeleton(itemCount: 3, itemHeight: 72)
 
+          : _error != null
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: FriendlyErrorBanner(
+                      message: _error!,
+                      onRetry: _load,
+                    ),
+                  ),
+                )
           : Column(
 
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -314,9 +345,8 @@ class _HarvestsScreenState extends ConsumerState<HarvestsScreen> {
                       },
 
                       onPageChanged: (focusedDay) {
-
-                        _focusedDay = focusedDay;
-
+                        setState(() => _focusedDay = focusedDay);
+                        _loadMonth(focusedDay);
                       },
 
                     ),

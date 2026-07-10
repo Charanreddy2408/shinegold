@@ -3,13 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../data/models/enums.dart';
+import '../../data/models/user.dart';
 import '../../features/auth/forgot_password_screen.dart';
 import '../../features/auth/login_screen.dart';
 import '../../features/executive/checkin/checkin_screen.dart';
 import '../../features/executive/farm_detail/farm_detail_screen.dart';
+import '../../features/executive/farms/farm_invitations_screen.dart';
 import '../../features/executive/onboard_farm/farm_boundary_picker_screen.dart';
+import '../../features/executive/onboard_farm/onboard_farm_screen.dart';
 import '../../features/executive/shell/executive_shell.dart';
 import '../../features/super_admin/shell/admin_shell.dart';
+import '../../features/visits/presentation/visit_report_screen.dart';
 import '../../features/welcome/welcome_screen.dart';
 import '../../shared/models/farm_boundary.dart';
 import '../../shared/providers/auth_provider.dart';
@@ -27,59 +31,91 @@ class AppRoutes {
   static const admin = '/admin';
   static const farmDetail = '/farm/:id';
   static const checkin = '/checkin/:farmId';
+  static const visitDetail = '/visit/:id';
+  static const farmInvitations = '/executive/invitations';
+  static const adminCreateFarm = '/admin/create-farm';
+}
+
+/// Notifies [GoRouter] when auth changes without recreating the router instance.
+class _RouterRefreshNotifier extends ChangeNotifier {
+  _RouterRefreshNotifier(Ref ref) {
+    ref.listen<AsyncValue<AuthSession?>>(authProvider, (_, __) {
+      notifyListeners();
+    });
+  }
+}
+
+String? _resolveRedirect(GoRouterState state, AsyncValue<AuthSession?> authState) {
+  if (authState.hasError) {
+    final loc = state.matchedLocation;
+    if (loc == AppRoutes.welcome ||
+        loc == AppRoutes.login ||
+        loc == AppRoutes.forgotPassword) {
+      return null;
+    }
+    return AppRoutes.login;
+  }
+
+  final session = authState.valueOrNull;
+  final loc = state.matchedLocation;
+  final isAuthRoute =
+      loc == AppRoutes.login || loc == AppRoutes.forgotPassword;
+  final isWelcome = loc == AppRoutes.welcome;
+
+  if (authState.isLoading && !isWelcome) return AppRoutes.welcome;
+
+  if (session == null) {
+    if (loc.startsWith('/executive') ||
+        loc.startsWith('/admin') ||
+        loc.startsWith('/farm') ||
+        loc.startsWith('/checkin') ||
+        loc.startsWith('/visit')) {
+      return AppRoutes.login;
+    }
+    return null;
+  }
+
+  // Let welcome animation play on every cold start; it navigates itself.
+  if (isWelcome) return null;
+
+  if (isAuthRoute) {
+    return session.user.role == UserRole.superAdmin
+        ? AppRoutes.admin
+        : AppRoutes.executive;
+  }
+
+  if (loc.startsWith('/executive') &&
+      session.user.role == UserRole.superAdmin) {
+    if (loc == AppRoutes.boundaryPicker) return null;
+    return AppRoutes.admin;
+  }
+
+  if (loc.startsWith('/admin') && session.user.role == UserRole.executive) {
+    return AppRoutes.executive;
+  }
+
+  if (loc == AppRoutes.adminCreateFarm &&
+      session.user.role != UserRole.superAdmin) {
+    return AppRoutes.executive;
+  }
+
+  if (loc.startsWith('/checkin') &&
+      session.user.role == UserRole.superAdmin) {
+    return AppRoutes.admin;
+  }
+
+  return null;
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authProvider);
+  final refresh = _RouterRefreshNotifier(ref);
 
   return GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: AppRoutes.welcome,
-    redirect: (context, state) {
-      final session = authState.valueOrNull;
-      final loc = state.matchedLocation;
-      final isAuthRoute =
-          loc == AppRoutes.login || loc == AppRoutes.forgotPassword;
-      final isWelcome = loc == AppRoutes.welcome;
-
-      if (authState.isLoading && !isWelcome) return AppRoutes.welcome;
-
-      if (session == null) {
-        if (loc.startsWith('/executive') ||
-            loc.startsWith('/admin') ||
-            loc.startsWith('/farm') ||
-            loc.startsWith('/checkin')) {
-          return AppRoutes.login;
-        }
-        return null;
-      }
-
-      // Let welcome animation play on every cold start; it navigates itself.
-      if (isWelcome) return null;
-
-      if (isAuthRoute) {
-        return session.user.role == UserRole.superAdmin
-            ? AppRoutes.admin
-            : AppRoutes.executive;
-      }
-
-      if (loc.startsWith('/executive') &&
-          session.user.role == UserRole.superAdmin) {
-        return AppRoutes.admin;
-      }
-
-      if (loc.startsWith('/admin') &&
-          session.user.role == UserRole.executive) {
-        return AppRoutes.executive;
-      }
-
-      if (loc.startsWith('/checkin') &&
-          session.user.role == UserRole.superAdmin) {
-        return AppRoutes.admin;
-      }
-
-      return null;
-    },
+    refreshListenable: refresh,
+    redirect: (context, state) =>
+        _resolveRedirect(state, ref.read(authProvider)),
     routes: [
       GoRoute(
         path: AppRoutes.welcome,
@@ -107,12 +143,22 @@ final routerProvider = Provider<GoRouter>((ref) {
                   initialCenter: args.initialCenter,
                   initialPins: args.initialPins,
                   initialAddress: args.initialAddress,
+                  userLocation: args.userLocation,
                 );
               }
               return const FarmBoundaryPickerScreen();
             },
           ),
+          GoRoute(
+            path: 'invitations',
+            parentNavigatorKey: rootNavigatorKey,
+            builder: (_, __) => const FarmInvitationsScreen(),
+          ),
         ],
+      ),
+      GoRoute(
+        path: AppRoutes.adminCreateFarm,
+        builder: (_, __) => const OnboardFarmScreen(isAdminCreate: true),
       ),
       GoRoute(
         path: AppRoutes.admin,
@@ -128,6 +174,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.checkin,
         builder: (_, state) => CheckinScreen(
           farmId: state.pathParameters['farmId']!,
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.visitDetail,
+        builder: (_, state) => VisitReportScreen(
+          visitId: state.pathParameters['id']!,
         ),
       ),
     ],

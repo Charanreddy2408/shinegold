@@ -36,9 +36,11 @@ class ApiAuthDataSource implements AuthDataSource {
       data: {'refresh_token': refreshToken},
     );
     final data = response.data as Map<String, dynamic>;
+    final newToken = data['access_token'] as String;
+    _client.updateToken(newToken);
     final user = await getMe();
     return AuthSession(
-      token: data['access_token'] as String,
+      token: newToken,
       refreshToken: refreshToken,
       user: user,
     );
@@ -77,7 +79,12 @@ class ApiAuthDataSource implements AuthDataSource {
 
   @override
   Future<bool> checkPasswordResetApproved(String employeeId) async {
-    return false;
+    final response = await _client.dio.get(
+      ApiEndpoints.passwordResetStatus,
+      queryParameters: {'employee_id': employeeId},
+    );
+    final data = response.data as Map<String, dynamic>;
+    return data['approved'] as bool? ?? false;
   }
 
   @override
@@ -101,5 +108,24 @@ class ApiAuthDataSource implements AuthDataSource {
         'confirm_password': confirmPassword,
       },
     );
+  }
+
+  @override
+  Future<User> updateProfile({
+    String? name,
+    String? address,
+    String? mobileNumber,
+    String? profilePhotoUrl,
+  }) async {
+    final response = await _client.dio.patch(
+      ApiEndpoints.usersMe,
+      data: {
+        if (name != null) 'name': name,
+        if (address != null) 'address': address,
+        if (mobileNumber != null) 'mobile_number': mobileNumber,
+        if (profilePhotoUrl != null) 'profile_photo_url': profilePhotoUrl,
+      },
+    );
+    return User.fromJson(response.data as Map<String, dynamic>);
   }
 }

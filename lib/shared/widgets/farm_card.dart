@@ -95,7 +95,11 @@ class FarmCard extends StatelessWidget {
                                   ),
                                   const SizedBox(height: AppSpacing.xs),
                                   Text(
-                                    farm.location,
+                                    farm.location.isNotEmpty
+                                        ? farm.location
+                                        : (farm.farmer.name != '—'
+                                            ? farm.farmer.name
+                                            : farm.crop),
                                     style: Theme.of(context)
                                         .textTheme
                                         .bodyMedium
@@ -103,6 +107,25 @@ class FarmCard extends StatelessWidget {
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
+                                  if (farm.assignedExecutives.isNotEmpty ||
+                                      farm.assignedExecutiveName.isNotEmpty) ...[
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      farm.assignedExecutives.length > 1
+                                          ? farm.assignedExecutives
+                                              .map((e) => e.name)
+                                              .join(', ')
+                                          : farm.assignedExecutiveName,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall
+                                          ?.copyWith(
+                                            color: AppColors.textMuted,
+                                          ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
                                   const SizedBox(height: AppSpacing.sm),
                                   Row(
                                     children: [

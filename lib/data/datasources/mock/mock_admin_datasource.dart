@@ -141,6 +141,8 @@ class MockDashboardDataSource implements DashboardDataSource {
     await Future<void>.delayed(AppConfig.mockNetworkDelay);
     final farms = MockSeedData.farms;
     return ExecutiveDashboard(
+      greetingName: 'Rahul Sharma',
+      dashboardDate: DateTime.now(),
       totalFarms: farms.length,
       visitedCount:
           farms.where((f) => f.status == FarmVisitStatus.visited).length,

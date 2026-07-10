@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/network/api_exception.dart';
 import '../../../core/animations/staggered_list.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
@@ -38,6 +39,7 @@ class _AdminExecutiveProfileScreenState
   VisitStatus? _visitFilter;
   List<Visit> _visits = [];
   bool _loading = true;
+  String? _error;
 
   @override
   void initState() {
@@ -55,27 +57,47 @@ class _AdminExecutiveProfileScreenState
   }
 
   Future<void> _load() async {
-    setState(() => _loading = true);
-    final visits = await ref.read(visitRepositoryProvider).getMyVisits(
-          _executive.id,
-          VisitFilter(
-            search: _searchController.text,
-            status: _visitFilter,
-          ),
-        );
-    if (mounted) {
-      setState(() {
-        _visits = visits;
-        _loading = false;
-      });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final visits = await ref.read(visitRepositoryProvider).getExecutiveVisits(
+            _executive.id,
+            VisitFilter(
+              search: _searchController.text,
+              status: _visitFilter,
+            ),
+          );
+      if (mounted) {
+        setState(() {
+          _visits = visits;
+          _loading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _error = formatApiError(e);
+        });
+      }
     }
   }
 
   Future<void> _toggleBlock() async {
-    final updated = await ref
-        .read(executiveRepositoryProvider)
-        .toggleBlock(_executive.id);
-    if (mounted) setState(() => _executive = updated);
+    try {
+      final updated = await ref
+          .read(executiveRepositoryProvider)
+          .toggleBlock(_executive.id);
+      if (mounted) setState(() => _executive = updated);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(formatApiError(e))),
+        );
+      }
+    }
   }
 
   int get _ongoingCount =>
@@ -224,6 +246,19 @@ class _AdminExecutiveProfileScreenState
                     if (_loading)
                       const SliverToBoxAdapter(
                         child: ListLoadingSkeleton(itemCount: 4, itemHeight: 72),
+                      )
+                    else if (_error != null)
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: FriendlyErrorBanner(
+                              message: _error!,
+                              onRetry: _load,
+                            ),
+                          ),
+                        ),
                       )
                     else if (_visits.isEmpty)
                       SliverFillRemaining(

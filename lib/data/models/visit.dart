@@ -1,4 +1,5 @@
 import 'enums.dart';
+import 'visit_form.dart';
 
 class Visit {
   const Visit({
@@ -16,6 +17,7 @@ class Visit {
     this.voiceNotePath,
     this.textNote,
     this.mcqAnswers = const {},
+    this.formAnswers = const [],
     this.condition,
     this.syncStatus = SyncStatus.synced,
     this.photoCount = 0,
@@ -36,6 +38,7 @@ class Visit {
   final String? voiceNotePath;
   final String? textNote;
   final Map<String, String> mcqAnswers;
+  final List<FormAnswerDisplay> formAnswers;
   final FarmHealthStatus? condition;
   final SyncStatus syncStatus;
   final int photoCount;
@@ -53,6 +56,18 @@ class Visit {
         json['checkin_at'] ??
         json['created_at'];
     final endedRaw = json['checkout_time'] ?? json['ended_at'];
+    final durationSeconds = json['duration_seconds'] as int?;
+
+    DateTime? endedAt =
+        endedRaw != null ? DateTime.parse(endedRaw as String) : null;
+    final startedAt = startedRaw != null
+        ? DateTime.parse(startedRaw as String)
+        : DateTime.now();
+    if (endedAt == null &&
+        durationSeconds != null &&
+        durationSeconds > 0) {
+      endedAt = startedAt.add(Duration(seconds: durationSeconds));
+    }
 
     final visitedBy = json['visited_by'];
     final executiveName = json['executive_name'] as String? ??
@@ -72,11 +87,8 @@ class Visit {
           '',
       executiveId: executiveId,
       executiveName: executiveName,
-      startedAt: startedRaw != null
-          ? DateTime.parse(startedRaw as String)
-          : DateTime.now(),
-      endedAt:
-          endedRaw != null ? DateTime.parse(endedRaw as String) : null,
+      startedAt: startedAt,
+      endedAt: endedAt,
       status: json['status'] is String
           ? _parseStatus(json['status'] as String)
           : VisitStatus.ongoing,
@@ -85,14 +97,25 @@ class Visit {
       longitude: (json['checkin_lng'] as num?)?.toDouble() ??
           (json['longitude'] as num?)?.toDouble(),
       photos: _parsePhotoUrls(json),
-      voiceNotePath: json['voice_note_url'] as String?,
+      voiceNotePath: json['voice_note_url'] as String? ??
+          json['voice_note'] as String? ??
+          json['voice_note_path'] as String?,
       textNote: json['text_note'] as String? ??
           json['remarks_preview'] as String?,
       mcqAnswers: _parseMcqAnswers(json['mcq_answers']),
+      formAnswers: (json['form_answers'] as List<dynamic>?)
+              ?.map(
+                (e) => FormAnswerDisplay.fromJson(e as Map<String, dynamic>),
+              )
+              .toList() ??
+          [],
       condition: null,
       syncStatus: SyncStatus.synced,
       photoCount: json['photo_count'] as int? ?? _parsePhotoUrls(json).length,
-      hasVoiceNote: json['has_voice_note'] as bool? ?? false,
+      hasVoiceNote: json['has_voice_note'] as bool? ??
+          (json['voice_note_url'] != null ||
+              json['voice_note'] != null ||
+              json['voice_note_path'] != null),
     );
   }
 
@@ -167,6 +190,7 @@ class Visit {
     String? voiceNotePath,
     String? textNote,
     Map<String, String>? mcqAnswers,
+    List<FormAnswerDisplay>? formAnswers,
     FarmHealthStatus? condition,
     SyncStatus? syncStatus,
     double? latitude,
@@ -187,6 +211,7 @@ class Visit {
         voiceNotePath: voiceNotePath ?? this.voiceNotePath,
         textNote: textNote ?? this.textNote,
         mcqAnswers: mcqAnswers ?? this.mcqAnswers,
+        formAnswers: formAnswers ?? this.formAnswers,
         condition: condition ?? this.condition,
         syncStatus: syncStatus ?? this.syncStatus,
         photoCount: photos?.length ?? photoCount,
