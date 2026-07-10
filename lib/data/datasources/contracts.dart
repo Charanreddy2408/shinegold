@@ -1,6 +1,8 @@
+import '../../core/network/json_helpers.dart';
 import '../models/enums.dart';
 import '../models/executive.dart';
 import '../models/farm.dart';
+import '../models/password_reset_request.dart';
 import '../models/user.dart';
 import '../models/visit.dart';
 import '../models/visit_form.dart';
@@ -17,6 +19,15 @@ abstract class AuthDataSource {
   });
   Future<void> requestPasswordReset(String employeeId);
   Future<bool> checkPasswordResetApproved(String employeeId);
+  Future<PaginatedResult<PasswordResetRequestItem>> listPasswordResetRequests({
+    String? status,
+    int page = 1,
+    int pageSize = 20,
+  });
+  Future<void> approvePasswordReset({
+    required String requestId,
+    required String tempPassword,
+  });
   Future<void> setNewPassword(String employeeId, String newPassword);
   Future<void> changePassword({
     required String currentPassword,

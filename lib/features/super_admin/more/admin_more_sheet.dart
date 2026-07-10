@@ -17,8 +17,8 @@ import '../../../shared/providers/auth_provider.dart';
 import '../../../shared/widgets/admin_ui.dart';
 
 import '../farmers/farmers_screen.dart';
-
 import '../nearby/admin_nearby_farms_section.dart';
+import '../password_reset/admin_password_reset_screen.dart';
 import '../profile/admin_profile_screen.dart';
 
 
@@ -214,6 +214,32 @@ class AdminMoreSheet extends ConsumerWidget {
                   Navigator.of(context).push(
 
                     adminPageRoute(const FarmersScreen()),
+
+                  );
+
+                },
+
+              ),
+
+              AdminMenuTile(
+
+                icon: Icons.lock_reset_rounded,
+
+                title: 'Password Resets',
+
+                subtitle: 'Approve executive forgot-password requests',
+
+                color: AppColors.warning,
+
+                delay: 90.ms,
+
+                onTap: () {
+
+                  Navigator.pop(context);
+
+                  Navigator.of(context).push(
+
+                    adminPageRoute(const AdminPasswordResetScreen()),
 
                   );
 

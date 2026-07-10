@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../../core/router/app_router.dart';
@@ -51,6 +53,8 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
   final _farmerAge = TextEditingController();
   DateTime _harvestDate = DateTime.now().add(const Duration(days: 90));
   Gender? _gender;
+  final List<String> _farmPhotos = [];
+  static const _maxFarmPhotos = 5;
 
   @override
   void initState() {
@@ -99,6 +103,7 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
     _farmerMobile.clear();
     _farmerAge.clear();
     _gender = null;
+    _farmPhotos.clear();
     _previewMapCentered = false;
   }
 
@@ -193,6 +198,51 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
     );
   }
 
+  Future<void> _pickFarmPhoto() async {
+    if (_farmPhotos.length >= _maxFarmPhotos) {
+      _showError('Maximum $_maxFarmPhotos photos allowed');
+      return;
+    }
+
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_camera_rounded),
+              title: const Text('Take photo'),
+              onTap: () => Navigator.pop(ctx, ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library_rounded),
+              title: const Text('Choose from gallery'),
+              onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (source == null) return;
+
+    final image = await ImagePicker().pickImage(
+      source: source,
+      maxWidth: 1600,
+      imageQuality: 85,
+    );
+    if (image != null && mounted) {
+      setState(() => _farmPhotos.add(image.path));
+    }
+  }
+
+  void _removeFarmPhoto(int index) {
+    setState(() => _farmPhotos.removeAt(index));
+  }
+
   Future<void> _submit() async {
     if (_gender == null || int.tryParse(_farmerAge.text) == null) {
       _showError('Please select gender and enter farmer age');
@@ -223,6 +273,7 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
         farmerMobile: _farmerMobile.text.trim(),
         farmerGender: _gender!,
         farmerAge: int.parse(_farmerAge.text),
+        photoPaths: List<String>.from(_farmPhotos),
       );
 
       if (widget.isAdminCreate) {
@@ -448,6 +499,8 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
           decoration: const InputDecoration(labelText: 'Harvest Type'),
         ),
         const SizedBox(height: AppSpacing.md),
+        _farmPhotosSection(),
+        const SizedBox(height: AppSpacing.md),
         ListTile(
           contentPadding: EdgeInsets.zero,
           title: const Text('Harvest Date'),
@@ -476,6 +529,87 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
             suffixIcon: hasBoundary
                 ? const Icon(Icons.lock_outline, size: 18)
                 : null,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _farmPhotosSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Farm Photos',
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        Text(
+          'Optional — up to $_maxFarmPhotos photos uploaded with the farm',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppColors.textSecondary,
+              ),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        SizedBox(
+          height: 96,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: _farmPhotos.length + 1,
+            separatorBuilder: (_, __) => const SizedBox(width: 10),
+            itemBuilder: (context, index) {
+              if (index == _farmPhotos.length) {
+                return InkWell(
+                  onTap: _pickFarmPhoto,
+                  borderRadius: BorderRadius.circular(14),
+                  child: Ink(
+                    width: 96,
+                    height: 96,
+                    decoration: AppColors.cardDecoration(radius: 14),
+                    child: const Icon(
+                      Icons.add_a_photo_outlined,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                );
+              }
+
+              return Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(14),
+                    child: Image.file(
+                      File(_farmPhotos[index]),
+                      width: 96,
+                      height: 96,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  Positioned(
+                    top: 4,
+                    right: 4,
+                    child: Material(
+                      color: Colors.black54,
+                      shape: const CircleBorder(),
+                      child: InkWell(
+                        customBorder: const CircleBorder(),
+                        onTap: () => _removeFarmPhoto(index),
+                        child: const Padding(
+                          padding: EdgeInsets.all(4),
+                          child: Icon(
+                            Icons.close_rounded,
+                            size: 16,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         ),
       ],

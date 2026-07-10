@@ -1,4 +1,6 @@
+import '../../core/network/json_helpers.dart';
 import '../datasources/contracts.dart';
+import '../models/password_reset_request.dart';
 import '../models/user.dart';
 
 class AuthRepository {
@@ -33,6 +35,26 @@ class AuthRepository {
 
   Future<bool> checkPasswordResetApproved(String employeeId) =>
       _dataSource.checkPasswordResetApproved(employeeId);
+
+  Future<PaginatedResult<PasswordResetRequestItem>> listPasswordResetRequests({
+    String? status,
+    int page = 1,
+    int pageSize = 20,
+  }) =>
+      _dataSource.listPasswordResetRequests(
+        status: status,
+        page: page,
+        pageSize: pageSize,
+      );
+
+  Future<void> approvePasswordReset({
+    required String requestId,
+    required String tempPassword,
+  }) =>
+      _dataSource.approvePasswordReset(
+        requestId: requestId,
+        tempPassword: tempPassword,
+      );
 
   Future<void> setNewPassword(String employeeId, String newPassword) =>
       _dataSource.setNewPassword(employeeId, newPassword);

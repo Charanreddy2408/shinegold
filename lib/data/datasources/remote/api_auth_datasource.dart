@@ -1,5 +1,7 @@
 import '../../../core/network/api_endpoints.dart';
 import '../../../core/network/dio_client.dart';
+import '../../../core/network/json_helpers.dart';
+import '../../models/password_reset_request.dart';
 import '../../models/user.dart';
 import '../contracts.dart';
 
@@ -85,6 +87,37 @@ class ApiAuthDataSource implements AuthDataSource {
     );
     final data = response.data as Map<String, dynamic>;
     return data['approved'] as bool? ?? false;
+  }
+
+  @override
+  Future<PaginatedResult<PasswordResetRequestItem>> listPasswordResetRequests({
+    String? status,
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    final response = await _client.dio.get(
+      ApiEndpoints.passwordResetRequests,
+      queryParameters: queryParams({
+        if (status != null) 'status': status,
+        'page': page,
+        'page_size': pageSize,
+      }),
+    );
+    return parsePaginated(
+      response.data,
+      PasswordResetRequestItem.fromJson,
+    );
+  }
+
+  @override
+  Future<void> approvePasswordReset({
+    required String requestId,
+    required String tempPassword,
+  }) async {
+    await _client.dio.post(
+      ApiEndpoints.approvePasswordReset(requestId),
+      data: {'temp_password': tempPassword},
+    );
   }
 
   @override
