@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
@@ -15,6 +16,11 @@ bool _audioContextReady = false;
 
 Future<void> ensureVoiceAudioContext() async {
   if (_audioContextReady) return;
+  // Web and desktop do not support mobile AVAudioSession options used below.
+  if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) {
+    _audioContextReady = true;
+    return;
+  }
   await AudioPlayer.global.setAudioContext(
     AudioContext(
       android: AudioContextAndroid(
@@ -25,7 +31,7 @@ Future<void> ensureVoiceAudioContext() async {
         audioFocus: AndroidAudioFocus.gain,
       ),
       iOS: AudioContextIOS(
-        category: AVAudioSessionCategory.playback,
+        category: AVAudioSessionCategory.playAndRecord,
         options: {
           AVAudioSessionOptions.defaultToSpeaker,
           AVAudioSessionOptions.mixWithOthers,

@@ -72,7 +72,8 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
       final sameDay = started.year == now.year &&
           started.month == now.month &&
           started.day == now.day;
-      if (!sameDay) {
+      final sameFarm = ongoing.farmId == widget.farmId;
+      if (!sameFarm || !sameDay) {
         await ref.read(visitRepositoryProvider).cancelVisit(ongoing.id);
       }
     } catch (_) {}
