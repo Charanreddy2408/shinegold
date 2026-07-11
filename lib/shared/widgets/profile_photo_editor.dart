@@ -1,6 +1,7 @@
-import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -31,32 +32,39 @@ class ProfilePhotoEditor extends ConsumerStatefulWidget {
 
 class _ProfilePhotoEditorState extends ConsumerState<ProfilePhotoEditor> {
   bool _uploading = false;
-  String? _localPreview;
+  XFile? _pickedPreview;
 
   Future<void> _pickPhoto() async {
-    final source = await showModalBottomSheet<ImageSource>(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.photo_camera_rounded),
-              title: const Text('Take photo'),
-              onTap: () => Navigator.pop(ctx, ImageSource.camera),
-            ),
-            ListTile(
-              leading: const Icon(Icons.photo_library_rounded),
-              title: const Text('Choose from gallery'),
-              onTap: () => Navigator.pop(ctx, ImageSource.gallery),
-            ),
-          ],
+    ImageSource? source;
+
+    if (kIsWeb) {
+      source = ImageSource.gallery;
+    } else {
+      source = await showModalBottomSheet<ImageSource>(
+        context: context,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
-      ),
-    );
+        builder: (ctx) => SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_camera_rounded),
+                title: const Text('Take photo'),
+                onTap: () => Navigator.pop(ctx, ImageSource.camera),
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library_rounded),
+                title: const Text('Choose from gallery'),
+                onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     if (source == null) return;
 
     final image = await ImagePicker().pickImage(
@@ -68,12 +76,12 @@ class _ProfilePhotoEditorState extends ConsumerState<ProfilePhotoEditor> {
 
     setState(() {
       _uploading = true;
-      _localPreview = image.path;
+      _pickedPreview = image;
     });
 
     try {
-      final url = await ref.read(uploadServiceProvider).uploadFile(
-            localPath: image.path,
+      final url = await ref.read(uploadServiceProvider).uploadXFile(
+            file: image,
             context: 'profile_photo',
           );
       await ref.read(authRepositoryProvider).updateProfile(
@@ -99,10 +107,44 @@ class _ProfilePhotoEditorState extends ConsumerState<ProfilePhotoEditor> {
       if (mounted) {
         setState(() {
           _uploading = false;
-          _localPreview = null;
+          _pickedPreview = null;
         });
       }
     }
+  }
+
+  Widget _buildAvatar(String displayUrl) {
+    if (_pickedPreview != null) {
+      return FutureBuilder<Uint8List>(
+        future: _pickedPreview!.readAsBytes(),
+        builder: (context, snapshot) {
+          return CircleAvatar(
+            radius: widget.radius,
+            backgroundColor: AppColors.surfaceElevated,
+            backgroundImage:
+                snapshot.hasData ? MemoryImage(snapshot.data!) : null,
+            child: _uploading && !snapshot.hasData
+                ? const Padding(
+                    padding: EdgeInsets.all(12),
+                    child: CircularProgressIndicator(strokeWidth: 2.5),
+                  )
+                : null,
+          );
+        },
+      );
+    }
+
+    return CircleAvatar(
+      radius: widget.radius,
+      backgroundColor: AppColors.surfaceElevated,
+      backgroundImage: CachedNetworkImageProvider(displayUrl),
+      child: _uploading
+          ? const Padding(
+              padding: EdgeInsets.all(12),
+              child: CircularProgressIndicator(strokeWidth: 2.5),
+            )
+          : null,
+    );
   }
 
   @override
@@ -127,19 +169,7 @@ class _ProfilePhotoEditorState extends ConsumerState<ProfilePhotoEditor> {
                     width: 2.5,
                   ),
                 ),
-                child: CircleAvatar(
-                  radius: widget.radius,
-                  backgroundColor: AppColors.surfaceElevated,
-                  backgroundImage: _localPreview != null
-                      ? FileImage(File(_localPreview!)) as ImageProvider
-                      : CachedNetworkImageProvider(displayUrl),
-                  child: _uploading
-                      ? const Padding(
-                          padding: EdgeInsets.all(12),
-                          child: CircularProgressIndicator(strokeWidth: 2.5),
-                        )
-                      : null,
-                ),
+                child: _buildAvatar(displayUrl),
               ),
               Container(
                 padding: const EdgeInsets.all(6),
@@ -149,7 +179,9 @@ class _ProfilePhotoEditorState extends ConsumerState<ProfilePhotoEditor> {
                   border: Border.all(color: Colors.white, width: 2),
                 ),
                 child: Icon(
-                  _uploading ? Icons.hourglass_top_rounded : Icons.camera_alt_rounded,
+                  _uploading
+                      ? Icons.hourglass_top_rounded
+                      : Icons.camera_alt_rounded,
                   color: Colors.white,
                   size: widget.radius * 0.38,
                 ),

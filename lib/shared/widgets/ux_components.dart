@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:io';
+import 'dart:io' show File, Platform;
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -501,24 +501,32 @@ class _VoiceNotePlayerState extends State<VoiceNotePlayer> {
 
     try {
       await ensureVoiceAudioContext();
-      final localPath = await VoiceAudioCache.ensureLocal(widget.url);
-
+      final remote = resolveMediaUrl(widget.url);
       await _player.stop();
-      await _player.setSource(DeviceFileSource(localPath));
 
-      final duration = await _player.getDuration();
-      if (duration == null || duration.inMilliseconds < 50) {
-        final remote = resolveMediaUrl(widget.url);
-        await _player.setSource(UrlSource(remote));
+      if (kIsWeb) {
+        try {
+          await _player.play(UrlSource(remote));
+        } catch (_) {
+          final bytes = await VoiceAudioCache.loadBytes(widget.url);
+          await _player.play(BytesSource(bytes));
+        }
+      } else {
+        final localPath = await VoiceAudioCache.ensureLocal(widget.url);
+        await _player.setSource(DeviceFileSource(localPath));
+
+        var duration = await _player.getDuration();
+        if (duration == null || duration.inMilliseconds < 50) {
+          await _player.setSource(UrlSource(remote));
+          duration = await _player.getDuration();
+        }
+
+        await _player.resume();
+        if (mounted) _duration = duration;
       }
 
-      await _player.resume();
-
       if (!mounted) return;
-      setState(() {
-        _loading = false;
-        _duration = duration;
-      });
+      setState(() => _loading = false);
     } catch (e) {
       if (!mounted) return;
       setState(() {
