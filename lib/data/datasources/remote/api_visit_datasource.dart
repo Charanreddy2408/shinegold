@@ -1,4 +1,7 @@
-import 'dart:io';
+import 'dart:io' show File;
+
+import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../core/network/api_endpoints.dart';
 import '../../../core/network/dio_client.dart';
@@ -78,12 +81,8 @@ class ApiVisitDataSource implements VisitDataSource {
           });
           continue;
         }
-        final file = File(path);
-        if (!await file.exists()) continue;
-        final url = await _uploads.uploadFile(
-          localPath: path,
-          context: 'visit_photo',
-        );
+        final url = await _uploadLocalMedia(path, 'visit_photo');
+        if (url == null) continue;
         photoEntries.add({
           'photo_url': url,
           'captured_lat': lat,
@@ -97,11 +96,9 @@ class ApiVisitDataSource implements VisitDataSource {
     if (voiceNotePath != null && voiceNotePath.isNotEmpty) {
       if (voiceNotePath.startsWith('http')) {
         payload['voice_note_url'] = voiceNotePath;
-      } else if (await File(voiceNotePath).exists()) {
-        payload['voice_note_url'] = await _uploads.uploadFile(
-          localPath: voiceNotePath,
-          context: 'visit_voice',
-        );
+      } else {
+        final url = await _uploadLocalMedia(voiceNotePath, 'visit_voice');
+        if (url != null) payload['voice_note_url'] = url;
       }
     }
 
@@ -213,5 +210,15 @@ class ApiVisitDataSource implements VisitDataSource {
   @override
   Future<void> cancelVisit(String visitId) async {
     await _client.dio.post(ApiEndpoints.visitCancel(visitId));
+  }
+
+  Future<String?> _uploadLocalMedia(String path, String context) async {
+    if (path.startsWith('http')) return path;
+    if (kIsWeb || path.startsWith('blob:')) {
+      return _uploads.uploadXFile(file: XFile(path), context: context);
+    }
+    final file = File(path);
+    if (!await file.exists()) return null;
+    return _uploads.uploadFile(localPath: path, context: context);
   }
 }

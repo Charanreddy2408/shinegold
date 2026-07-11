@@ -136,6 +136,8 @@ class UploadService {
         return 'audio/mpeg';
       case '.wav':
         return 'audio/wav';
+      case '.webm':
+        return 'audio/webm';
       default:
         return 'image/jpeg';
     }

@@ -1,6 +1,8 @@
 import 'dart:async';
-import 'dart:io';
+import 'dart:io' show Directory;
+import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -47,7 +49,7 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
   String? _uploadedVoiceUrl;
   final _audioRecorder = AudioRecorder();
   String? _apiErrorMessage;
-  final List<String> _photos = [];
+  final List<XFile> _photos = [];
   String? _farmName;
   Timer? _saveDebounce;
 
@@ -224,65 +226,112 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
     } catch (_) {}
   }
 
+  RecordConfig get _voiceRecordConfig {
+    if (kIsWeb) {
+      return const RecordConfig(encoder: AudioEncoder.opus);
+    }
+    return const RecordConfig(
+      encoder: AudioEncoder.aacLc,
+      sampleRate: 44100,
+      bitRate: 128000,
+      numChannels: 1,
+    );
+  }
+
   Future<void> _toggleVoiceRecording() async {
     if (_recording) {
-      final path = await _audioRecorder.stop();
-      if (!mounted) return;
-      setState(() {
-        _recording = false;
-        _voicePath = path;
-        _voiceMarked = path != null && path.isNotEmpty;
-      });
-      if (path != null && path.isNotEmpty && _visit != null) {
-        await _uploadVoiceNote(path);
+      try {
+        final path = await _audioRecorder.stop();
+        if (!mounted) return;
+        setState(() {
+          _recording = false;
+          _voicePath = path;
+          _voiceMarked = path != null && path.isNotEmpty;
+        });
+        if (path != null && path.isNotEmpty && _visit != null) {
+          await _uploadVoiceNote(path);
+        }
+      } catch (e) {
+        if (!mounted) return;
+        setState(() => _recording = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not stop recording: ${formatApiError(e)}'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
       }
       return;
     }
 
-    final hasPermission = await _audioRecorder.hasPermission();
-    if (!hasPermission) {
+    if (!kIsWeb) {
+      final hasPermission = await _audioRecorder.hasPermission();
+      if (!hasPermission) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Microphone permission is required to record'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return;
+      }
+    }
+
+    final path = kIsWeb
+        ? 'visit_voice_${const Uuid().v4()}.webm'
+        : '${Directory.systemTemp.path}/visit_voice_${const Uuid().v4()}.m4a';
+
+    try {
+      await _audioRecorder.start(_voiceRecordConfig, path: path);
+      if (!mounted) return;
+      setState(() {
+        _recording = true;
+        _voicePath = path;
+        _voiceMarked = false;
+      });
+    } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Microphone permission is required to record'),
+        SnackBar(
+          content: Text('Could not start recording: ${formatApiError(e)}'),
           behavior: SnackBarBehavior.floating,
         ),
       );
-      return;
     }
-
-    final path =
-        '${Directory.systemTemp.path}/visit_voice_${const Uuid().v4()}.m4a';
-    await _audioRecorder.start(
-      const RecordConfig(
-        encoder: AudioEncoder.aacLc,
-        sampleRate: 44100,
-        bitRate: 128000,
-        numChannels: 1,
-      ),
-      path: path,
-    );
-    if (!mounted) return;
-    setState(() {
-      _recording = true;
-      _voicePath = path;
-      _voiceMarked = false;
-    });
   }
 
   Future<void> _uploadVoiceNote(String path) async {
     if (_visit == null) return;
     try {
-      final url = await ref.read(uploadServiceProvider).uploadFile(
-            localPath: path,
-            context: 'visit_voice',
-          );
+      final uploads = ref.read(uploadServiceProvider);
+      final url = kIsWeb || path.startsWith('blob:')
+          ? await uploads.uploadXFile(
+              file: XFile(
+                path,
+                mimeType: kIsWeb ? 'audio/webm' : null,
+                name: 'visit_voice.webm',
+              ),
+              context: 'visit_voice',
+            )
+          : await uploads.uploadFile(
+              localPath: path,
+              context: 'visit_voice',
+            );
       await ref.read(visitRepositoryProvider).saveVisitForm(
             visitId: _visit!.id,
             voiceNotePath: url,
           );
       if (mounted) setState(() => _uploadedVoiceUrl = url);
-    } catch (_) {}
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Voice upload failed: ${formatApiError(e)}'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   Future<void> _pickPhoto() async {
@@ -296,8 +345,47 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
       );
       return;
     }
-    final image = await ImagePicker().pickImage(source: ImageSource.camera);
-    if (image != null) setState(() => _photos.add(image.path));
+
+    ImageSource source = ImageSource.camera;
+    if (kIsWeb) {
+      source = ImageSource.gallery;
+    } else {
+      final picked = await showModalBottomSheet<ImageSource>(
+        context: context,
+        builder: (ctx) => SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_camera_rounded),
+                title: const Text('Take photo'),
+                onTap: () => Navigator.pop(ctx, ImageSource.camera),
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library_rounded),
+                title: const Text('Choose from gallery'),
+                onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+              ),
+            ],
+          ),
+        ),
+      );
+      if (picked == null) return;
+      source = picked;
+    }
+
+    final image = await ImagePicker().pickImage(
+      source: source,
+      maxWidth: 1600,
+      imageQuality: 85,
+    );
+    if (image != null && mounted) {
+      setState(() => _photos.add(image));
+    }
+  }
+
+  void _removePhoto(int index) {
+    setState(() => _photos.removeAt(index));
   }
 
   void _goToStep(int step) {
@@ -338,7 +426,7 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
 
       await ref.read(visitRepositoryProvider).submitVisit(
             visitId: _visit!.id,
-            photos: _photos,
+            photos: _photos.map((photo) => photo.path).toList(),
             checkoutLat: checkoutLat,
             checkoutLng: checkoutLng,
             voiceNotePath: _uploadedVoiceUrl ?? _voicePath,
@@ -467,6 +555,7 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
                   isRecording: _recording,
                   hasVoice: _voiceMarked,
                   onAddPhoto: _pickPhoto,
+                  onRemovePhoto: _removePhoto,
                   onToggleVoice: _toggleVoiceRecording,
                   onNext: () => _goToStep(3),
                 ),
@@ -674,14 +763,16 @@ class _MediaStep extends StatelessWidget {
     required this.isRecording,
     required this.hasVoice,
     required this.onAddPhoto,
+    required this.onRemovePhoto,
     required this.onToggleVoice,
     required this.onNext,
   });
 
-  final List<String> photos;
+  final List<XFile> photos;
   final bool isRecording;
   final bool hasVoice;
   final VoidCallback onAddPhoto;
+  final ValueChanged<int> onRemovePhoto;
   final VoidCallback onToggleVoice;
   final VoidCallback onNext;
 
@@ -729,16 +820,9 @@ class _MediaStep extends StatelessWidget {
                     ),
                   );
                 }
-                return ClipRRect(
-                  borderRadius: BorderRadius.circular(14),
-                  child: Image.file(
-                    File(photos[i]),
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
-                      color: AppColors.surfaceElevated,
-                      child: const Icon(Icons.broken_image_outlined),
-                    ),
-                  ),
+                return _VisitPhotoTile(
+                  file: photos[i],
+                  onRemove: () => onRemovePhoto(i),
                 );
               },
             ),
@@ -783,7 +867,7 @@ class _SubmitStep extends StatelessWidget {
 
   final VisitFormContext? formContext;
   final FormAnswersMap answers;
-  final List<String> photos;
+  final List<XFile> photos;
   final bool hasVoice;
   final bool loading;
   final VoidCallback onSubmit;
@@ -901,6 +985,67 @@ class _ReviewRow extends StatelessWidget {
                     ),
               ),
             ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _VisitPhotoTile extends StatelessWidget {
+  const _VisitPhotoTile({
+    required this.file,
+    required this.onRemove,
+  });
+
+  final XFile file;
+  final VoidCallback onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(14),
+          child: FutureBuilder<Uint8List>(
+            future: file.readAsBytes(),
+            builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                return Container(
+                  color: AppColors.surfaceElevated,
+                  child: const Icon(Icons.broken_image_outlined),
+                );
+              }
+              if (!snapshot.hasData) {
+                return Container(
+                  color: AppColors.surfaceElevated,
+                  child: const Center(
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                );
+              }
+              return Image.memory(
+                snapshot.data!,
+                fit: BoxFit.cover,
+              );
+            },
+          ),
+        ),
+        Positioned(
+          top: 4,
+          right: 4,
+          child: Material(
+            color: Colors.black54,
+            shape: const CircleBorder(),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: onRemove,
+              child: const Padding(
+                padding: EdgeInsets.all(4),
+                child: Icon(Icons.close_rounded, size: 16, color: Colors.white),
+              ),
+            ),
           ),
         ),
       ],
