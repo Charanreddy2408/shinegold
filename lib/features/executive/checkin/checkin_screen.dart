@@ -228,7 +228,7 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
 
   RecordConfig get _voiceRecordConfig {
     if (kIsWeb) {
-      return const RecordConfig(encoder: AudioEncoder.opus);
+      return const RecordConfig(encoder: AudioEncoder.wav);
     }
     return const RecordConfig(
       encoder: AudioEncoder.aacLc,
@@ -279,7 +279,7 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
     }
 
     final path = kIsWeb
-        ? 'visit_voice_${const Uuid().v4()}.webm'
+        ? 'visit_voice_${const Uuid().v4()}.wav'
         : '${Directory.systemTemp.path}/visit_voice_${const Uuid().v4()}.m4a';
 
     try {
@@ -309,8 +309,8 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
           ? await uploads.uploadXFile(
               file: XFile(
                 path,
-                mimeType: kIsWeb ? 'audio/webm' : null,
-                name: 'visit_voice.webm',
+                mimeType: kIsWeb ? 'audio/wav' : null,
+                name: 'visit_voice.wav',
               ),
               context: 'visit_voice',
             )

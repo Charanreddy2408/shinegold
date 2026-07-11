@@ -94,14 +94,25 @@ class UploadService {
         data['file_url'] as String? ??
         data['url'] as String;
 
-    await Dio().put(
-      uploadUrl,
-      data: bytes,
-      options: Options(
-        headers: {'Content-Type': contentType},
-        contentType: contentType,
-      ),
-    );
+    try {
+      await Dio().put(
+        uploadUrl,
+        data: bytes,
+        options: Options(
+          headers: {'Content-Type': contentType},
+          contentType: contentType,
+        ),
+      );
+    } on DioException catch (error) {
+      final body = error.response?.data;
+      final message = body is Map
+          ? (body['message'] ?? body['error'] ?? body['detail'])?.toString()
+          : body?.toString();
+      if (message != null && message.isNotEmpty) {
+        throw Exception(message);
+      }
+      rethrow;
+    }
 
     return publicUrl;
   }
