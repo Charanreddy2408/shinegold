@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../../../core/network/api_exception.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -53,7 +54,7 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
   final _farmerAge = TextEditingController();
   DateTime _harvestDate = DateTime.now().add(const Duration(days: 90));
   Gender? _gender;
-  final List<String> _farmPhotos = [];
+  final List<XFile> _farmPhotos = [];
   static const _maxFarmPhotos = 5;
 
   @override
@@ -192,6 +193,35 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
     return true;
   }
 
+  bool _validateFarmerStep() {
+    if (_farmerName.text.trim().isEmpty) {
+      _showError('Enter farmer name');
+      return false;
+    }
+    if (_farmerMobile.text.trim().isEmpty) {
+      _showError('Enter farmer mobile number');
+      return false;
+    }
+    if (_gender == null) {
+      _showError('Please select gender');
+      return false;
+    }
+    final age = int.tryParse(_farmerAge.text.trim());
+    if (age == null || age <= 0) {
+      _showError('Enter a valid farmer age');
+      return false;
+    }
+    if (_harvestType.text.trim().isEmpty) {
+      _showError('Enter harvest type on the farm details step');
+      return false;
+    }
+    if (_boundary == null || _boundary!.pins.length < 3) {
+      _showError('Farm boundary is required. Go back and mark the boundary.');
+      return false;
+    }
+    return true;
+  }
+
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
@@ -235,7 +265,43 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
       imageQuality: 85,
     );
     if (image != null && mounted) {
-      setState(() => _farmPhotos.add(image.path));
+      setState(() => _farmPhotos.add(image));
+    }
+  }
+
+  Future<void> _replaceFarmPhoto(int index) async {
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_camera_rounded),
+              title: const Text('Take photo'),
+              onTap: () => Navigator.pop(ctx, ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library_rounded),
+              title: const Text('Choose from gallery'),
+              onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (source == null) return;
+
+    final image = await ImagePicker().pickImage(
+      source: source,
+      maxWidth: 1600,
+      imageQuality: 85,
+    );
+    if (image != null && mounted) {
+      setState(() => _farmPhotos[index] = image);
     }
   }
 
@@ -244,19 +310,25 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
   }
 
   Future<void> _submit() async {
-    if (_gender == null || int.tryParse(_farmerAge.text) == null) {
-      _showError('Please select gender and enter farmer age');
-      return;
-    }
-    if (_boundary == null) {
-      _showError('Farm boundary is required');
+    if (!_validateFarmerStep()) return;
+
+    final user = ref.read(currentUserProvider);
+    if (user == null) {
+      _showError('You must be signed in to onboard a farm.');
       return;
     }
 
     setState(() => _loading = true);
-    final user = ref.read(currentUserProvider)!;
     final boundary = _boundary!;
     try {
+      List<String>? uploadedPhotoUrls;
+      if (_farmPhotos.isNotEmpty) {
+        uploadedPhotoUrls = await ref.read(uploadServiceProvider).uploadXFiles(
+              files: _farmPhotos,
+              context: 'farm_photo',
+            );
+      }
+
       final request = OnboardFarmRequest(
         farmName: _farmName.text.trim(),
         location: _location.text.trim().isNotEmpty
@@ -272,12 +344,14 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
         farmerName: _farmerName.text.trim(),
         farmerMobile: _farmerMobile.text.trim(),
         farmerGender: _gender!,
-        farmerAge: int.parse(_farmerAge.text),
-        photoPaths: List<String>.from(_farmPhotos),
+        farmerAge: int.parse(_farmerAge.text.trim()),
       );
 
       if (widget.isAdminCreate) {
-        await ref.read(farmRepositoryProvider).createFarmAsAdmin(request);
+        await ref.read(farmRepositoryProvider).createFarmAsAdmin(
+              request,
+              uploadedPhotoUrls: uploadedPhotoUrls,
+            );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Farm created successfully')),
@@ -289,10 +363,15 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
               request,
               user.id,
               user.name,
+              uploadedPhotoUrls: uploadedPhotoUrls,
             );
         if (mounted) setState(() => _success = true);
         bumpAppRefresh(ref);
         unawaited(ref.read(authProvider.notifier).refreshUser());
+      }
+    } catch (e) {
+      if (mounted) {
+        _showError(formatApiError(e));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -378,7 +457,7 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
                   : ShinePrimaryButton(
                       label: 'Submit',
                       isLoading: _loading,
-                      onPressed: _submit,
+                      onPressed: _loading ? null : _submit,
                     ),
             ),
           ],
@@ -535,82 +614,80 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
     );
   }
 
-  Widget _farmPhotosSection() {
+  Widget _farmPhotosSection({bool compact = false}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Farm Photos',
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w700,
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Farm Photos',
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
               ),
+            ),
+            if (_farmPhotos.isNotEmpty)
+              Text(
+                '${_farmPhotos.length}/$_maxFarmPhotos',
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: AppColors.textMuted,
+                      fontWeight: FontWeight.w700,
+                    ),
+              ),
+          ],
         ),
         const SizedBox(height: AppSpacing.xs),
         Text(
-          'Optional — up to $_maxFarmPhotos photos uploaded with the farm',
+          compact
+              ? 'Tap a photo to replace it, or use Remove.'
+              : 'Optional — add up to $_maxFarmPhotos photos (camera or gallery)',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: AppColors.textSecondary,
               ),
         ),
         const SizedBox(height: AppSpacing.sm),
-        SizedBox(
-          height: 96,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: _farmPhotos.length + 1,
-            separatorBuilder: (_, __) => const SizedBox(width: 10),
-            itemBuilder: (context, index) {
-              if (index == _farmPhotos.length) {
-                return InkWell(
-                  onTap: _pickFarmPhoto,
-                  borderRadius: BorderRadius.circular(14),
-                  child: Ink(
-                    width: 96,
-                    height: 96,
-                    decoration: AppColors.cardDecoration(radius: 14),
-                    child: const Icon(
-                      Icons.add_a_photo_outlined,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                );
-              }
-
-              return Stack(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(14),
-                    child: Image.file(
-                      File(_farmPhotos[index]),
-                      width: 96,
-                      height: 96,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  Positioned(
-                    top: 4,
-                    right: 4,
-                    child: Material(
-                      color: Colors.black54,
-                      shape: const CircleBorder(),
-                      child: InkWell(
-                        customBorder: const CircleBorder(),
-                        onTap: () => _removeFarmPhoto(index),
-                        child: const Padding(
-                          padding: EdgeInsets.all(4),
-                          child: Icon(
-                            Icons.close_rounded,
-                            size: 16,
-                            color: Colors.white,
-                          ),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            for (var i = 0; i < _farmPhotos.length; i++)
+              _FarmPhotoTile(
+                file: _farmPhotos[i],
+                onReplace: () => _replaceFarmPhoto(i),
+                onRemove: () => _removeFarmPhoto(i),
+              ),
+            if (_farmPhotos.length < _maxFarmPhotos)
+              InkWell(
+                onTap: _pickFarmPhoto,
+                borderRadius: BorderRadius.circular(14),
+                child: Ink(
+                  width: 108,
+                  height: 128,
+                  decoration: AppColors.cardDecoration(radius: 14),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Icon(
+                        Icons.add_a_photo_outlined,
+                        color: AppColors.primary,
+                        size: 28,
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'Add photo',
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12,
                         ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
-              );
-            },
-          ),
+                ),
+              ),
+          ],
         ),
       ],
     );
@@ -619,6 +696,10 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
   Widget _farmerStep() {
     return Column(
       children: [
+        if (_farmPhotos.isNotEmpty) ...[
+          _farmPhotosSection(compact: true),
+          const SizedBox(height: AppSpacing.lg),
+        ],
         TextField(
           controller: _farmerName,
           decoration: const InputDecoration(labelText: 'Farmer Name'),
@@ -631,7 +712,7 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
         ),
         const SizedBox(height: AppSpacing.md),
         DropdownButtonFormField<Gender>(
-          initialValue: _gender,
+          value: _gender,
           decoration: const InputDecoration(labelText: 'Gender'),
           items: Gender.values
               .map((g) => DropdownMenuItem(value: g, child: Text(g.label)))
@@ -643,6 +724,67 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
           controller: _farmerAge,
           keyboardType: TextInputType.number,
           decoration: const InputDecoration(labelText: 'Age'),
+        ),
+      ],
+    );
+  }
+}
+
+class _FarmPhotoTile extends StatelessWidget {
+  const _FarmPhotoTile({
+    required this.file,
+    required this.onReplace,
+    required this.onRemove,
+  });
+
+  final XFile file;
+  final VoidCallback onReplace;
+  final VoidCallback onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        InkWell(
+          onTap: onReplace,
+          borderRadius: BorderRadius.circular(14),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(14),
+            child: FutureBuilder<Uint8List>(
+              future: file.readAsBytes(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return Container(
+                    width: 108,
+                    height: 108,
+                    color: AppColors.surfaceElevated,
+                    child: const Center(
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  );
+                }
+                return Image.memory(
+                  snapshot.data!,
+                  width: 108,
+                  height: 108,
+                  fit: BoxFit.cover,
+                );
+              },
+            ),
+          ),
+        ),
+        const SizedBox(height: 6),
+        TextButton.icon(
+          onPressed: onRemove,
+          icon: const Icon(Icons.delete_outline_rounded, size: 16),
+          label: const Text('Remove'),
+          style: TextButton.styleFrom(
+            foregroundColor: AppColors.error,
+            padding: EdgeInsets.zero,
+            minimumSize: Size.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
         ),
       ],
     );
