@@ -75,11 +75,12 @@ class ApiFarmDataSource implements FarmDataSource {
   Future<Farm> onboardFarm(
     OnboardFarmRequest request,
     String executiveId,
-    String executiveName,
-  ) async {
-    List<String>? uploadedPhotos;
-    if (request.photoPaths.isNotEmpty) {
-      uploadedPhotos = await _uploads.uploadFiles(
+    String executiveName, {
+    List<String>? uploadedPhotoUrls,
+  }) async {
+    List<String>? photos = uploadedPhotoUrls;
+    if (photos == null && request.photoPaths.isNotEmpty) {
+      photos = await _uploads.uploadFiles(
         localPaths: request.photoPaths,
         context: 'farm_photo',
       );
@@ -87,7 +88,7 @@ class ApiFarmDataSource implements FarmDataSource {
 
     final response = await _client.dio.post(
       ApiEndpoints.farms,
-      data: request.toJson(uploadedPhotos: uploadedPhotos),
+      data: request.toJson(uploadedPhotos: photos),
     );
     final data = response.data as Map<String, dynamic>;
     final farmId = data['id']?.toString();
@@ -125,16 +126,17 @@ class ApiFarmDataSource implements FarmDataSource {
   Future<Farm> createFarmAsAdmin(
     OnboardFarmRequest request, {
     List<String> executiveIds = const [],
+    List<String>? uploadedPhotoUrls,
   }) async {
-    List<String>? uploadedPhotos;
-    if (request.photoPaths.isNotEmpty) {
-      uploadedPhotos = await _uploads.uploadFiles(
+    List<String>? photos = uploadedPhotoUrls;
+    if (photos == null && request.photoPaths.isNotEmpty) {
+      photos = await _uploads.uploadFiles(
         localPaths: request.photoPaths,
         context: 'farm_photo',
       );
     }
 
-    final body = request.toJson(uploadedPhotos: uploadedPhotos);
+    final body = request.toJson(uploadedPhotos: photos);
     if (executiveIds.isNotEmpty) {
       body['executive_ids'] = executiveIds;
     }

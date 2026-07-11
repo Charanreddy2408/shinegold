@@ -1,6 +1,8 @@
-import 'dart:io';
+import 'dart:io' show File;
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
 
 import 'api_endpoints.dart';
 import 'dio_client.dart';
@@ -10,17 +12,73 @@ class UploadService {
 
   final DioClient _client;
 
+  Future<String> uploadXFile({
+    required XFile file,
+    required String context,
+  }) async {
+    final bytes = await file.readAsBytes();
+    final contentType = _resolveContentType(
+      name: file.name,
+      path: file.path,
+      mimeType: file.mimeType,
+    );
+    return _uploadBytes(bytes: bytes, contentType: contentType, context: context);
+  }
+
   Future<String> uploadFile({
     required String localPath,
     required String context,
   }) async {
+    if (kIsWeb) {
+      throw UnsupportedError(
+        'uploadFile is not supported on web. Use uploadXFile instead.',
+      );
+    }
+
     final file = File(localPath);
     if (!await file.exists()) {
       throw Exception('File not found: $localPath');
     }
 
-    final contentType = _contentTypeFor(localPath);
+    final contentType = _resolveContentType(name: localPath, path: localPath);
+    return _uploadBytes(
+      bytes: await file.readAsBytes(),
+      contentType: contentType,
+      context: context,
+    );
+  }
 
+  Future<List<String>> uploadFiles({
+    required List<String> localPaths,
+    required String context,
+  }) async {
+    final urls = <String>[];
+    for (final path in localPaths) {
+      if (path.startsWith('http://') || path.startsWith('https://')) {
+        urls.add(path);
+      } else {
+        urls.add(await uploadFile(localPath: path, context: context));
+      }
+    }
+    return urls;
+  }
+
+  Future<List<String>> uploadXFiles({
+    required List<XFile> files,
+    required String context,
+  }) async {
+    final urls = <String>[];
+    for (final file in files) {
+      urls.add(await uploadXFile(file: file, context: context));
+    }
+    return urls;
+  }
+
+  Future<String> _uploadBytes({
+    required List<int> bytes,
+    required String contentType,
+    required String context,
+  }) async {
     final presignResponse = await _client.dio.post(
       ApiEndpoints.uploadPresign,
       data: {
@@ -38,7 +96,7 @@ class UploadService {
 
     await Dio().put(
       uploadUrl,
-      data: await file.readAsBytes(),
+      data: bytes,
       options: Options(
         headers: {'Content-Type': contentType},
         contentType: contentType,
@@ -48,19 +106,15 @@ class UploadService {
     return publicUrl;
   }
 
-  Future<List<String>> uploadFiles({
-    required List<String> localPaths,
-    required String context,
-  }) async {
-    final urls = <String>[];
-    for (final path in localPaths) {
-      if (path.startsWith('http://') || path.startsWith('https://')) {
-        urls.add(path);
-      } else {
-        urls.add(await uploadFile(localPath: path, context: context));
-      }
+  String _resolveContentType({
+    required String path,
+    String? name,
+    String? mimeType,
+  }) {
+    if (mimeType != null && mimeType.isNotEmpty) {
+      return mimeType;
     }
-    return urls;
+    return _contentTypeFor(name?.isNotEmpty == true ? name! : path);
   }
 
   String _contentTypeFor(String localPath) {
@@ -83,7 +137,7 @@ class UploadService {
       case '.wav':
         return 'audio/wav';
       default:
-        return 'application/octet-stream';
+        return 'image/jpeg';
     }
   }
 }

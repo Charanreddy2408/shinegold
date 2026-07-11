@@ -111,8 +111,12 @@ class MockFarmDataSource implements FarmDataSource {
     }
   }
 
-  Future<Farm> onboardFarm(OnboardFarmRequest request, String executiveId,
-      String executiveName) async {
+  Future<Farm> onboardFarm(
+    OnboardFarmRequest request,
+    String executiveId,
+    String executiveName, {
+    List<String>? uploadedPhotoUrls,
+  }) async {
     await Future<void>.delayed(AppConfig.mockNetworkDelay);
 
     final id = 'farm-${_random.nextInt(9999)}';
@@ -208,8 +212,14 @@ class MockFarmDataSource implements FarmDataSource {
   Future<Farm> createFarmAsAdmin(
     OnboardFarmRequest request, {
     List<String> executiveIds = const [],
+    List<String>? uploadedPhotoUrls,
   }) async {
-    return onboardFarm(request, executiveIds.firstOrNull ?? '', 'Admin');
+    return onboardFarm(
+      request,
+      executiveIds.firstOrNull ?? '',
+      'Admin',
+      uploadedPhotoUrls: uploadedPhotoUrls,
+    );
   }
 
   @override

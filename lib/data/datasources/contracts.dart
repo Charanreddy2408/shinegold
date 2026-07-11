@@ -54,8 +54,9 @@ abstract class FarmDataSource {
   Future<Farm> onboardFarm(
     OnboardFarmRequest request,
     String executiveId,
-    String executiveName,
-  );
+    String executiveName, {
+    List<String>? uploadedPhotoUrls,
+  });
 
   Future<List<FarmInvitation>> getFarmInvitations({
     double? lat,
@@ -69,6 +70,7 @@ abstract class FarmDataSource {
   Future<Farm> createFarmAsAdmin(
     OnboardFarmRequest request, {
     List<String> executiveIds = const [],
+    List<String>? uploadedPhotoUrls,
   });
 
   Future<List<String>> assignFarmExecutives(

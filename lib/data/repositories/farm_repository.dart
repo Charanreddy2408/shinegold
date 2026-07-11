@@ -39,9 +39,15 @@ class FarmRepository {
   Future<Farm> onboardFarm(
     OnboardFarmRequest request,
     String executiveId,
-    String executiveName,
-  ) =>
-      _dataSource.onboardFarm(request, executiveId, executiveName);
+    String executiveName, {
+    List<String>? uploadedPhotoUrls,
+  }) =>
+      _dataSource.onboardFarm(
+        request,
+        executiveId,
+        executiveName,
+        uploadedPhotoUrls: uploadedPhotoUrls,
+      );
 
   Future<List<FarmInvitation>> getFarmInvitations({
     double? lat,
@@ -62,8 +68,13 @@ class FarmRepository {
   Future<Farm> createFarmAsAdmin(
     OnboardFarmRequest request, {
     List<String> executiveIds = const [],
+    List<String>? uploadedPhotoUrls,
   }) =>
-      _dataSource.createFarmAsAdmin(request, executiveIds: executiveIds);
+      _dataSource.createFarmAsAdmin(
+        request,
+        executiveIds: executiveIds,
+        uploadedPhotoUrls: uploadedPhotoUrls,
+      );
 
   Future<List<String>> assignFarmExecutives(
     String farmId, {
