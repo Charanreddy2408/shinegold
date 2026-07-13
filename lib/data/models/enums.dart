@@ -18,7 +18,14 @@ enum FarmHealthStatus { healthy, needsWater, needsAttention, critical, urgentVis
 
 enum SyncStatus { synced, pendingSync, syncFailed }
 
-enum QuickFarmFilter { all, nearby, pending, harvestSoon, recentlyVisited }
+enum QuickFarmFilter {
+  all,
+  nearby,
+  pending,
+  harvestSoon,
+  recentlyVisited,
+  completed,
+}
 
 extension FarmHealthStatusUi on FarmHealthStatus {
   String get label {
@@ -89,6 +96,8 @@ extension QuickFarmFilterLabel on QuickFarmFilter {
         return 'Harvest Soon';
       case QuickFarmFilter.recentlyVisited:
         return 'Recently Visited';
+      case QuickFarmFilter.completed:
+        return 'Completed';
     }
   }
 }

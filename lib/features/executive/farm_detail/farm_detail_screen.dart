@@ -248,7 +248,7 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
           CollapsibleSection(
             title: 'Map',
             icon: Icons.map_outlined,
-            initiallyExpanded: false,
+            initiallyExpanded: true,
             child: FarmMapPreview(
               latitude: farm.latitude,
               longitude: farm.longitude,

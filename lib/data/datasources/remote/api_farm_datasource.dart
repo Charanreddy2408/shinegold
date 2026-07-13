@@ -56,9 +56,24 @@ class ApiFarmDataSource implements FarmDataSource {
                 f.lastVisited != null && f.lastVisited!.isAfter(cutoff),
           )
           .toList();
+      farms.sort((a, b) {
+        final aDate = a.lastVisited ?? DateTime.fromMillisecondsSinceEpoch(0);
+        final bDate = b.lastVisited ?? DateTime.fromMillisecondsSinceEpoch(0);
+        return bDate.compareTo(aDate);
+      });
+    } else if (filter.quickFilter == QuickFarmFilter.completed) {
+      farms = farms
+          .where((f) => f.status == FarmVisitStatus.visited)
+          .toList();
+    } else if (filter.quickFilter == QuickFarmFilter.nearby) {
+      farms = farms.where((f) => (f.distanceKm ?? 999) <= 25).toList();
+      farms.sort(
+        (a, b) => (a.distanceKm ?? 999).compareTo(b.distanceKm ?? 999),
+      );
     }
 
-    if (filter.sortOrder == SortOrder.nameAsc) {
+    if (filter.sortOrder == SortOrder.nameAsc &&
+        filter.quickFilter != QuickFarmFilter.recentlyVisited) {
       farms.sort((a, b) => a.name.compareTo(b.name));
     }
 

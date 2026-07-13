@@ -16,30 +16,42 @@ bool _audioContextReady = false;
 
 Future<void> ensureVoiceAudioContext() async {
   if (_audioContextReady) return;
-  // Web and desktop do not support mobile AVAudioSession options used below.
   if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) {
     _audioContextReady = true;
     return;
   }
-  await AudioPlayer.global.setAudioContext(
-    AudioContext(
-      android: AudioContextAndroid(
-        isSpeakerphoneOn: true,
-        stayAwake: true,
-        contentType: AndroidContentType.music,
-        usageType: AndroidUsageType.media,
-        audioFocus: AndroidAudioFocus.gain,
-      ),
-      iOS: AudioContextIOS(
-        category: AVAudioSessionCategory.playAndRecord,
-        options: {
-          AVAudioSessionOptions.defaultToSpeaker,
-          AVAudioSessionOptions.mixWithOthers,
-        },
-      ),
-    ),
-  );
-  _audioContextReady = true;
+
+  try {
+    if (Platform.isAndroid) {
+      await AudioPlayer.global.setAudioContext(
+        AudioContext(
+          android: const AudioContextAndroid(
+            isSpeakerphoneOn: true,
+            stayAwake: true,
+            contentType: AndroidContentType.speech,
+            usageType: AndroidUsageType.media,
+            audioFocus: AndroidAudioFocus.gain,
+          ),
+        ),
+      );
+    } else {
+      // iOS: playback category for listening to visit reports.
+      await AudioPlayer.global.setAudioContext(
+        AudioContext(
+          iOS: AudioContextIOS(
+            category: AVAudioSessionCategory.playback,
+            options: const {
+              AVAudioSessionOptions.mixWithOthers,
+            },
+          ),
+        ),
+      );
+    }
+    _audioContextReady = true;
+  } catch (_) {
+    // Don't block app start if audio context setup fails.
+    _audioContextReady = true;
+  }
 }
 
 class HealthBadge extends StatelessWidget {
@@ -456,6 +468,19 @@ class _VoiceNotePlayerState extends State<VoiceNotePlayer> {
     await _player.setPlayerMode(PlayerMode.mediaPlayer);
     await _player.setVolume(1.0);
     await _player.setReleaseMode(ReleaseMode.stop);
+    if (!kIsWeb && Platform.isAndroid) {
+      await _player.setAudioContext(
+        AudioContext(
+          android: const AudioContextAndroid(
+            isSpeakerphoneOn: true,
+            stayAwake: true,
+            contentType: AndroidContentType.speech,
+            usageType: AndroidUsageType.media,
+            audioFocus: AndroidAudioFocus.gain,
+          ),
+        ),
+      );
+    }
 
     _player.onPlayerStateChanged.listen((state) {
       if (!mounted) return;
@@ -503,6 +528,7 @@ class _VoiceNotePlayerState extends State<VoiceNotePlayer> {
       await ensureVoiceAudioContext();
       final remote = resolveMediaUrl(widget.url);
       await _player.stop();
+      await _player.setVolume(1.0);
 
       if (kIsWeb) {
         try {
@@ -512,21 +538,47 @@ class _VoiceNotePlayerState extends State<VoiceNotePlayer> {
           await _player.play(BytesSource(bytes));
         }
       } else {
-        final localPath = await VoiceAudioCache.ensureLocal(widget.url);
-        await _player.setSource(DeviceFileSource(localPath));
+        // Prefer local file; fall back to stream / bytes if needed.
+        var played = false;
+        try {
+          final localPath = await VoiceAudioCache.ensureLocal(widget.url);
+          await _player.play(
+            DeviceFileSource(localPath),
+            volume: 1.0,
+            mode: PlayerMode.mediaPlayer,
+          );
+          played = true;
+        } catch (_) {}
 
-        var duration = await _player.getDuration();
-        if (duration == null || duration.inMilliseconds < 50) {
-          await _player.setSource(UrlSource(remote));
-          duration = await _player.getDuration();
+        if (!played) {
+          try {
+            await _player.play(
+              UrlSource(remote),
+              volume: 1.0,
+              mode: PlayerMode.mediaPlayer,
+            );
+            played = true;
+          } catch (_) {}
         }
 
-        await _player.resume();
-        if (mounted) _duration = duration;
+        if (!played) {
+          final bytes = await VoiceAudioCache.loadBytes(widget.url);
+          await _player.play(
+            BytesSource(bytes),
+            volume: 1.0,
+            mode: PlayerMode.mediaPlayer,
+          );
+        }
+
+        final duration = await _player.getDuration();
+        if (mounted && duration != null) _duration = duration;
       }
 
       if (!mounted) return;
-      setState(() => _loading = false);
+      setState(() {
+        _loading = false;
+        _playing = true;
+      });
     } catch (e) {
       if (!mounted) return;
       setState(() {

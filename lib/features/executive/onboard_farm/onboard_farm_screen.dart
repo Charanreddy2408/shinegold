@@ -64,16 +64,30 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
       initialCenter: IndiaMapBounds.center,
       initialZoom: IndiaMapBounds.pickerZoom,
       minZoom: 4.5,
-      maxZoom: 18,
+      maxZoom: 19,
       cameraConstraint: CameraConstraint.containCenter(
         bounds: IndiaMapBounds.bounds,
       ),
       interactionOptions: const InteractionOptions(
-        flags: InteractiveFlag.none,
+        flags: InteractiveFlag.pinchZoom | InteractiveFlag.drag,
       ),
+      onMapReady: () {
+        final loc = _employeeLocationFromState(ref.read(locationProvider));
+        if (loc != null && IndiaMapBounds.contains(loc)) {
+          _previewMapCentered = true;
+          _centerPreviewMap(loc);
+        }
+      },
     );
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      unawaited(ref.read(locationProvider.notifier).requestLocation());
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await ref.read(locationProvider.notifier).requestLocation();
+      await ref.read(locationProvider.notifier).refreshLocation();
+      if (!mounted) return;
+      final loc = _employeeLocationFromState(ref.read(locationProvider));
+      if (loc != null && IndiaMapBounds.contains(loc)) {
+        _previewMapCentered = true;
+        _centerPreviewMap(loc);
+      }
     });
   }
 
@@ -172,9 +186,30 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
       centerFarmMapOn(
         _previewMapController,
         employeeLocation,
-        zoom: 15.5,
+        zoom: 16,
+        animate: true,
       );
     });
+  }
+
+  Future<void> _recenterPreviewMap() async {
+    await ref.read(locationProvider.notifier).requestLocation();
+    await ref.read(locationProvider.notifier).refreshLocation();
+    if (!mounted) return;
+    final loc = _employeeLocationFromState(ref.read(locationProvider));
+    if (loc == null) {
+      _showError('Could not get GPS. Enable location and try again.');
+      return;
+    }
+    if (!IndiaMapBounds.contains(loc)) {
+      _showError(
+        'Your GPS is outside India. Open the boundary map and search the farm village.',
+      );
+      return;
+    }
+    _previewMapCentered = true;
+    _centerPreviewMap(loc);
+    setState(() {});
   }
 
   bool _validateFarmStep() {
@@ -381,11 +416,13 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
   @override
   Widget build(BuildContext context) {
     ref.listen<LocationState>(locationProvider, (prev, next) {
-      if (_step != 0 || _previewMapCentered) return;
+      if (_step != 0) return;
       final loc = _employeeLocationFromState(next);
       if (loc != null && IndiaMapBounds.contains(loc)) {
-        _previewMapCentered = true;
-        _centerPreviewMap(loc);
+        if (!_previewMapCentered) {
+          _previewMapCentered = true;
+          _centerPreviewMap(loc);
+        }
       }
     });
 
@@ -499,6 +536,28 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     ),
                   ),
+                Positioned(
+                  top: 10,
+                  right: 10,
+                  child: Material(
+                    elevation: 3,
+                    borderRadius: BorderRadius.circular(28),
+                    color: AppColors.surfaceCard,
+                    child: InkWell(
+                      onTap: () => unawaited(_recenterPreviewMap()),
+                      borderRadius: BorderRadius.circular(28),
+                      child: Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: Icon(
+                          Icons.my_location_rounded,
+                          color: employeeLocation != null
+                              ? AppColors.info
+                              : AppColors.textMuted,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
                 Positioned(
                   left: 12,
                   right: 12,

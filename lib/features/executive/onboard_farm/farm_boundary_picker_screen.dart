@@ -48,17 +48,19 @@ class _FarmBoundaryPickerScreenState
   bool _searching = false;
   bool _showClear = false;
   bool _locating = false;
-  bool _centeredOnEmployee = false;
+  bool _mapReady = false;
   String? _selectedAddress;
   LatLng? _employeeLocation;
 
   late final MapOptions _mapOptions;
 
-  static const _employeeZoom = 16.0;
+  static const _employeeZoom = 16.5;
 
   double get _areaAcres => GeoArea.polygonAreaAcres(_pins);
 
   bool get _canConfirm => _pins.length >= 3;
+
+  bool get _hasEmployeeLocation => _employeeLocation != null;
 
   bool get _employeeInIndia =>
       _employeeLocation != null && IndiaMapBounds.contains(_employeeLocation!);
@@ -66,7 +68,7 @@ class _FarmBoundaryPickerScreenState
   @override
   void initState() {
     super.initState();
-    _employeeLocation = widget.userLocation;
+    _employeeLocation = widget.userLocation ?? widget.initialCenter;
     _pins.addAll(widget.initialPins.where(IndiaMapBounds.contains));
     _selectedAddress = widget.initialAddress;
     if (widget.initialAddress != null) {
@@ -74,19 +76,21 @@ class _FarmBoundaryPickerScreenState
       _showClear = _searchController.text.isNotEmpty;
     }
 
+    final start = resolveFarmMapCenter(
+      employeeLocation: _employeeLocation,
+      initialCenter: widget.initialCenter,
+      pins: _pins,
+    );
+
     _mapOptions = MapOptions(
-      initialCenter: resolveFarmMapCenter(
-        employeeLocation: _employeeLocation,
-        initialCenter: widget.initialCenter,
-        pins: _pins,
-      ),
+      initialCenter: start,
       initialZoom: resolveFarmMapZoom(
         employeeLocation: _employeeLocation,
         pins: _pins,
         employeeZoom: _employeeZoom,
       ),
       minZoom: 4.5,
-      maxZoom: 18,
+      maxZoom: 19,
       cameraConstraint: CameraConstraint.containCenter(
         bounds: IndiaMapBounds.bounds,
       ),
@@ -97,40 +101,76 @@ class _FarmBoundaryPickerScreenState
             InteractiveFlag.flingAnimation,
       ),
       onTap: _onMapTap,
+      onMapReady: () {
+        _mapReady = true;
+        if (_employeeLocation != null) {
+          _moveToEmployee(_employeeLocation!);
+        }
+      },
     );
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      unawaited(_bootstrapEmployeeLocation());
+      unawaited(_bootstrapEmployeeLocation(forceRefresh: true));
     });
   }
 
-  Future<void> _bootstrapEmployeeLocation() async {
-    if (_employeeLocation == null) {
-      setState(() => _locating = true);
-      await ref.read(locationProvider.notifier).requestLocation();
-    } else {
-      await ref.read(locationProvider.notifier).refreshLocation();
-    }
+  Future<void> _bootstrapEmployeeLocation({bool forceRefresh = false}) async {
+    if (!mounted) return;
+    setState(() => _locating = true);
 
-    final pos = ref.read(locationProvider).position;
-    if (pos != null) {
-      _employeeLocation = LatLng(pos.latitude, pos.longitude);
+    try {
+      if (_employeeLocation == null || forceRefresh) {
+        await ref.read(locationProvider.notifier).requestLocation();
+        await ref.read(locationProvider.notifier).refreshLocation();
+      } else {
+        await ref.read(locationProvider.notifier).refreshLocation();
+      }
+
+      final pos = ref.read(locationProvider).position;
+      if (pos != null) {
+        _employeeLocation = LatLng(pos.latitude, pos.longitude);
+      }
+    } finally {
+      if (mounted) setState(() => _locating = false);
     }
 
     if (!mounted) return;
-    setState(() => _locating = false);
 
     if (_employeeLocation == null) {
       _showMessage(
-        'Could not get GPS. Search for the farm area or enable location.',
+        'Could not get GPS. Enable location, then tap Recenter.',
       );
       return;
     }
 
-    _centerOnEmployee(animate: false);
+    _moveToEmployee(_employeeLocation!);
     if (_selectedAddress == null || _selectedAddress!.isEmpty) {
       unawaited(_fillAddressFromLocation(_employeeLocation!));
     }
+  }
+
+  Future<void> _recenterOnEmployee() async {
+    await _bootstrapEmployeeLocation(forceRefresh: true);
+  }
+
+  void _moveToEmployee(LatLng loc) {
+    if (!IndiaMapBounds.contains(loc)) {
+      _showMessage(
+        'Your GPS is outside India. Search for the farm village, then mark pins.',
+      );
+      // Still show the closest view inside India so the map isn't blank.
+      if (_mapReady) {
+        _mapController.move(IndiaMapBounds.center, IndiaMapBounds.pickerZoom);
+      }
+      return;
+    }
+
+    centerFarmMapOn(
+      _mapController,
+      loc,
+      zoom: _employeeZoom,
+      animate: true,
+    );
   }
 
   Future<void> _fillAddressFromLocation(LatLng point) async {
@@ -150,22 +190,6 @@ class _FarmBoundaryPickerScreenState
 
   void _fitIndia() {
     _mapController.move(IndiaMapBounds.center, IndiaMapBounds.overviewZoom);
-  }
-
-  void _centerOnEmployee({bool animate = true}) {
-    final loc = _employeeLocation;
-    if (loc == null) return;
-
-    if (!IndiaMapBounds.contains(loc)) {
-      _showMessage(
-        'Your GPS is outside India. Search for the farm village or pan the map.',
-      );
-      _moveMap(IndiaMapBounds.center, IndiaMapBounds.pickerZoom);
-      return;
-    }
-
-    _centeredOnEmployee = true;
-    centerFarmMapOn(_mapController, loc, zoom: _employeeZoom, animate: animate);
   }
 
   @override
@@ -214,10 +238,6 @@ class _FarmBoundaryPickerScreenState
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
   }
 
-  void _moveMap(LatLng point, double zoom) {
-    centerFarmMapOn(_mapController, point, zoom: zoom);
-  }
-
   void _selectSearchResult(GeocodingResult result) {
     if (!IndiaMapBounds.contains(result.point)) {
       _showMessage('Please pick a location inside India.');
@@ -230,7 +250,7 @@ class _FarmBoundaryPickerScreenState
       _showClear = true;
       _searchResults.clear();
     });
-    _moveMap(result.point, 15);
+    centerFarmMapOn(_mapController, result.point, zoom: 15, animate: true);
   }
 
   void _clearSearch() {
@@ -286,12 +306,16 @@ class _FarmBoundaryPickerScreenState
       final pos = next.position;
       if (pos == null) return;
       final updated = LatLng(pos.latitude, pos.longitude);
-      if (_employeeLocation == updated) return;
+      final prevPos = _employeeLocation;
+      final moved = prevPos == null ||
+          (prevPos.latitude - updated.latitude).abs() > 0.00005 ||
+          (prevPos.longitude - updated.longitude).abs() > 0.00005;
+      if (!moved) return;
       _employeeLocation = updated;
       if (mounted) {
         setState(() {});
-        if (_employeeInIndia && !_centeredOnEmployee) {
-          _centerOnEmployee(animate: false);
+        if (_mapReady && IndiaMapBounds.contains(updated)) {
+          _moveToEmployee(updated);
         }
       }
     });
@@ -307,10 +331,9 @@ class _FarmBoundaryPickerScreenState
         elevation: 0,
         actions: [
           IconButton(
-            onPressed:
-                _locating ? null : () => unawaited(_bootstrapEmployeeLocation()),
+            onPressed: _locating ? null : () => unawaited(_recenterOnEmployee()),
             icon: const Icon(Icons.my_location_rounded),
-            tooltip: 'Refresh my location',
+            tooltip: 'Recenter on my location',
           ),
           IconButton(
             onPressed: _fitIndia,
@@ -355,55 +378,70 @@ class _FarmBoundaryPickerScreenState
               ),
             ),
           ),
-          if (_employeeLocation != null)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.lg,
-                0,
-                AppSpacing.lg,
-                AppSpacing.sm,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.lg,
+              0,
+              AppSpacing.lg,
+              AppSpacing.sm,
+            ),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.sm,
               ),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.sm,
+              decoration: BoxDecoration(
+                color: (_hasEmployeeLocation
+                        ? (_employeeInIndia ? AppColors.info : AppColors.warning)
+                        : AppColors.textMuted)
+                    .withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                border: Border.all(
+                  color: (_hasEmployeeLocation
+                          ? (_employeeInIndia
+                              ? AppColors.info
+                              : AppColors.warning)
+                          : AppColors.borderSubtle)
+                      .withValues(alpha: 0.35),
                 ),
-                decoration: BoxDecoration(
-                  color: (_employeeInIndia ? AppColors.info : AppColors.warning)
-                      .withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                  border: Border.all(
-                    color: (_employeeInIndia ? AppColors.info : AppColors.warning)
-                        .withValues(alpha: 0.35),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    _hasEmployeeLocation
+                        ? (_employeeInIndia
+                            ? Icons.gps_fixed_rounded
+                            : Icons.gps_not_fixed_rounded)
+                        : Icons.gps_off_rounded,
+                    size: 18,
+                    color: _hasEmployeeLocation
+                        ? (_employeeInIndia
+                            ? AppColors.info
+                            : AppColors.warning)
+                        : AppColors.textMuted,
                   ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      _employeeInIndia
-                          ? Icons.gps_fixed_rounded
-                          : Icons.gps_not_fixed_rounded,
-                      size: 18,
-                      color:
-                          _employeeInIndia ? AppColors.info : AppColors.warning,
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
+                  const SizedBox(width: AppSpacing.sm),
                     Expanded(
                       child: Text(
-                        _employeeInIndia
-                            ? 'You are on the map (blue pin). Tap around your position to mark the farm boundary.'
-                            : 'GPS is outside India — search the farm village, then mark boundary pins.',
+                        !_hasEmployeeLocation
+                            ? 'Fetching your GPS… tap Recenter if this takes too long.'
+                            : _employeeInIndia
+                                ? 'Location OK · Lat ${_employeeLocation!.latitude.toStringAsFixed(4)}, Lng ${_employeeLocation!.longitude.toStringAsFixed(4)}. Blue pin = you — tap to mark boundary.'
+                                : 'GPS is working but outside India '
+                                    '(${_employeeLocation!.latitude.toStringAsFixed(4)}, '
+                                    '${_employeeLocation!.longitude.toStringAsFixed(4)}). '
+                                    'On emulator: Extended Controls → Location → set an India city, then tap Recenter.',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               color: AppColors.textSecondary,
                               fontWeight: FontWeight.w600,
                             ),
                       ),
                     ),
-                  ],
-                ),
+                ],
               ),
             ),
+          ),
           if (_searchResults.isNotEmpty)
             Container(
               margin: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
@@ -442,8 +480,8 @@ class _FarmBoundaryPickerScreenState
                   mapOptions: _mapOptions,
                   employeeLocation: _employeeLocation,
                   boundaryPins: _pins,
-                  showRecenterFab: _employeeInIndia,
-                  onRecenterEmployee: _centerOnEmployee,
+                  showRecenterFab: true,
+                  onRecenterEmployee: () => unawaited(_recenterOnEmployee()),
                 ),
               ),
             ),

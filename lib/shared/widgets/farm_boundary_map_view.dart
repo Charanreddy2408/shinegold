@@ -141,7 +141,7 @@ class FarmBoundaryMapView extends StatelessWidget {
               ),
             ),
           ),
-        if (showRecenterFab && employeeLocation != null && onRecenterEmployee != null)
+        if (showRecenterFab && onRecenterEmployee != null)
           Positioned(
             right: 10,
             bottom: 10,
@@ -152,11 +152,13 @@ class FarmBoundaryMapView extends StatelessWidget {
               child: InkWell(
                 onTap: onRecenterEmployee,
                 borderRadius: BorderRadius.circular(28),
-                child: const Padding(
-                  padding: EdgeInsets.all(12),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
                   child: Icon(
                     Icons.my_location_rounded,
-                    color: AppColors.info,
+                    color: employeeLocation != null
+                        ? AppColors.info
+                        : AppColors.textMuted,
                   ),
                 ),
               ),
@@ -177,22 +179,20 @@ void centerFarmMapOn(
   final target = IndiaMapBounds.contains(point)
       ? point
       : IndiaMapBounds.clamp(point);
+  final z = zoom.clamp(4.5, 19).toDouble();
 
   void move() {
     try {
-      if (animate) {
-        controller.move(target, zoom.clamp(4.5, 18));
-      } else {
-        controller.move(target, zoom.clamp(4.5, 18));
-      }
+      controller.move(target, z);
     } catch (_) {
       // Map not ready yet.
     }
   }
 
   move();
-  Future<void>.delayed(const Duration(milliseconds: 120), move);
-  Future<void>.delayed(const Duration(milliseconds: 350), move);
+  Future<void>.delayed(const Duration(milliseconds: 80), move);
+  Future<void>.delayed(const Duration(milliseconds: 250), move);
+  Future<void>.delayed(const Duration(milliseconds: 600), move);
 }
 
 LatLng resolveFarmMapCenter({

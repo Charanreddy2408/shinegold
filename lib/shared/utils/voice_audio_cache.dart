@@ -37,7 +37,7 @@ class VoiceAudioCache {
     }
 
     final bytes = response.data;
-    if (bytes == null || bytes.length < 256) {
+    if (bytes == null || bytes.length < 64) {
       throw Exception('Downloaded voice note is empty');
     }
 
@@ -59,7 +59,7 @@ class VoiceAudioCache {
       if (!await file.exists()) {
         throw Exception('Voice note file not found');
       }
-      if (await file.length() < 256) {
+      if (await file.length() < 64) {
         throw Exception('Voice note file is empty');
       }
       return trimmed;
@@ -73,7 +73,7 @@ class VoiceAudioCache {
 
     if (await cacheFile.exists()) {
       final cachedLen = await cacheFile.length();
-      if (cachedLen > 256) return cachePath;
+      if (cachedLen > 64) return cachePath;
     }
 
     final response = await _dio.download(
@@ -90,7 +90,7 @@ class VoiceAudioCache {
     }
 
     final len = await cacheFile.length();
-    if (len < 256) {
+    if (len < 64) {
       throw Exception('Downloaded voice note is empty');
     }
 

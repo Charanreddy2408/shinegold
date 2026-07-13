@@ -35,10 +35,20 @@ class MockFarmDataSource implements FarmDataSource {
           .toList();
     }
 
+    if (userLat != null && userLng != null) {
+      result = result
+          .map(
+            (f) => f.copyWith(
+              distanceKm: _haversine(userLat, userLng, f.latitude, f.longitude),
+            ),
+          )
+          .toList();
+    }
+
     if (filter.quickFilter != null) {
       switch (filter.quickFilter!) {
         case QuickFarmFilter.nearby:
-          break;
+          result = result.where((f) => (f.distanceKm ?? 999) <= 25).toList();
         case QuickFarmFilter.pending:
           result = result
               .where((f) => f.status == FarmVisitStatus.pending)
@@ -61,6 +71,10 @@ class MockFarmDataSource implements FarmDataSource {
                     ),
               )
               .toList();
+        case QuickFarmFilter.completed:
+          result = result
+              .where((f) => f.status == FarmVisitStatus.visited)
+              .toList();
         case QuickFarmFilter.all:
           break;
       }
@@ -76,21 +90,21 @@ class MockFarmDataSource implements FarmDataSource {
       result = result.where((f) => f.status == filter.status).toList();
     }
 
-    if (userLat != null && userLng != null) {
-      result = result
-          .map(
-            (f) => f.copyWith(
-              distanceKm: _haversine(userLat, userLng, f.latitude, f.longitude),
-            ),
-          )
-          .toList();
-    }
-
     switch (filter.sortOrder) {
       case SortOrder.nearbyToFarthest:
-        result.sort(
-          (a, b) => (a.distanceKm ?? 999).compareTo(b.distanceKm ?? 999),
-        );
+        if (filter.quickFilter == QuickFarmFilter.recentlyVisited) {
+          result.sort((a, b) {
+            final aDate =
+                a.lastVisited ?? DateTime.fromMillisecondsSinceEpoch(0);
+            final bDate =
+                b.lastVisited ?? DateTime.fromMillisecondsSinceEpoch(0);
+            return bDate.compareTo(aDate);
+          });
+        } else {
+          result.sort(
+            (a, b) => (a.distanceKm ?? 999).compareTo(b.distanceKm ?? 999),
+          );
+        }
       case SortOrder.farthestToNearby:
         result.sort(
           (a, b) => (b.distanceKm ?? 0).compareTo(a.distanceKm ?? 0),

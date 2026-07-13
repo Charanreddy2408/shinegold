@@ -7,7 +7,11 @@ import 'shared/widgets/ux_components.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await ensureVoiceAudioContext();
+  try {
+    await ensureVoiceAudioContext();
+  } catch (_) {
+    // Audio setup is best-effort; playback will retry later.
+  }
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
