@@ -21,6 +21,7 @@ import '../../../shared/widgets/shine_buttons.dart';
 import '../../../shared/widgets/shine_card.dart';
 import '../../../shared/widgets/status_chip.dart';
 import '../../../shared/widgets/ux_components.dart';
+import '../../../shared/utils/media_url.dart';
 import '../../../shared/widgets/visit_log_tile.dart';
 
 class FarmDetailScreen extends ConsumerStatefulWidget {
@@ -95,8 +96,10 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
 
     final farm = _farm!;
     final dateFormat = DateFormat('dd MMM yyyy');
-    final farmerPhoto = farm.farmer.photoUrl ??
-        'https://i.pravatar.cc/120?u=${farm.farmer.id}';
+    final farmerPhoto = farm.farmer.photoUrl != null &&
+            farm.farmer.photoUrl!.trim().isNotEmpty
+        ? resolveMediaUrl(farm.farmer.photoUrl!)
+        : null;
     final isExecutive =
         ref.watch(currentUserProvider)?.role == UserRole.executive;
     final isAdmin =
@@ -146,7 +149,20 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
                   CircleAvatar(
                     radius: 28,
                     backgroundColor: AppColors.primarySoft,
-                    backgroundImage: CachedNetworkImageProvider(farmerPhoto),
+                    backgroundImage: farmerPhoto != null
+                        ? CachedNetworkImageProvider(farmerPhoto)
+                        : null,
+                    child: farmerPhoto == null
+                        ? Text(
+                            farm.farmer.name.isNotEmpty
+                                ? farm.farmer.name[0].toUpperCase()
+                                : '?',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.primaryDark,
+                            ),
+                          )
+                        : null,
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -255,6 +271,54 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
               height: 180,
             ),
           ),
+          if (farm.photoUrls.isNotEmpty) ...[
+            const SizedBox(height: 20),
+            Text(
+              'Farm Photos',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+            ),
+            const SizedBox(height: 10),
+            SizedBox(
+              height: 108,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: farm.photoUrls.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 10),
+                itemBuilder: (context, i) {
+                  final url = resolveMediaUrl(farm.photoUrls[i]);
+                  return GestureDetector(
+                    onTap: () => showPhotoGallery(
+                      context,
+                      urls: farm.photoUrls.map(resolveMediaUrl).toList(),
+                      initialIndex: i,
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(14),
+                      child: CachedNetworkImage(
+                        imageUrl: url,
+                        width: 108,
+                        height: 108,
+                        fit: BoxFit.cover,
+                        placeholder: (_, __) => Container(
+                          width: 108,
+                          height: 108,
+                          color: AppColors.surfaceElevated,
+                        ),
+                        errorWidget: (_, __, ___) => Container(
+                          width: 108,
+                          height: 108,
+                          color: AppColors.surfaceElevated,
+                          child: const Icon(Icons.broken_image_outlined),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
           const SizedBox(height: 12),
           CollapsibleSection(
             title: 'Visit History',

@@ -532,10 +532,10 @@ class _VoiceNotePlayerState extends State<VoiceNotePlayer> {
 
       if (kIsWeb) {
         try {
-          await _player.play(UrlSource(remote));
-        } catch (_) {
           final bytes = await VoiceAudioCache.loadBytes(widget.url);
           await _player.play(BytesSource(bytes));
+        } catch (_) {
+          await _player.play(UrlSource(remote));
         }
       } else {
         // Prefer local file; fall back to stream / bytes if needed.
@@ -714,7 +714,7 @@ class _PhotoGalleryDialogState extends State<_PhotoGalleryDialog> {
                   child: InteractiveViewer(
                     minScale: 0.8,
                     maxScale: 4,
-                    child: isRemote
+                    child: isRemote || kIsWeb
                         ? CachedNetworkImage(
                             imageUrl: url,
                             fit: BoxFit.contain,
