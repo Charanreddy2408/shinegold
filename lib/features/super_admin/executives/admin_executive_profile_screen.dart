@@ -287,12 +287,25 @@ class _AdminExecutiveProfileScreenState
                                   visit: visit,
                                   dateLabel: dateFormat.format(visit.startedAt),
                                   isLast: isLast,
-                                  onTap: () => context.push(
-                                    AppRoutes.farmDetail.replaceFirst(
-                                      ':id',
-                                      visit.farmId,
-                                    ),
-                                  ),
+                                  onTap: () {
+                                    if (visit.status == VisitStatus.completed &&
+                                        visit.id.isNotEmpty) {
+                                      context.push(
+                                        AppRoutes.visitDetail.replaceFirst(
+                                          ':id',
+                                          visit.id,
+                                        ),
+                                      );
+                                      return;
+                                    }
+                                    if (visit.farmId.isEmpty) return;
+                                    context.push(
+                                      AppRoutes.farmDetail.replaceFirst(
+                                        ':id',
+                                        visit.farmId,
+                                      ),
+                                    );
+                                  },
                                 ),
                               );
                             },
