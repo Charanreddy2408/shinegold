@@ -4,20 +4,21 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/animations/staggered_list.dart';
+import '../../../core/network/api_exception.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../data/models/enums.dart';
 import '../../../data/models/visit.dart';
-import '../../../core/network/api_exception.dart';
-import '../../../shared/widgets/ux_components.dart';
 import '../../../shared/providers/app_refresh_provider.dart';
 import '../../../shared/providers/auth_provider.dart';
 import '../../../shared/providers/repository_providers.dart';
+import '../../../shared/utils/async_ui.dart';
 import '../../../shared/widgets/animated_loading.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/shine_card.dart';
 import '../../../shared/widgets/shine_empty_state.dart';
 import '../../../shared/widgets/status_chip.dart';
+import '../../../shared/widgets/ux_components.dart';
 
 class MyVisitsScreen extends ConsumerStatefulWidget {
   const MyVisitsScreen({super.key});
@@ -29,46 +30,57 @@ class MyVisitsScreen extends ConsumerStatefulWidget {
 class _MyVisitsScreenState extends ConsumerState<MyVisitsScreen> {
   VisitStatus? _tab;
   final _searchController = TextEditingController();
+  final _searchDebounce = Debouncer();
+  final _loadGen = LoadGeneration();
   List<Visit> _visits = [];
-  bool _loading = true;
+  bool _initialLoading = true;
+  bool _refreshing = false;
   String? _error;
 
   @override
   void initState() {
     super.initState();
-    _load();
+    _load(isRefresh: false);
   }
 
   @override
   void dispose() {
+    _searchDebounce.dispose();
     _searchController.dispose();
     super.dispose();
   }
 
-  Future<void> _load() async {
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
+  Future<void> _load({bool isRefresh = true}) async {
+    final gen = _loadGen.next();
+    if (mounted) {
+      setState(() {
+        if (_visits.isEmpty) {
+          _initialLoading = true;
+        } else {
+          _refreshing = true;
+        }
+        _error = null;
+      });
+    }
     try {
       final user = ref.read(currentUserProvider)!;
       final visits = await ref.read(visitRepositoryProvider).getMyVisits(
             user.id,
             VisitFilter(search: _searchController.text, status: _tab),
           );
-      if (mounted) {
-        setState(() {
-          _visits = visits;
-          _loading = false;
-        });
-      }
+      if (!mounted || !_loadGen.isCurrent(gen)) return;
+      setState(() {
+        _visits = visits;
+        _initialLoading = false;
+        _refreshing = false;
+      });
     } catch (e) {
-      if (mounted) {
-        setState(() {
-          _loading = false;
-          _error = formatApiError(e);
-        });
-      }
+      if (!mounted || !_loadGen.isCurrent(gen)) return;
+      setState(() {
+        _initialLoading = false;
+        _refreshing = false;
+        _error = formatApiError(e);
+      });
     }
   }
 
@@ -83,16 +95,21 @@ class _MyVisitsScreenState extends ConsumerState<MyVisitsScreen> {
     return AppBackground(
       header: GradientHeader(
         title: 'My Visits',
-        subtitle: _loading ? 'Loading...' : '${_visits.length} visit records',
+        subtitle: _initialLoading
+            ? 'Loading...'
+            : '${_visits.length} visit records',
         compact: true,
       ),
       child: Column(
         children: [
+          SoftRefreshBar(visible: _refreshing),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             child: TextField(
               controller: _searchController,
-              onChanged: (_) => _load(),
+              onChanged: (_) => _searchDebounce.run(
+                () => _load(isRefresh: _visits.isNotEmpty),
+              ),
               decoration: const InputDecoration(
                 hintText: 'Search by farm name...',
                 prefixIcon: Icon(Icons.search_rounded),
@@ -116,21 +133,21 @@ class _MyVisitsScreenState extends ConsumerState<MyVisitsScreen> {
               selected: {_tab},
               onSelectionChanged: (s) {
                 setState(() => _tab = s.first);
-                _load();
+                _load(isRefresh: _visits.isNotEmpty);
               },
             ),
           ),
           const SizedBox(height: 8),
           Expanded(
-            child: _loading
+            child: _initialLoading
                 ? const ListLoadingSkeleton(itemCount: 4, itemHeight: 88)
-                : _error != null
+                : _error != null && _visits.isEmpty
                     ? Center(
                         child: Padding(
                           padding: const EdgeInsets.all(24),
                           child: FriendlyErrorBanner(
                             message: _error!,
-                            onRetry: _load,
+                            onRetry: () => _load(isRefresh: false),
                           ),
                         ),
                       )
@@ -141,7 +158,7 @@ class _MyVisitsScreenState extends ConsumerState<MyVisitsScreen> {
                         subtitle: 'Your farm visits will appear here',
                       )
                     : RefreshIndicator(
-                        onRefresh: _load,
+                        onRefresh: () => _load(isRefresh: true),
                         color: AppColors.primary,
                         child: ListView.builder(
                           padding: const EdgeInsets.all(16),

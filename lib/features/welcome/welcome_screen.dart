@@ -40,7 +40,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
 
   bool _navigated = false;
 
-  static const _splashDuration = Duration(milliseconds: 4800);
+  static const _splashDuration = Duration(milliseconds: 2800);
 
   @override
   void initState() {
@@ -693,7 +693,7 @@ class _ParticleFieldPainter extends CustomPainter {
 
   final double progress;
 
-  static const _count = 24;
+  static const _count = 12;
 
   @override
   void paint(Canvas canvas, Size size) {

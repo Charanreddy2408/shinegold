@@ -88,7 +88,7 @@ class _AdminPasswordResetScreenState
             );
       },
     );
-    tempPassword.dispose();
+    disposeSheetControllers([tempPassword]);
 
     if (approved == true && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(

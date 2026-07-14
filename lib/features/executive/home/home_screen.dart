@@ -14,6 +14,7 @@ import '../../../shared/providers/auth_provider.dart';
 import '../../../shared/providers/location_provider.dart';
 import '../../../shared/providers/repository_providers.dart';
 import '../../../shared/utils/location_coords.dart';
+import '../../../shared/widgets/animated_loading.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/dashboard_overview.dart';
 import '../../../shared/widgets/shine_empty_state.dart';
@@ -48,7 +49,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Future<void> _load() async {
     if (!mounted) return;
-    setState(() => _loading = true);
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
       final dashboard =
           await ref.read(dashboardRepositoryProvider).getExecutiveDashboard();
@@ -126,52 +130,67 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
       ),
       child: _loading
-          ? const Center(
-              child: CircularProgressIndicator(color: AppColors.primary),
-            )
+          ? const DashboardLoadingSkeleton()
           : _error != null
               ? Padding(
                   padding: const EdgeInsets.all(20),
                   child: FriendlyErrorBanner(message: _error!, onRetry: _load),
                 )
-              : ListView(
-                  padding: const EdgeInsets.only(bottom: 24),
-                  children: [
-                    DashboardOverviewCard(
-                      totalFarms: _total,
-                      completed: _visited,
-                      pending: _pending,
-                      harvestSoon: _upcoming,
+              : RefreshIndicator(
+                  onRefresh: _load,
+                  color: AppColors.primary,
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(
+                      parent: BouncingScrollPhysics(),
                     ),
-                    if (_todayFarms.isNotEmpty) ...[
-                      SectionHeader(
-                        label: 'PRIORITY',
-                        title: 'Farms for today',
-                        trailing: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.sm,
-                            vertical: AppSpacing.xs,
+                    padding: const EdgeInsets.only(bottom: 24),
+                    children: [
+                      DashboardOverviewCard(
+                        totalFarms: _total,
+                        completed: _visited,
+                        pending: _pending,
+                        harvestSoon: _upcoming,
+                      ),
+                      if (_todayFarms.isEmpty)
+                        const Padding(
+                          padding: EdgeInsets.fromLTRB(16, 8, 16, 0),
+                          child: ShineEmptyState(
+                            icon: Icons.eco_outlined,
+                            title: 'No priority farms',
+                            subtitle:
+                                'Pending visits for today will show up here',
                           ),
-                          decoration: BoxDecoration(
-                            color: AppColors.primarySoft,
-                            borderRadius:
-                                BorderRadius.circular(AppSpacing.radiusXl),
-                          ),
-                          child: Text(
-                            '${_todayFarms.length}',
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelSmall
-                                ?.copyWith(
-                                  color: AppColors.primaryDark,
-                                  fontWeight: FontWeight.w700,
-                                ),
+                        )
+                      else ...[
+                        SectionHeader(
+                          label: 'PRIORITY',
+                          title: 'Farms for today',
+                          trailing: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.sm,
+                              vertical: AppSpacing.xs,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.primarySoft,
+                              borderRadius:
+                                  BorderRadius.circular(AppSpacing.radiusXl),
+                            ),
+                            child: Text(
+                              '${_todayFarms.length}',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelSmall
+                                  ?.copyWith(
+                                    color: AppColors.primaryDark,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                            ),
                           ),
                         ),
-                      ),
-                      ..._todayFarms.map(_farmTile),
+                        ..._todayFarms.map(_farmTile),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
     );
   }

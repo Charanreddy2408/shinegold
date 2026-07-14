@@ -18,6 +18,7 @@ import '../../../shared/widgets/admin_network_hero.dart';
 import '../../../shared/widgets/animated_loading.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/admin_ui.dart';
+import '../../../shared/widgets/ux_components.dart';
 import '../executives/admin_executive_profile_screen.dart';
 import '../nearby/admin_nearby_farms_section.dart';
 class AdminDashboardScreen extends ConsumerStatefulWidget {
@@ -105,20 +106,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               ? Center(
                   child: Padding(
                     padding: const EdgeInsets.all(24),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          _error!,
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.bodyLarge,
-                        ),
-                        const SizedBox(height: 16),
-                        FilledButton(
-                          onPressed: _load,
-                          child: const Text('Retry'),
-                        ),
-                      ],
+                    child: FriendlyErrorBanner(
+                      message: _error!,
+                      onRetry: _load,
                     ),
                   ),
                 )

@@ -65,11 +65,13 @@ class ShineSearchBar extends StatelessWidget {
     required this.controller,
     required this.hint,
     this.onFilterTap,
+    this.onChanged,
   });
 
   final TextEditingController controller;
   final String hint;
   final VoidCallback? onFilterTap;
+  final ValueChanged<String>? onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -78,6 +80,7 @@ class ShineSearchBar extends StatelessWidget {
         Expanded(
           child: TextField(
             controller: controller,
+            onChanged: onChanged,
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontSize: 15),
             decoration: InputDecoration(
               hintText: hint,

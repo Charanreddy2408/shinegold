@@ -9,6 +9,7 @@ import '../../../data/models/farm.dart';
 import '../../../shared/providers/app_refresh_provider.dart';
 import '../../../shared/providers/location_provider.dart';
 import '../../../shared/providers/repository_providers.dart';
+import '../../../shared/utils/async_ui.dart';
 import '../../../shared/widgets/animated_loading.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/farm_card.dart';
@@ -24,8 +25,11 @@ class AdminFarmsScreen extends ConsumerStatefulWidget {
 
 class _AdminFarmsScreenState extends ConsumerState<AdminFarmsScreen> {
   final _searchController = TextEditingController();
+  final _searchDebounce = Debouncer();
+  final _loadGen = LoadGeneration();
   List<Farm> _farms = [];
-  bool _loading = true;
+  bool _initialLoading = true;
+  bool _refreshing = false;
   String? _error;
 
   @override
@@ -33,23 +37,35 @@ class _AdminFarmsScreenState extends ConsumerState<AdminFarmsScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(locationProvider.notifier).requestLocation();
-      _load();
+      _load(isRefresh: false);
     });
-    _searchController.addListener(_load);
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  void _onSearchChanged() {
+    _searchDebounce.run(() => _load(isRefresh: _farms.isNotEmpty));
   }
 
   @override
   void dispose() {
-    _searchController.removeListener(_load);
+    _searchController.removeListener(_onSearchChanged);
+    _searchDebounce.dispose();
     _searchController.dispose();
     super.dispose();
   }
 
-  Future<void> _load() async {
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
+  Future<void> _load({bool isRefresh = true}) async {
+    final gen = _loadGen.next();
+    if (mounted) {
+      setState(() {
+        if (_farms.isEmpty) {
+          _initialLoading = true;
+        } else {
+          _refreshing = true;
+        }
+        _error = null;
+      });
+    }
     try {
       final loc = ref.read(locationProvider);
       final farms = await ref.read(farmRepositoryProvider).getFarms(
@@ -57,26 +73,28 @@ class _AdminFarmsScreenState extends ConsumerState<AdminFarmsScreen> {
             userLat: loc.position?.latitude,
             userLng: loc.position?.longitude,
           );
-      if (mounted) {
-        setState(() {
-          _farms = farms;
-          _loading = false;
-        });
-      }
+      if (!mounted || !_loadGen.isCurrent(gen)) return;
+      setState(() {
+        _farms = farms;
+        _initialLoading = false;
+        _refreshing = false;
+      });
     } catch (e) {
-      if (mounted) {
-        setState(() {
-          _loading = false;
-          _error = formatApiError(e);
-        });
-      }
+      if (!mounted || !_loadGen.isCurrent(gen)) return;
+      setState(() {
+        _initialLoading = false;
+        _refreshing = false;
+        _error = formatApiError(e);
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
     ref.listen<int>(appRefreshProvider, (previous, next) {
-      if (previous != null && previous != next) _load();
+      if (previous != null && previous != next) {
+        _load(isRefresh: true);
+      }
     });
 
     return Scaffold(
@@ -86,67 +104,73 @@ class _AdminFarmsScreenState extends ConsumerState<AdminFarmsScreen> {
         label: const Text('Create Farm'),
       ),
       body: AppBackground(
-      header: GradientHeader(
-        title: 'All Farms',
-        subtitle: _loading ? 'Loading...' : '${_farms.length} farms total',
-        compact: true,
-      ),
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-            child: ShineSearchBar(
-              controller: _searchController,
-              hint: 'Search farms...',
+        header: GradientHeader(
+          title: 'All Farms',
+          subtitle: _initialLoading
+              ? 'Loading...'
+              : '${_farms.length} farms total',
+          compact: true,
+        ),
+        child: Column(
+          children: [
+            SoftRefreshBar(visible: _refreshing),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              child: ShineSearchBar(
+                controller: _searchController,
+                hint: 'Search farms...',
+              ),
             ),
-          ),
-          Expanded(
-            child: _loading
-                ? const ListLoadingSkeleton()
-                : _error != null
-                    ? Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(24),
-                          child: FriendlyErrorBanner(
-                            message: _error!,
-                            onRetry: _load,
+            Expanded(
+              child: _initialLoading
+                  ? const ListLoadingSkeleton()
+                  : _error != null && _farms.isEmpty
+                      ? Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: FriendlyErrorBanner(
+                              message: _error!,
+                              onRetry: () => _load(isRefresh: false),
+                            ),
                           ),
-                        ),
-                      )
-                : _farms.isEmpty
-                    ? const ShineEmptyState(
-                        icon: Icons.eco_outlined,
-                        title: 'No farms found',
-                      )
-                    : RefreshIndicator(
-                        onRefresh: _load,
-                        child: ListView.builder(
-                          padding: const EdgeInsets.all(16),
-                          physics: const AlwaysScrollableScrollPhysics(
-                            parent: BouncingScrollPhysics(),
-                          ),
-                          addRepaintBoundaries: true,
-                          itemCount: _farms.length,
-                          itemBuilder: (context, index) {
-                            return StaggeredListItem(
-                              index: index,
-                              child: FarmCard(
-                                farm: _farms[index],
-                                index: index,
-                                onTap: () => context.push(
-                                  AppRoutes.farmDetail.replaceFirst(
-                                    ':id',
-                                    _farms[index].id,
-                                  ),
+                        )
+                      : _farms.isEmpty
+                          ? const ShineEmptyState(
+                              icon: Icons.eco_outlined,
+                              title: 'No farms found',
+                            )
+                          : RefreshIndicator(
+                              onRefresh: () => _load(isRefresh: true),
+                              child: ListView.builder(
+                                padding: const EdgeInsets.all(16),
+                                physics: const AlwaysScrollableScrollPhysics(
+                                  parent: BouncingScrollPhysics(),
                                 ),
+                                addAutomaticKeepAlives: false,
+                                addRepaintBoundaries: true,
+                                itemCount: _farms.length,
+                                itemBuilder: (context, index) {
+                                  final farm = _farms[index];
+                                  return StaggeredListItem(
+                                    key: ValueKey(farm.id),
+                                    index: index,
+                                    child: FarmCard(
+                                      farm: farm,
+                                      index: index,
+                                      onTap: () => context.push(
+                                        AppRoutes.farmDetail.replaceFirst(
+                                          ':id',
+                                          farm.id,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
-                            );
-                          },
-                        ),
-                      ),
-          ),
-        ],
-      ),
+                            ),
+            ),
+          ],
+        ),
       ),
     );
   }

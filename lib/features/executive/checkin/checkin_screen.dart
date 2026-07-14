@@ -79,7 +79,10 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
       if (!sameFarm || !sameDay) {
         await ref.read(visitRepositoryProvider).cancelVisit(ongoing.id);
       }
-    } catch (_) {}
+    } catch (e) {
+      // Non-fatal cleanup — keep going into check-in.
+      debugPrint('Stale visit cleanup skipped: $e');
+    }
   }
 
   Future<void> _cancelActiveVisit() async {
@@ -87,7 +90,18 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
     _cancelling = true;
     try {
       await ref.read(visitRepositoryProvider).cancelVisit(_visit!.id);
-    } catch (_) {}
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Could not cancel visit: ${formatApiError(e)}',
+            ),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
     _cancelling = false;
   }
 
@@ -224,7 +238,9 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
             visitId: _visit!.id,
             formAnswers: entries,
           );
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('Autosave visit form failed: $e');
+    }
   }
 
   RecordConfig get _voiceRecordConfig {

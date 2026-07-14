@@ -7,6 +7,7 @@ import '../../core/network/dio_client.dart';
 import '../../data/models/enums.dart';
 import '../../data/models/user.dart';
 import '../../data/repositories/auth_repository.dart';
+import '../services/notification_service.dart';
 import 'repository_providers.dart';
 
 const _sessionKey = 'auth_session';
@@ -77,6 +78,9 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthSession?>> {
     await prefs.remove(_sessionKey);
     _dio.updateToken(null);
     state = const AsyncValue.data(null);
+    try {
+      await NotificationService.instance.clearAll();
+    } catch (_) {}
   }
 
   Future<void> _persistSession(AuthSession session) async {
@@ -113,6 +117,9 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthSession?>> {
     await prefs.remove(_sessionKey);
     _dio.updateToken(null);
     state = const AsyncValue.data(null);
+    try {
+      await NotificationService.instance.clearAll();
+    } catch (_) {}
   }
 
   Future<void> requestPasswordReset(String employeeId) =>

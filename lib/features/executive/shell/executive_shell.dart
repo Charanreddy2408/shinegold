@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -9,6 +11,7 @@ import '../my_visits/my_visits_screen.dart';
 import '../onboard_farm/onboard_farm_screen.dart';
 import '../profile/executive_profile_screen.dart';
 import '../../../shared/providers/auth_provider.dart';
+import '../../../shared/providers/harvest_reminder_provider.dart';
 import '../../../shared/providers/location_provider.dart';
 
 class ExecutiveShell extends ConsumerStatefulWidget {
@@ -24,7 +27,10 @@ class _ExecutiveShellState extends ConsumerState<ExecutiveShell> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _bootstrapLocation());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(_bootstrapLocation());
+      unawaited(ref.read(harvestReminderSyncProvider).sync());
+    });
   }
 
   Future<void> _bootstrapLocation() async {

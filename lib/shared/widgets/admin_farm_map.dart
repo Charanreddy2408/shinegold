@@ -43,7 +43,7 @@ class _AdminIndiaFarmMapState extends State<AdminIndiaFarmMap>
     super.initState();
     _pulseController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1800),
+      duration: const Duration(milliseconds: 2400),
     )..repeat(reverse: true);
     _loadMap();
   }

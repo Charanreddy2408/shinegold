@@ -12,6 +12,7 @@ import '../../../shared/providers/app_refresh_provider.dart';
 import '../../../shared/providers/auth_provider.dart';
 import '../../../shared/providers/location_provider.dart';
 import '../../../shared/providers/repository_providers.dart';
+import '../../../shared/utils/async_ui.dart';
 import '../../../shared/utils/location_coords.dart';
 import '../../../shared/widgets/animated_loading.dart';
 import '../../../shared/widgets/app_background.dart';
@@ -29,9 +30,12 @@ class FarmsScreen extends ConsumerStatefulWidget {
 
 class _FarmsScreenState extends ConsumerState<FarmsScreen> {
   final _searchController = TextEditingController();
+  final _searchDebounce = Debouncer();
+  final _loadGen = LoadGeneration();
   FarmFilter _filter = const FarmFilter();
   List<Farm> _farms = [];
-  bool _loading = true;
+  bool _initialLoading = true;
+  bool _refreshing = false;
   String? _error;
 
   @override
@@ -39,27 +43,35 @@ class _FarmsScreenState extends ConsumerState<FarmsScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await ref.read(locationProvider.notifier).requestLocation();
-      if (mounted) _loadFarms();
+      if (mounted) _loadFarms(isRefresh: false);
     });
     _searchController.addListener(_onSearchChanged);
   }
 
   void _onSearchChanged() {
-    _loadFarms();
+    _searchDebounce.run(() => _loadFarms(isRefresh: _farms.isNotEmpty));
   }
 
   @override
   void dispose() {
     _searchController.removeListener(_onSearchChanged);
+    _searchDebounce.dispose();
     _searchController.dispose();
     super.dispose();
   }
 
-  Future<void> _loadFarms() async {
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
+  Future<void> _loadFarms({bool isRefresh = true}) async {
+    final gen = _loadGen.next();
+    if (mounted) {
+      setState(() {
+        if (_farms.isEmpty) {
+          _initialLoading = true;
+        } else {
+          _refreshing = true;
+        }
+        _error = null;
+      });
+    }
     try {
       final loc = ref.read(locationProvider);
       final user = ref.read(currentUserProvider);
@@ -67,25 +79,25 @@ class _FarmsScreenState extends ConsumerState<FarmsScreen> {
         devicePosition: loc.position,
         user: user,
       );
-      var filter = _filter.copyWith(search: _searchController.text);
+      final filter = _filter.copyWith(search: _searchController.text);
       final farms = await ref.read(farmRepositoryProvider).getFarms(
             filter,
             userLat: coords.latitude,
             userLng: coords.longitude,
           );
-      if (mounted) {
-        setState(() {
-          _farms = farms;
-          _loading = false;
-        });
-      }
+      if (!mounted || !_loadGen.isCurrent(gen)) return;
+      setState(() {
+        _farms = farms;
+        _initialLoading = false;
+        _refreshing = false;
+      });
     } catch (e) {
-      if (mounted) {
-        setState(() {
-          _loading = false;
-          _error = _formatError(e);
-        });
-      }
+      if (!mounted || !_loadGen.isCurrent(gen)) return;
+      setState(() {
+        _initialLoading = false;
+        _refreshing = false;
+        _error = _formatError(e);
+      });
     }
   }
 
@@ -98,7 +110,7 @@ class _FarmsScreenState extends ConsumerState<FarmsScreen> {
         clearQuickFilter: filter == null,
       );
     });
-    _loadFarms();
+    _loadFarms(isRefresh: _farms.isNotEmpty);
   }
 
   Future<void> _showFilters() async {
@@ -171,7 +183,7 @@ class _FarmsScreenState extends ConsumerState<FarmsScreen> {
                         child: FilledButton(
                           onPressed: () {
                             Navigator.pop(ctx);
-                            _loadFarms();
+                            _loadFarms(isRefresh: _farms.isNotEmpty);
                           },
                           child: const Text('Apply'),
                         ),
@@ -201,7 +213,9 @@ class _FarmsScreenState extends ConsumerState<FarmsScreen> {
   @override
   Widget build(BuildContext context) {
     ref.listen<int>(appRefreshProvider, (previous, next) {
-      if (previous != null && previous != next) _loadFarms();
+      if (previous != null && previous != next) {
+        _loadFarms(isRefresh: true);
+      }
     });
 
     final loc = ref.watch(locationProvider);
@@ -216,7 +230,9 @@ class _FarmsScreenState extends ConsumerState<FarmsScreen> {
     return AppBackground(
       header: GradientHeader(
         title: 'Farms',
-        subtitle: _loading ? 'Loading...' : '${_farms.length} assigned farms',
+        subtitle: _initialLoading
+            ? 'Loading...'
+            : '${_farms.length} assigned farms',
         compact: true,
         trailing: IconButton(
           tooltip: 'Nearby unassigned farms',
@@ -227,6 +243,7 @@ class _FarmsScreenState extends ConsumerState<FarmsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          SoftRefreshBar(visible: _refreshing),
           if (showLocationBanner)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
@@ -235,7 +252,7 @@ class _FarmsScreenState extends ConsumerState<FarmsScreen> {
                 icon: Icons.location_off_outlined,
                 onRetry: () async {
                   await ref.read(locationProvider.notifier).requestLocation();
-                  if (mounted) _loadFarms();
+                  if (mounted) _loadFarms(isRefresh: true);
                 },
               ),
             ),
@@ -271,14 +288,14 @@ class _FarmsScreenState extends ConsumerState<FarmsScreen> {
           ),
           const SizedBox(height: 4),
           Expanded(
-            child: _loading
+            child: _initialLoading
                 ? const ListLoadingSkeleton()
-                : _error != null
+                : _error != null && _farms.isEmpty
                     ? Padding(
                         padding: const EdgeInsets.all(16),
                         child: FriendlyErrorBanner(
                           message: _error!,
-                          onRetry: _loadFarms,
+                          onRetry: () => _loadFarms(isRefresh: false),
                         ),
                       )
                     : _farms.isEmpty
@@ -291,7 +308,7 @@ class _FarmsScreenState extends ConsumerState<FarmsScreen> {
                               onPressed: () {
                                 _searchController.clear();
                                 setState(() => _filter = const FarmFilter());
-                                _loadFarms();
+                                _loadFarms(isRefresh: false);
                               },
                             ),
                           )

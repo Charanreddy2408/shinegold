@@ -9,8 +9,8 @@ import '../../../shared/providers/repository_providers.dart';
 import '../../../shared/utils/list_search.dart';
 import '../../../shared/widgets/ux_components.dart';
 import '../../../shared/widgets/admin_ui.dart';
+import '../../../shared/widgets/animated_loading.dart';
 import '../../../shared/widgets/app_background.dart';
-import '../../../shared/widgets/gold_shimmer.dart';
 import '../../../shared/widgets/shine_empty_state.dart';
 import 'admin_executive_profile_screen.dart';
 
@@ -30,7 +30,6 @@ class _ExecutivesScreenState extends ConsumerState<ExecutivesScreen> {
   @override
   void initState() {
     super.initState();
-    _searchController.addListener(() => setState(() {}));
     _load();
   }
 
@@ -131,11 +130,7 @@ class _ExecutivesScreenState extends ConsumerState<ExecutivesScreen> {
       },
     );
 
-    empId.dispose();
-    name.dispose();
-    mobile.dispose();
-    address.dispose();
-    password.dispose();
+    disposeSheetControllers([empId, name, mobile, address, password]);
 
     if (created == true && mounted) {
       await _load();
@@ -181,18 +176,12 @@ class _ExecutivesScreenState extends ConsumerState<ExecutivesScreen> {
               child: ShineSearchBar(
                 controller: _searchController,
                 hint: 'Search by name, ID, or mobile...',
+                onChanged: (_) => setState(() {}),
               ),
             ),
           Expanded(
             child: _loading
-                ? ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: 4,
-                    itemBuilder: (_, __) => const Padding(
-                      padding: EdgeInsets.only(bottom: 12),
-                      child: ShimmerBox(height: 88),
-                    ),
-                  )
+                ? const ListLoadingSkeleton(itemCount: 5, itemHeight: 88)
                 : _error != null
                     ? Center(
                         child: Padding(
@@ -221,12 +210,14 @@ class _ExecutivesScreenState extends ConsumerState<ExecutivesScreen> {
                           physics: const AlwaysScrollableScrollPhysics(
                             parent: BouncingScrollPhysics(),
                           ),
+                          addAutomaticKeepAlives: false,
                           itemCount: filtered.length,
                           itemBuilder: (context, index) {
                             final exec = filtered[index];
                             final photo = exec.profilePhotoUrl ??
                                 'https://i.pravatar.cc/150?u=${exec.employeeId}';
                             return StaggeredListItem(
+                              key: ValueKey(exec.id),
                               index: index,
                               child: Padding(
                                 padding: const EdgeInsets.only(bottom: 12),

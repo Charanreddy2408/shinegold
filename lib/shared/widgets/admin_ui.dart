@@ -32,6 +32,19 @@ Future<T?> showAdminFormSheet<T>({
   );
 }
 
+/// Dispose text controllers after the bottom sheet has finished unmounting.
+/// Calling [TextEditingController.dispose] immediately causes rebuild crashes
+/// while the sheet / keyboard is still animating closed.
+void disposeSheetControllers(Iterable<TextEditingController> controllers) {
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    Future<void>.delayed(const Duration(milliseconds: 350), () {
+      for (final controller in controllers) {
+        controller.dispose();
+      }
+    });
+  });
+}
+
 class _AdminFormSheet extends StatefulWidget {
   const _AdminFormSheet({
     required this.title,
@@ -61,6 +74,10 @@ class _AdminFormSheetState extends State<_AdminFormSheet> {
     setState(() => _submitting = true);
     try {
       await widget.onSubmit();
+      if (!mounted) return;
+      // Unfocus before pop so IME hide doesn't rebuild disposed fields.
+      FocusManager.instance.primaryFocus?.unfocus();
+      await Future<void>.delayed(const Duration(milliseconds: 80));
       if (!mounted) return;
       Navigator.of(context).pop(true);
     } catch (e) {

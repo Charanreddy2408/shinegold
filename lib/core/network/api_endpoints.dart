@@ -59,6 +59,7 @@ class ApiEndpoints {
 
   // Harvests
   static const harvestsCalendar = '$_v1/harvests/calendar';
+  static const harvestsReminders = '$_v1/harvests/reminders';
 
   static const health = '/health';
 }
