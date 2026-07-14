@@ -224,7 +224,8 @@ class _AdminFormSheetState extends State<_AdminFormSheet> {
 }
 
 /// Polished admin form field with icon and filled style.
-class AdminFormField extends StatelessWidget {
+/// When [obscureText] is true, shows a visibility eye toggle.
+class AdminFormField extends StatefulWidget {
   const AdminFormField({
     super.key,
     required this.controller,
@@ -243,17 +244,38 @@ class AdminFormField extends StatelessWidget {
   final String? hint;
 
   @override
+  State<AdminFormField> createState() => _AdminFormFieldState();
+}
+
+class _AdminFormFieldState extends State<AdminFormField> {
+  late bool _obscured;
+
+  @override
+  void initState() {
+    super.initState();
+    _obscured = widget.obscureText;
+  }
+
+  @override
+  void didUpdateWidget(covariant AdminFormField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.obscureText != widget.obscureText && widget.obscureText) {
+      _obscured = true;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return TextField(
-      controller: controller,
-      obscureText: obscureText,
-      keyboardType: keyboardType,
+      controller: widget.controller,
+      obscureText: widget.obscureText && _obscured,
+      keyboardType: widget.keyboardType,
       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
             fontWeight: FontWeight.w600,
           ),
       decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
+        labelText: widget.label,
+        hintText: widget.hint,
         prefixIcon: Container(
           margin: const EdgeInsets.all(10),
           padding: const EdgeInsets.all(8),
@@ -261,9 +283,21 @@ class AdminFormField extends StatelessWidget {
             color: AppColors.primary.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(icon, color: AppColors.primaryDark, size: 20),
+          child: Icon(widget.icon, color: AppColors.primaryDark, size: 20),
         ),
         prefixIconConstraints: const BoxConstraints(minWidth: 56, minHeight: 48),
+        suffixIcon: widget.obscureText
+            ? IconButton(
+                tooltip: _obscured ? 'Show password' : 'Hide password',
+                icon: Icon(
+                  _obscured
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility_outlined,
+                  color: AppColors.textMuted,
+                ),
+                onPressed: () => setState(() => _obscured = !_obscured),
+              )
+            : null,
         filled: true,
         fillColor: AppColors.canvasDeep,
         border: OutlineInputBorder(

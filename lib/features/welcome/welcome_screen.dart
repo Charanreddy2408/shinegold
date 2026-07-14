@@ -27,17 +27,20 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
   late final AnimationController _progressController;
   late final AnimationController _shimmerController;
   late final AnimationController _floatController;
+  late final AnimationController _exitController;
 
   late final Animation<double> _logoScale;
   late final Animation<double> _logoOpacity;
   late final Animation<double> _titleOpacity;
   late final Animation<double> _titleSlide;
   late final Animation<double> _taglineOpacity;
+  late final Animation<double> _taglineSlide;
   late final Animation<double> _footerOpacity;
+  late final Animation<double> _progressEase;
 
   bool _navigated = false;
 
-  static const _splashDuration = Duration(milliseconds: 5200);
+  static const _splashDuration = Duration(milliseconds: 4800);
 
   @override
   void initState() {
@@ -45,62 +48,75 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
 
     _orbitController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 16),
+      duration: const Duration(seconds: 22),
     )..repeat();
 
     _pulseController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2400),
+      duration: const Duration(milliseconds: 3200),
     )..repeat(reverse: true);
 
     _floatController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 3200),
+      duration: const Duration(milliseconds: 4200),
     )..repeat(reverse: true);
 
     _shimmerController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2800),
+      duration: const Duration(milliseconds: 3600),
     )..repeat();
 
     _entranceController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1600),
+      duration: const Duration(milliseconds: 2100),
     )..forward();
+
+    _exitController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 420),
+    );
+
+    const ease = Curves.easeOutCubic;
+    const soft = Curves.easeInOutCubic;
 
     _logoScale = CurvedAnimation(
       parent: _entranceController,
-      curve: const Interval(0.0, 0.55, curve: Curves.easeOutBack),
+      curve: const Interval(0.0, 0.55, curve: Curves.easeOutQuint),
     );
-    // Floor at 0.15 so logo never fully disappears if frames skip.
-    _logoOpacity = Tween<double>(begin: 0.15, end: 1).animate(
+    _logoOpacity = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
         parent: _entranceController,
-        curve: const Interval(0.0, 0.4, curve: Curves.easeOut),
+        curve: const Interval(0.0, 0.42, curve: ease),
       ),
     );
-    _titleOpacity = Tween<double>(begin: 0.2, end: 1).animate(
+    _titleOpacity = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
         parent: _entranceController,
-        curve: const Interval(0.35, 0.7, curve: Curves.easeOut),
+        curve: const Interval(0.28, 0.68, curve: ease),
       ),
     );
-    _titleSlide = Tween<double>(begin: 18, end: 0).animate(
+    _titleSlide = Tween<double>(begin: 28, end: 0).animate(
       CurvedAnimation(
         parent: _entranceController,
-        curve: const Interval(0.35, 0.75, curve: Curves.easeOutCubic),
+        curve: const Interval(0.28, 0.72, curve: Curves.easeOutQuint),
       ),
     );
-    _taglineOpacity = Tween<double>(begin: 0.15, end: 1).animate(
+    _taglineOpacity = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
         parent: _entranceController,
-        curve: const Interval(0.55, 0.9, curve: Curves.easeOut),
+        curve: const Interval(0.48, 0.88, curve: soft),
       ),
     );
-    _footerOpacity = Tween<double>(begin: 0.3, end: 1).animate(
+    _taglineSlide = Tween<double>(begin: 16, end: 0).animate(
       CurvedAnimation(
         parent: _entranceController,
-        curve: const Interval(0.65, 1.0, curve: Curves.easeOut),
+        curve: const Interval(0.48, 0.9, curve: ease),
+      ),
+    );
+    _footerOpacity = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(
+        parent: _entranceController,
+        curve: const Interval(0.62, 1.0, curve: soft),
       ),
     );
 
@@ -108,6 +124,11 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
       vsync: this,
       duration: _splashDuration,
     )..forward();
+
+    _progressEase = CurvedAnimation(
+      parent: _progressController,
+      curve: Curves.easeInOutCubic,
+    );
 
     _progressController.addStatusListener((status) {
       if (status == AnimationStatus.completed) _goNext();
@@ -122,6 +143,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
     _progressController.dispose();
     _shimmerController.dispose();
     _floatController.dispose();
+    _exitController.dispose();
     super.dispose();
   }
 
@@ -129,8 +151,12 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
     if (_navigated || !mounted) return;
     _navigated = true;
 
+    try {
+      await _exitController.forward();
+    } catch (_) {}
+
     while (ref.read(authProvider).isLoading && mounted) {
-      await Future<void>.delayed(const Duration(milliseconds: 50));
+      await Future<void>.delayed(const Duration(milliseconds: 40));
     }
     if (!mounted) return;
 
@@ -160,369 +186,381 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
       onTap: _goNext,
       behavior: HitTestBehavior.opaque,
       child: Scaffold(
-        body: Container(
-          width: double.infinity,
-          height: double.infinity,
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Color(0xFFFFFBF2),
-                Color(0xFFFFF0C8),
-                Color(0xFFE4F7EC),
-                Color(0xFFD8F0E4),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              stops: [0.0, 0.35, 0.7, 1.0],
-            ),
-          ),
-          child: Stack(
-            children: [
-              // Ambient drifting blobs
-              AnimatedBuilder(
-                animation: Listenable.merge([
-                  _floatController,
-                  _orbitController,
-                ]),
-                builder: (context, _) {
-                  final t = _floatController.value;
-                  final o = _orbitController.value * 2 * math.pi;
-                  return Stack(
-                    children: [
-                      Positioned(
-                        top: -60 + t * 24,
-                        right: -40 + math.sin(o) * 18,
-                        child: _SoftBlob(
-                          size: size.width * 0.55,
-                          color: AppColors.primary.withValues(alpha: 0.22),
-                        ),
-                      ),
-                      Positioned(
-                        bottom: -80 - t * 20,
-                        left: -50 + math.cos(o) * 16,
-                        child: _SoftBlob(
-                          size: size.width * 0.6,
-                          color: AppColors.secondary.withValues(alpha: 0.18),
-                        ),
-                      ),
-                      Positioned(
-                        top: size.height * 0.38,
-                        left: -30 + math.sin(o * 1.3) * 28,
-                        child: _SoftBlob(
-                          size: 140,
-                          color: AppColors.primaryBright
-                              .withValues(alpha: 0.12),
-                        ),
-                      ),
-                    ],
-                  );
-                },
+        body: AnimatedBuilder(
+          animation: _exitController,
+          builder: (context, child) {
+            final exitT = Curves.easeInCubic.transform(_exitController.value);
+            return Opacity(
+              opacity: 1 - exitT,
+              child: Transform.scale(
+                scale: 1 - exitT * 0.04,
+                child: child,
               ),
-
-              // Floating grain particles
-              Positioned.fill(
-                child: AnimatedBuilder(
-                  animation: _orbitController,
+            );
+          },
+          child: Container(
+            width: double.infinity,
+            height: double.infinity,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Color(0xFFFFFBF2),
+                  Color(0xFFFFF0C8),
+                  Color(0xFFE4F7EC),
+                  Color(0xFFD8F0E4),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                stops: [0.0, 0.35, 0.7, 1.0],
+              ),
+            ),
+            child: Stack(
+              children: [
+                AnimatedBuilder(
+                  animation: Listenable.merge([
+                    _floatController,
+                    _orbitController,
+                  ]),
                   builder: (context, _) {
-                    return CustomPaint(
-                      painter: _ParticleFieldPainter(
-                        progress: _orbitController.value,
-                      ),
+                    final t = Curves.easeInOutSine.transform(
+                      _floatController.value,
+                    );
+                    final o = _orbitController.value * 2 * math.pi;
+                    return Stack(
+                      children: [
+                        Positioned(
+                          top: -60 + t * 18,
+                          right: -40 + math.sin(o) * 12,
+                          child: _SoftBlob(
+                            size: size.width * 0.55,
+                            color: AppColors.primary.withValues(alpha: 0.2),
+                          ),
+                        ),
+                        Positioned(
+                          bottom: -80 - t * 14,
+                          left: -50 + math.cos(o) * 12,
+                          child: _SoftBlob(
+                            size: size.width * 0.6,
+                            color: AppColors.secondary.withValues(alpha: 0.16),
+                          ),
+                        ),
+                        Positioned(
+                          top: size.height * 0.38,
+                          left: -30 + math.sin(o * 1.2) * 20,
+                          child: _SoftBlob(
+                            size: 140,
+                            color: AppColors.primaryBright
+                                .withValues(alpha: 0.1),
+                          ),
+                        ),
+                      ],
                     );
                   },
                 ),
-              ),
+                Positioned.fill(
+                  child: AnimatedBuilder(
+                    animation: _orbitController,
+                    builder: (context, _) {
+                      return CustomPaint(
+                        painter: _ParticleFieldPainter(
+                          progress: _orbitController.value,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                SafeArea(
+                  child: Column(
+                    children: [
+                      const Spacer(flex: 2),
+                      AnimatedBuilder(
+                        animation: Listenable.merge([
+                          _entranceController,
+                          _pulseController,
+                          _orbitController,
+                          _floatController,
+                        ]),
+                        builder: (context, _) {
+                          final pulse = Curves.easeInOutSine.transform(
+                            _pulseController.value,
+                          );
+                          final floatY =
+                              (Curves.easeInOutSine.transform(
+                                        _floatController.value,
+                                      ) -
+                                      0.5) *
+                                  8;
+                          final scale =
+                              (0.86 + _logoScale.value * 0.14) *
+                              (1.0 + pulse * 0.022);
 
-              SafeArea(
-                child: Column(
-                  children: [
-                    const Spacer(flex: 2),
-
-                    // Logo stage
-                    AnimatedBuilder(
-                      animation: Listenable.merge([
-                        _entranceController,
-                        _pulseController,
-                        _orbitController,
-                        _floatController,
-                      ]),
-                      builder: (context, _) {
-                        final pulse = _pulseController.value;
-                        final floatY = (_floatController.value - 0.5) * 10;
-                        final scale =
-                            (0.88 + _logoScale.value * 0.12) *
-                            (1.0 + pulse * 0.035);
-
-                        return Transform.translate(
-                          offset: Offset(0, floatY),
-                          child: Opacity(
-                            opacity: _logoOpacity.value,
-                            child: Transform.scale(
-                              scale: scale,
-                              child: SizedBox(
-                                width: 300,
-                                height: 300,
-                                child: Stack(
-                                  alignment: Alignment.center,
-                                  children: [
-                                    // Outer ring
-                                    CustomPaint(
-                                      size: const Size(300, 300),
-                                      painter: _OrbitRingPainter(
-                                        rotation:
-                                            _orbitController.value * 2 * math.pi,
-                                        pulse: pulse,
+                          return Transform.translate(
+                            offset: Offset(0, floatY),
+                            child: Opacity(
+                              opacity: _logoOpacity.value,
+                              child: Transform.scale(
+                                scale: scale,
+                                child: SizedBox(
+                                  width: 300,
+                                  height: 300,
+                                  child: Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      CustomPaint(
+                                        size: const Size(300, 300),
+                                        painter: _OrbitRingPainter(
+                                          rotation: _orbitController.value *
+                                              2 *
+                                              math.pi,
+                                          pulse: pulse,
+                                        ),
                                       ),
-                                    ),
-                                    // Sun rays
-                                    CustomPaint(
-                                      size: const Size(280, 280),
-                                      painter: _SunRaysPainter(
-                                        rotation: _orbitController.value *
-                                            2 *
-                                            math.pi,
-                                        intensity: 0.55 + pulse * 0.45,
+                                      CustomPaint(
+                                        size: const Size(280, 280),
+                                        painter: _SunRaysPainter(
+                                          rotation: _orbitController.value *
+                                              2 *
+                                              math.pi,
+                                          intensity: 0.5 + pulse * 0.35,
+                                        ),
                                       ),
+                                      Container(
+                                        width: 186 + pulse * 12,
+                                        height: 186 + pulse * 12,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: AppColors.primary
+                                                  .withValues(
+                                                alpha: 0.22 + pulse * 0.14,
+                                              ),
+                                              blurRadius: 36 + pulse * 14,
+                                              spreadRadius: 4 + pulse * 4,
+                                            ),
+                                            BoxShadow(
+                                              color: AppColors.secondary
+                                                  .withValues(
+                                                alpha: 0.12 + pulse * 0.1,
+                                              ),
+                                              blurRadius: 24,
+                                              spreadRadius: 1,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const ShineLogo(size: 168),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: AppSpacing.xl),
+                      AnimatedBuilder(
+                        animation: Listenable.merge([
+                          _entranceController,
+                          _shimmerController,
+                        ]),
+                        builder: (context, _) {
+                          return Transform.translate(
+                            offset: Offset(0, _titleSlide.value),
+                            child: Opacity(
+                              opacity: _titleOpacity.value,
+                              child: Column(
+                                children: [
+                                  ShaderMask(
+                                    blendMode: BlendMode.srcIn,
+                                    shaderCallback: (bounds) {
+                                      final t = Curves.easeInOutSine.transform(
+                                        _shimmerController.value,
+                                      );
+                                      return LinearGradient(
+                                        begin: Alignment(-1.2 + t * 2.4, 0),
+                                        end: Alignment(-0.2 + t * 2.4, 0),
+                                        colors: const [
+                                          AppColors.primaryDark,
+                                          AppColors.primaryBright,
+                                          AppColors.secondary,
+                                          AppColors.primaryDark,
+                                        ],
+                                        stops: const [0.0, 0.35, 0.55, 1.0],
+                                      ).createShader(bounds);
+                                    },
+                                    child: Text(
+                                      'SHINE GOLD',
+                                      textAlign: TextAlign.center,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .headlineMedium
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w900,
+                                            letterSpacing: 3.5,
+                                            fontSize: 32,
+                                            height: 1.1,
+                                            color: Colors.white,
+                                          ),
                                     ),
-                                    // Glow halo
-                                    Container(
-                                      width: 190 + pulse * 18,
-                                      height: 190 + pulse * 18,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: AppColors.primary
-                                                .withValues(
-                                              alpha: 0.28 + pulse * 0.22,
-                                            ),
-                                            blurRadius: 42 + pulse * 20,
-                                            spreadRadius: 6 + pulse * 6,
-                                          ),
-                                          BoxShadow(
-                                            color: AppColors.secondary
-                                                .withValues(
-                                              alpha: 0.16 + pulse * 0.14,
-                                            ),
-                                            blurRadius: 28,
-                                            spreadRadius: 2,
-                                          ),
+                                  ),
+                                  const SizedBox(height: AppSpacing.sm),
+                                  Container(
+                                    width: 40 + _titleOpacity.value * 44,
+                                    height: 3,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(2),
+                                      gradient: const LinearGradient(
+                                        colors: [
+                                          AppColors.primary,
+                                          AppColors.secondary,
                                         ],
                                       ),
                                     ),
-                                    const ShineLogo(size: 168),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      AnimatedBuilder(
+                        animation: _entranceController,
+                        builder: (context, _) {
+                          return Transform.translate(
+                            offset: Offset(0, _taglineSlide.value),
+                            child: Opacity(
+                              opacity: _taglineOpacity.value,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.xxxl,
+                                ),
+                                child: Column(
+                                  children: [
+                                    Text(
+                                      'ORGANIC AGRO INVENTION',
+                                      textAlign: TextAlign.center,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelLarge
+                                          ?.copyWith(
+                                            color: AppColors.primaryDark,
+                                            letterSpacing: 2.4,
+                                            fontWeight: FontWeight.w800,
+                                          ),
+                                    ),
+                                    const SizedBox(height: AppSpacing.sm),
+                                    Text(
+                                      'Field intelligence for a greener harvest',
+                                      textAlign: TextAlign.center,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.copyWith(
+                                            color: AppColors.textSecondary,
+                                            fontWeight: FontWeight.w500,
+                                            height: 1.35,
+                                          ),
+                                    ),
                                   ],
                                 ),
                               ),
                             ),
-                          ),
-                        );
-                      },
-                    ),
-
-                    const SizedBox(height: AppSpacing.xl),
-
-                    // Brand name with shimmer sweep
-                    AnimatedBuilder(
-                      animation: Listenable.merge([
-                        _entranceController,
-                        _shimmerController,
-                      ]),
-                      builder: (context, _) {
-                        return Transform.translate(
-                          offset: Offset(0, _titleSlide.value),
-                          child: Opacity(
-                            opacity: _titleOpacity.value,
-                            child: Column(
-                              children: [
-                                ShaderMask(
-                                  blendMode: BlendMode.srcIn,
-                                  shaderCallback: (bounds) {
-                                    final t = _shimmerController.value;
-                                    return LinearGradient(
-                                      begin: Alignment(-1.2 + t * 2.4, 0),
-                                      end: Alignment(-0.2 + t * 2.4, 0),
-                                      colors: const [
-                                        AppColors.primaryDark,
-                                        AppColors.primaryBright,
-                                        AppColors.secondary,
-                                        AppColors.primaryDark,
-                                      ],
-                                      stops: const [0.0, 0.35, 0.55, 1.0],
-                                    ).createShader(bounds);
-                                  },
-                                  child: Text(
-                                    'SHINE GOLD',
-                                    textAlign: TextAlign.center,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .headlineMedium
-                                        ?.copyWith(
-                                          fontWeight: FontWeight.w900,
-                                          letterSpacing: 3.5,
-                                          fontSize: 32,
-                                          height: 1.1,
-                                          color: Colors.white,
+                          );
+                        },
+                      ),
+                      const Spacer(flex: 3),
+                      AnimatedBuilder(
+                        animation: Listenable.merge([
+                          _entranceController,
+                          _progressEase,
+                          _pulseController,
+                        ]),
+                        builder: (context, _) {
+                          final pulse = Curves.easeInOutSine.transform(
+                            _pulseController.value,
+                          );
+                          return Opacity(
+                            opacity: _footerOpacity.value,
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(
+                                AppSpacing.xxxl,
+                                0,
+                                AppSpacing.xxxl,
+                                AppSpacing.xxl,
+                              ),
+                              child: Column(
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(6),
+                                    child: Stack(
+                                      children: [
+                                        LinearProgressIndicator(
+                                          value: _progressEase.value,
+                                          minHeight: 5,
+                                          backgroundColor: AppColors.primarySoft
+                                              .withValues(alpha: 0.55),
+                                          color: AppColors.primary,
                                         ),
-                                  ),
-                                ),
-                                const SizedBox(height: AppSpacing.sm),
-                                Container(
-                                  width: 56 + _titleOpacity.value * 28,
-                                  height: 3,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(2),
-                                    gradient: const LinearGradient(
-                                      colors: [
-                                        AppColors.primary,
-                                        AppColors.secondary,
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-
-                    const SizedBox(height: AppSpacing.md),
-
-                    AnimatedBuilder(
-                      animation: _entranceController,
-                      builder: (context, _) {
-                        return Opacity(
-                          opacity: _taglineOpacity.value,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.xxxl,
-                            ),
-                            child: Column(
-                              children: [
-                                Text(
-                                  'ORGANIC AGRO INVENTION',
-                                  textAlign: TextAlign.center,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .labelLarge
-                                      ?.copyWith(
-                                        color: AppColors.primaryDark,
-                                        letterSpacing: 2.4,
-                                        fontWeight: FontWeight.w800,
-                                      ),
-                                ),
-                                const SizedBox(height: AppSpacing.sm),
-                                Text(
-                                  'Field intelligence for a greener harvest',
-                                  textAlign: TextAlign.center,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyMedium
-                                      ?.copyWith(
-                                        color: AppColors.textSecondary,
-                                        fontWeight: FontWeight.w500,
-                                        height: 1.35,
-                                      ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-
-                    const Spacer(flex: 3),
-
-                    // Footer progress + hint
-                    AnimatedBuilder(
-                      animation: Listenable.merge([
-                        _entranceController,
-                        _progressController,
-                        _pulseController,
-                      ]),
-                      builder: (context, _) {
-                        final pulse = _pulseController.value;
-                        return Opacity(
-                          opacity: _footerOpacity.value,
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(
-                              AppSpacing.xxxl,
-                              0,
-                              AppSpacing.xxxl,
-                              AppSpacing.xxl,
-                            ),
-                            child: Column(
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(6),
-                                  child: Stack(
-                                    children: [
-                                      LinearProgressIndicator(
-                                        value: _progressController.value,
-                                        minHeight: 5,
-                                        backgroundColor: AppColors.primarySoft
-                                            .withValues(alpha: 0.55),
-                                        color: AppColors.primary,
-                                      ),
-                                      Positioned.fill(
-                                        child: Align(
-                                          alignment: Alignment(
-                                            -1 +
-                                                _progressController.value * 2,
-                                            0,
-                                          ),
-                                          child: Container(
-                                            width: 28,
-                                            height: 5,
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(6),
-                                              gradient: LinearGradient(
-                                                colors: [
-                                                  Colors.white.withValues(
-                                                    alpha: 0,
-                                                  ),
-                                                  Colors.white.withValues(
-                                                    alpha: 0.55,
-                                                  ),
-                                                  Colors.white.withValues(
-                                                    alpha: 0,
-                                                  ),
-                                                ],
+                                        Positioned.fill(
+                                          child: Align(
+                                            alignment: Alignment(
+                                              -1 + _progressEase.value * 2,
+                                              0,
+                                            ),
+                                            child: Container(
+                                              width: 32,
+                                              height: 5,
+                                              decoration: BoxDecoration(
+                                                borderRadius:
+                                                    BorderRadius.circular(6),
+                                                gradient: LinearGradient(
+                                                  colors: [
+                                                    Colors.white.withValues(
+                                                      alpha: 0,
+                                                    ),
+                                                    Colors.white.withValues(
+                                                      alpha: 0.5,
+                                                    ),
+                                                    Colors.white.withValues(
+                                                      alpha: 0,
+                                                    ),
+                                                  ],
+                                                ),
                                               ),
                                             ),
                                           ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: AppSpacing.md),
-                                Opacity(
-                                  opacity: 0.55 + pulse * 0.45,
-                                  child: Text(
-                                    'Tap anywhere to continue',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .labelSmall
-                                        ?.copyWith(
-                                          color: AppColors.textMuted,
-                                          fontWeight: FontWeight.w600,
-                                          letterSpacing: 0.4,
-                                        ),
+                                  const SizedBox(height: AppSpacing.md),
+                                  Opacity(
+                                    opacity: 0.5 + pulse * 0.5,
+                                    child: Text(
+                                      'Tap anywhere to continue',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall
+                                          ?.copyWith(
+                                            color: AppColors.textMuted,
+                                            fontWeight: FontWeight.w600,
+                                            letterSpacing: 0.4,
+                                          ),
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
-                        );
-                      },
-                    ),
-                  ],
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -571,12 +609,12 @@ class _SunRaysPainter extends CustomPainter {
         ..shader = LinearGradient(
           colors: [
             AppColors.primaryBright.withValues(alpha: 0),
-            AppColors.primary.withValues(alpha: 0.22 * intensity),
-            AppColors.secondary.withValues(alpha: 0.28 * intensity),
+            AppColors.primary.withValues(alpha: 0.18 * intensity),
+            AppColors.secondary.withValues(alpha: 0.24 * intensity),
           ],
           stops: const [0.0, 0.45, 1.0],
         ).createShader(Rect.fromCircle(center: center, radius: radius))
-        ..strokeWidth = long ? 3.5 : 2.2
+        ..strokeWidth = long ? 3.2 : 2
         ..strokeCap = StrokeCap.round
         ..style = PaintingStyle.stroke;
 
@@ -610,21 +648,20 @@ class _OrbitRingPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width * 0.42 + pulse * 4;
+    final radius = size.width * 0.42 + pulse * 3;
 
     final ring = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.4
-      ..color = AppColors.primary.withValues(alpha: 0.22 + pulse * 0.15);
+      ..color = AppColors.primary.withValues(alpha: 0.2 + pulse * 0.12);
     canvas.drawCircle(center, radius, ring);
 
     final ring2 = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1
-      ..color = AppColors.secondary.withValues(alpha: 0.14 + pulse * 0.1);
+      ..color = AppColors.secondary.withValues(alpha: 0.12 + pulse * 0.08);
     canvas.drawCircle(center, radius * 0.78, ring2);
 
-    // Orbiting dots
     for (var i = 0; i < 5; i++) {
       final angle = rotation * (i.isEven ? 1 : -1) + i * 1.25;
       final r = i.isEven ? radius : radius * 0.78;
@@ -634,14 +671,14 @@ class _OrbitRingPainter extends CustomPainter {
       );
       final dot = Paint()
         ..color = (i % 3 == 0 ? AppColors.primary : AppColors.secondary)
-            .withValues(alpha: 0.75);
-      canvas.drawCircle(pos, i.isEven ? 4.2 : 3.2, dot);
+            .withValues(alpha: 0.7);
+      canvas.drawCircle(pos, i.isEven ? 4 : 3, dot);
       canvas.drawCircle(
         pos,
-        i.isEven ? 8 : 6,
+        i.isEven ? 7.5 : 5.5,
         Paint()
           ..color = (i % 3 == 0 ? AppColors.primary : AppColors.secondary)
-              .withValues(alpha: 0.18),
+              .withValues(alpha: 0.14),
       );
     }
   }
@@ -656,25 +693,23 @@ class _ParticleFieldPainter extends CustomPainter {
 
   final double progress;
 
-  // Fixed particle seeds — recomputed every frame from index, not Random.
-  static const _count = 28;
+  static const _count = 24;
 
   @override
   void paint(Canvas canvas, Size size) {
     if (!size.isFinite || size.width <= 0 || size.height <= 0) return;
 
     for (var i = 0; i < _count; i++) {
-      // Hash-ish deterministic values from index (stable across frames).
       final bx = ((i * 73) % 100) / 100.0;
       final by = ((i * 47 + 19) % 100) / 100.0;
-      final speed = 0.35 + ((i * 17) % 65) / 100.0;
+      final speed = 0.28 + ((i * 17) % 55) / 100.0;
       final phase = ((i * 31) % 100) / 100.0;
-      final radius = 1.2 + ((i * 11) % 25) / 10.0;
+      final radius = 1.1 + ((i * 11) % 22) / 10.0;
       final drift = math.sin((progress + phase) * 2 * math.pi * speed);
 
-      var x = (bx * size.width + drift * 18) % size.width;
+      var x = (bx * size.width + drift * 14) % size.width;
       if (x < 0) x += size.width;
-      var y = (by * size.height - progress * size.height * speed * 0.35) %
+      var y = (by * size.height - progress * size.height * speed * 0.28) %
           size.height;
       if (y < 0) y += size.height;
 
@@ -686,7 +721,7 @@ class _ParticleFieldPainter extends CustomPainter {
         radius,
         Paint()
           ..color = (isGold ? AppColors.primary : AppColors.secondary)
-              .withValues(alpha: 0.18 + (drift.abs() * 0.22)),
+              .withValues(alpha: 0.14 + (drift.abs() * 0.18)),
       );
     }
   }

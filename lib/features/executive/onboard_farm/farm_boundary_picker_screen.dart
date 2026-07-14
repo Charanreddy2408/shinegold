@@ -96,9 +96,13 @@ class _FarmBoundaryPickerScreenState
       ),
       interactionOptions: const InteractionOptions(
         flags: InteractiveFlag.pinchZoom |
+            InteractiveFlag.pinchMove |
             InteractiveFlag.drag |
             InteractiveFlag.doubleTapZoom |
-            InteractiveFlag.flingAnimation,
+            InteractiveFlag.flingAnimation |
+            InteractiveFlag.scrollWheelZoom,
+        enableMultiFingerGestureRace: true,
+        pinchZoomThreshold: 0.25,
       ),
       onTap: _onMapTap,
       onMapReady: () {

@@ -85,26 +85,8 @@ class IndiaChoroplethMapPainter extends CustomPainter {
           ..strokeWidth = isSelected ? 1.8 : 0.65,
       );
 
-      if (count > 0 && mapRect.width > 180) {
-        final tp = TextPainter(
-          text: TextSpan(
-            text: '$count',
-            style: TextStyle(
-              color: count >= 3
-                  ? Colors.white
-                  : AppColors.primaryDark.withValues(alpha: 0.9),
-              fontSize: count >= 3 ? 10 : 8,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          textDirection: TextDirection.ltr,
-        )..layout();
-
-        tp.paint(
-          canvas,
-          state.centroid - Offset(tp.width / 2, tp.height / 2),
-        );
-      }
+      // Counts are shown as cluster badges in the overlay — avoid faint
+      // floating numerals that clash with farm markers.
     }
 
     final border = ui.Path();

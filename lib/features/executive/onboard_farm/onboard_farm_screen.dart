@@ -69,7 +69,13 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
         bounds: IndiaMapBounds.bounds,
       ),
       interactionOptions: const InteractionOptions(
-        flags: InteractiveFlag.pinchZoom | InteractiveFlag.drag,
+        flags: InteractiveFlag.pinchZoom |
+            InteractiveFlag.pinchMove |
+            InteractiveFlag.drag |
+            InteractiveFlag.doubleTapZoom |
+            InteractiveFlag.scrollWheelZoom,
+        enableMultiFingerGestureRace: true,
+        pinchZoomThreshold: 0.25,
       ),
       onMapReady: () {
         final loc = _employeeLocationFromState(ref.read(locationProvider));

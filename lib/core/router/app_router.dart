@@ -99,11 +99,6 @@ String? _resolveRedirect(GoRouterState state, AsyncValue<AuthSession?> authState
     return AppRoutes.executive;
   }
 
-  if (loc.startsWith('/checkin') &&
-      session.user.role == UserRole.superAdmin) {
-    return AppRoutes.admin;
-  }
-
   return null;
 }
 

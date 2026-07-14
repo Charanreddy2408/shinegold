@@ -15,6 +15,7 @@ class FarmBoundaryMapView extends StatelessWidget {
     this.employeeLocation,
     this.boundaryPins = const [],
     this.showIndiaBadge = true,
+    this.showZoomControls = true,
     this.showRecenterFab = false,
     this.onRecenterEmployee,
   });
@@ -24,11 +25,26 @@ class FarmBoundaryMapView extends StatelessWidget {
   final LatLng? employeeLocation;
   final List<LatLng> boundaryPins;
   final bool showIndiaBadge;
+  final bool showZoomControls;
   final bool showRecenterFab;
   final VoidCallback? onRecenterEmployee;
 
   bool get _employeeInIndia =>
       employeeLocation != null && IndiaMapBounds.contains(employeeLocation!);
+
+  double get _minZoom => mapOptions.minZoom ?? 4.5;
+  double get _maxZoom => mapOptions.maxZoom ?? 19;
+
+  void _zoomBy(double delta) {
+    try {
+      final camera = mapController.camera;
+      final next = (camera.zoom + delta).clamp(_minZoom, _maxZoom).toDouble();
+      if ((next - camera.zoom).abs() < 0.01) return;
+      mapController.move(camera.center, next);
+    } catch (_) {
+      // Map not ready yet.
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -141,31 +157,78 @@ class FarmBoundaryMapView extends StatelessWidget {
               ),
             ),
           ),
-        if (showRecenterFab && onRecenterEmployee != null)
+        if (showZoomControls ||
+            (showRecenterFab && onRecenterEmployee != null))
           Positioned(
             right: 10,
             bottom: 10,
-            child: Material(
-              elevation: 3,
-              borderRadius: BorderRadius.circular(28),
-              color: AppColors.surfaceCard,
-              child: InkWell(
-                onTap: onRecenterEmployee,
-                borderRadius: BorderRadius.circular(28),
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Icon(
-                    Icons.my_location_rounded,
-                    color: employeeLocation != null
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (showZoomControls) ...[
+                  _MapRoundButton(
+                    icon: Icons.add_rounded,
+                    tooltip: 'Zoom in',
+                    onTap: () => _zoomBy(1),
+                  ),
+                  const SizedBox(height: 8),
+                  _MapRoundButton(
+                    icon: Icons.remove_rounded,
+                    tooltip: 'Zoom out',
+                    onTap: () => _zoomBy(-1),
+                  ),
+                ],
+                if (showZoomControls &&
+                    showRecenterFab &&
+                    onRecenterEmployee != null)
+                  const SizedBox(height: 8),
+                if (showRecenterFab && onRecenterEmployee != null)
+                  _MapRoundButton(
+                    icon: Icons.my_location_rounded,
+                    tooltip: 'Recenter on me',
+                    iconColor: employeeLocation != null
                         ? AppColors.info
                         : AppColors.textMuted,
+                    onTap: onRecenterEmployee!,
                   ),
-                ),
-              ),
+              ],
             ),
           ),
       ],
     );
+  }
+}
+
+class _MapRoundButton extends StatelessWidget {
+  const _MapRoundButton({
+    required this.icon,
+    required this.onTap,
+    this.tooltip,
+    this.iconColor = AppColors.textPrimary,
+  });
+
+  final IconData icon;
+  final VoidCallback onTap;
+  final String? tooltip;
+  final Color iconColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final button = Material(
+      elevation: 3,
+      borderRadius: BorderRadius.circular(28),
+      color: AppColors.surfaceCard,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(28),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Icon(icon, color: iconColor),
+        ),
+      ),
+    );
+    if (tooltip == null) return button;
+    return Tooltip(message: tooltip!, child: button);
   }
 }
 

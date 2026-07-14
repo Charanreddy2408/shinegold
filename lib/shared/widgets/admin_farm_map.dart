@@ -152,7 +152,7 @@ class _AdminIndiaFarmMapState extends State<AdminIndiaFarmMap>
                                 ?.copyWith(fontWeight: FontWeight.w800),
                           ),
                           Text(
-                            'Density of farms by state',
+                            'Bubbles show farm count by state',
                             style:
                                 Theme.of(context).textTheme.bodySmall?.copyWith(
                                       color: AppColors.textMuted,
@@ -309,7 +309,7 @@ class _AdminIndiaFarmMapState extends State<AdminIndiaFarmMap>
                               },
                             ),
                           ),
-                          const _DensityLegendBar(),
+                          const _MapLegendBar(),
                         ],
                       );
                     },
@@ -323,12 +323,66 @@ class _AdminIndiaFarmMapState extends State<AdminIndiaFarmMap>
         .fadeIn(duration: 400.ms);
   }
 
+  /// Overview: one clear count bubble per state (avoids overlapping pins).
+  /// State selected: individual farm pins at coordinates.
   List<Widget> _buildFarmMarkers(Size size) {
-    final markers = <Widget>[];
-    for (var i = 0; i < _plottedFarms.length; i++) {
-      final farm = _plottedFarms[i];
+    if (_selectedState == null) {
+      return _buildStateClusterMarkers(size);
+    }
+    return _buildIndividualFarmPins(size);
+  }
+
+  List<Widget> _buildStateClusterMarkers(Size size) {
+    final byState = <String, List<Farm>>{};
+    for (final farm in _plottedFarms) {
       final state = FarmStateResolver.resolve(farm);
-      if (_selectedState != null && state != _selectedState) continue;
+      if (state == 'Unknown') continue;
+      byState.putIfAbsent(state, () => []).add(farm);
+    }
+
+    final markers = <Widget>[];
+    for (final entry in byState.entries) {
+      final farms = entry.value;
+      final centroid = _stateShapeCentroid(entry.key) ??
+          _averageProjected(farms, size);
+      if (centroid == null) continue;
+
+      final pending = farms
+          .where((f) => f.status == FarmVisitStatus.pending)
+          .length;
+      final accent = pending > 0 ? AppColors.error : AppColors.secondary;
+      const bubble = 36.0;
+
+      markers.add(
+        Positioned(
+          left: centroid.dx - bubble / 2,
+          top: centroid.dy - bubble / 2,
+          child: GestureDetector(
+            onTap: () => setState(() {
+              _selectedState = entry.key;
+              _selectedFarm = null;
+            }),
+            child: AnimatedBuilder(
+              animation: _pulseController,
+              builder: (_, __) => _StateClusterBadge(
+                count: farms.length,
+                accent: accent,
+                pulse: pending > 0,
+                pulseValue: _pulseController.value,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    return markers;
+  }
+
+  List<Widget> _buildIndividualFarmPins(Size size) {
+    final markers = <Widget>[];
+    for (final farm in _plottedFarms) {
+      final state = FarmStateResolver.resolve(farm);
+      if (state != _selectedState) continue;
 
       final offset = IndiaMapProjection.project(
         LatLng(farm.latitude, farm.longitude),
@@ -337,7 +391,7 @@ class _AdminIndiaFarmMapState extends State<AdminIndiaFarmMap>
       final color = _pinColor(farm.status);
       final isSelected = _selectedFarm?.id == farm.id;
       final pulse = farm.status == FarmVisitStatus.pending && !isSelected;
-      const pinSize = 20.0;
+      const pinSize = 28.0;
 
       markers.add(
         Positioned(
@@ -349,28 +403,50 @@ class _AdminIndiaFarmMapState extends State<AdminIndiaFarmMap>
               _selectedState = state;
             }),
             child: pulse
-              ? AnimatedBuilder(
-                  animation: _pulseController,
-                  builder: (_, __) => _FarmPin(
-                    farm: farm,
+                ? AnimatedBuilder(
+                    animation: _pulseController,
+                    builder: (_, __) => _FarmPin(
+                      color: color,
+                      isSelected: isSelected,
+                      pulse: true,
+                      pulseValue: _pulseController.value,
+                      label: farm.name.isNotEmpty ? farm.name[0] : 'F',
+                    ),
+                  )
+                : _FarmPin(
                     color: color,
                     isSelected: isSelected,
-                    pulse: true,
-                    pulseValue: _pulseController.value,
+                    pulse: false,
+                    pulseValue: 0,
+                    label: farm.name.isNotEmpty ? farm.name[0] : 'F',
                   ),
-                )
-              : _FarmPin(
-                  farm: farm,
-                  color: color,
-                  isSelected: isSelected,
-                  pulse: false,
-                  pulseValue: 0,
-                ),
           ),
         ),
       );
     }
     return markers;
+  }
+
+  Offset? _stateShapeCentroid(String stateName) {
+    for (final shape in _states) {
+      if (shape.name == stateName) return shape.centroid;
+    }
+    return null;
+  }
+
+  Offset? _averageProjected(List<Farm> farms, Size size) {
+    if (farms.isEmpty) return null;
+    var x = 0.0;
+    var y = 0.0;
+    for (final farm in farms) {
+      final p = IndiaMapProjection.project(
+        LatLng(farm.latitude, farm.longitude),
+        size,
+      );
+      x += p.dx;
+      y += p.dy;
+    }
+    return Offset(x / farms.length, y / farms.length);
   }
 
   Color _pinColor(FarmVisitStatus status) {
@@ -434,65 +510,155 @@ class _StatPill extends StatelessWidget {
   }
 }
 
-class _DensityLegendBar extends StatelessWidget {
-  const _DensityLegendBar();
+class _MapLegendBar extends StatelessWidget {
+  const _MapLegendBar();
 
   @override
   Widget build(BuildContext context) {
-    final items = [
-      (0, 'None'),
-      (1, '1'),
-      (2, '2'),
-      (3, '3+'),
-    ];
-
     return Container(
-      height: 44,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: const BoxDecoration(
         color: Color(0xFFF3F5F0),
         border: Border(
           top: BorderSide(color: AppColors.borderSubtle),
         ),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Farm density',
+            'Tap a bubble to open farms in that state',
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textMuted,
                 ),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: items.map((item) {
-                return Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 16,
-                      height: 16,
-                      decoration: BoxDecoration(
-                        color: IndiaStatesMapData.colorForCount(item.$1),
-                        borderRadius: BorderRadius.circular(4),
-                        border: Border.all(color: AppColors.borderSubtle),
-                      ),
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      item.$2,
-                      style: const TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                );
-              }).toList(),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              _legendDot(AppColors.error, 'Pending'),
+              const SizedBox(width: 10),
+              _legendDot(AppColors.info, 'Ongoing'),
+              const SizedBox(width: 10),
+              _legendDot(AppColors.success, 'Done'),
+              const SizedBox(width: 10),
+              _legendDot(AppColors.secondary, 'Harvest'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _legendDot(Color color, String label) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.white, width: 1.2),
+            boxShadow: [
+              BoxShadow(
+                color: color.withValues(alpha: 0.35),
+                blurRadius: 3,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 4),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textSecondary,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Clear count bubble for overview mode (one per state).
+class _StateClusterBadge extends StatelessWidget {
+  const _StateClusterBadge({
+    required this.count,
+    required this.accent,
+    required this.pulse,
+    required this.pulseValue,
+  });
+
+  final int count;
+  final Color accent;
+  final bool pulse;
+  final double pulseValue;
+
+  @override
+  Widget build(BuildContext context) {
+    final ring = pulse ? 4.0 + pulseValue * 6 : 0.0;
+
+    return SizedBox(
+      width: 40,
+      height: 40,
+      child: Stack(
+        alignment: Alignment.center,
+        clipBehavior: Clip.none,
+        children: [
+          if (pulse)
+            Container(
+              width: 34 + ring,
+              height: 34 + ring,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: accent.withValues(alpha: 0.18 * (1 - pulseValue)),
+              ),
+            ),
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  accent,
+                  Color.lerp(accent, Colors.black, 0.18)!,
+                ],
+              ),
+              border: Border.all(color: Colors.white, width: 2.5),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.22),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+                BoxShadow(
+                  color: accent.withValues(alpha: 0.35),
+                  blurRadius: 6,
+                ),
+              ],
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              count > 99 ? '99+' : '$count',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 13,
+                fontWeight: FontWeight.w900,
+                height: 1,
+                shadows: [
+                  Shadow(
+                    color: Colors.black38,
+                    blurRadius: 2,
+                    offset: Offset(0, 1),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -503,22 +669,22 @@ class _DensityLegendBar extends StatelessWidget {
 
 class _FarmPin extends StatelessWidget {
   const _FarmPin({
-    required this.farm,
     required this.color,
     required this.isSelected,
     required this.pulse,
     required this.pulseValue,
+    required this.label,
   });
 
-  final Farm farm;
   final Color color;
   final bool isSelected;
   final bool pulse;
   final double pulseValue;
+  final String label;
 
   @override
   Widget build(BuildContext context) {
-    final size = isSelected ? 22.0 : 18.0;
+    final size = isSelected ? 30.0 : 26.0;
 
     return Stack(
       alignment: Alignment.center,
@@ -526,11 +692,11 @@ class _FarmPin extends StatelessWidget {
       children: [
         if (pulse)
           Container(
-            width: size + pulseValue * 10,
-            height: size + pulseValue * 10,
+            width: size + pulseValue * 8,
+            height: size + pulseValue * 8,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: color.withValues(alpha: 0.12 * (1 - pulseValue)),
+              color: color.withValues(alpha: 0.16 * (1 - pulseValue)),
             ),
           ),
         Container(
@@ -541,24 +707,24 @@ class _FarmPin extends StatelessWidget {
             color: color,
             border: Border.all(
               color: Colors.white,
-              width: isSelected ? 2.2 : 1.8,
+              width: isSelected ? 3 : 2.4,
             ),
             boxShadow: [
               BoxShadow(
-                color: color.withValues(alpha: 0.35),
-                blurRadius: isSelected ? 6 : 4,
-                offset: const Offset(0, 1.5),
+                color: Colors.black.withValues(alpha: 0.28),
+                blurRadius: isSelected ? 8 : 5,
+                offset: const Offset(0, 2),
               ),
             ],
           ),
-          child: Center(
-            child: Container(
-              width: size * 0.28,
-              height: size * 0.28,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white,
-              ),
+          alignment: Alignment.center,
+          child: Text(
+            label.toUpperCase(),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: isSelected ? 12 : 11,
+              fontWeight: FontWeight.w900,
+              height: 1,
             ),
           ),
         ),

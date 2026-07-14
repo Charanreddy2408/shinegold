@@ -347,28 +347,34 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
                         .toList(),
                   ),
           ),
-          SizedBox(height: isExecutive ? 80 : 24),
+          SizedBox(
+            height: (isExecutive || isAdmin) &&
+                    farm.status != FarmVisitStatus.visited
+                ? 80
+                : 24,
+          ),
         ],
       ),
-      bottomNavigationBar: isExecutive && farm.status != FarmVisitStatus.visited
-          ? SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: ShinePrimaryButton(
-                  label: farm.status == FarmVisitStatus.ongoing
-                      ? 'Continue Visit'
-                      : 'Start Visit',
-                  icon: Icons.play_arrow_rounded,
-                  onPressed: () async {
-                    final done = await context.push<bool>(
-                      AppRoutes.checkin.replaceFirst(':farmId', farm.id),
-                    );
-                    if (done == true && mounted) _load();
-                  },
-                ),
-              ),
-            )
-          : null,
+      bottomNavigationBar:
+          (isExecutive || isAdmin) && farm.status != FarmVisitStatus.visited
+              ? SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: ShinePrimaryButton(
+                      label: farm.status == FarmVisitStatus.ongoing
+                          ? 'Continue Visit'
+                          : 'Start Visit',
+                      icon: Icons.play_arrow_rounded,
+                      onPressed: () async {
+                        final done = await context.push<bool>(
+                          AppRoutes.checkin.replaceFirst(':farmId', farm.id),
+                        );
+                        if (done == true && mounted) _load();
+                      },
+                    ),
+                  ),
+                )
+              : null,
     );
   }
 }
