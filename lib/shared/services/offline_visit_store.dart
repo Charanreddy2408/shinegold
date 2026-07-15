@@ -100,6 +100,65 @@ class OfflineVisitStore {
     return _visits.any((v) => v.farmId == farmId);
   }
 
+  /// Copies photos and voice note into app documents so they survive OS
+  /// temp cleanup while the visit waits for sync.
+  Future<PendingVisit> persistMedia(PendingVisit visit) async {
+    if (kIsWeb) return visit;
+    try {
+      final docs = await getApplicationDocumentsDirectory();
+      final mediaDir = Directory('${docs.path}/pending_media/${visit.localId}');
+      await mediaDir.create(recursive: true);
+
+      final photoPaths = <String>[];
+      for (final path in visit.photoPaths) {
+        final copied = await _copyIntoDir(path, mediaDir);
+        if (copied != null) photoPaths.add(copied);
+      }
+
+      String? voicePath = visit.voiceNotePath;
+      if (voicePath != null) {
+        voicePath = await _copyIntoDir(voicePath, mediaDir) ?? voicePath;
+      }
+
+      return visit.copyWith(photoPaths: photoPaths, voiceNotePath: voicePath);
+    } catch (e) {
+      debugPrint('OfflineVisitStore persistMedia failed: $e');
+      return visit;
+    }
+  }
+
+  Future<String?> _copyIntoDir(String path, Directory dir) async {
+    if (path.startsWith('http')) return path;
+    try {
+      final source = File(path);
+      if (!await source.exists()) return null;
+      final name = source.uri.pathSegments.isNotEmpty
+          ? source.uri.pathSegments.last
+          : 'media_${DateTime.now().millisecondsSinceEpoch}';
+      final dest = '${dir.path}/$name';
+      if (dest == path) return path;
+      await source.copy(dest);
+      return dest;
+    } catch (e) {
+      debugPrint('OfflineVisitStore media copy failed: $e');
+      return null;
+    }
+  }
+
+  /// Removes the durable media folder once a visit has synced.
+  Future<void> deleteMedia(String localId) async {
+    if (kIsWeb) return;
+    try {
+      final docs = await getApplicationDocumentsDirectory();
+      final mediaDir = Directory('${docs.path}/pending_media/$localId');
+      if (await mediaDir.exists()) {
+        await mediaDir.delete(recursive: true);
+      }
+    } catch (_) {
+      // Leftover files are harmless.
+    }
+  }
+
   Future<void> clear() async {
     await _ensureLoaded();
     _visits.clear();

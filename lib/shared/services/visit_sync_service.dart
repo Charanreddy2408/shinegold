@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -65,7 +63,7 @@ class VisitSyncService {
     for (final visit in ordered) {
       try {
         await _replay(visit);
-        await _cleanupMedia(visit);
+        await _store.deleteMedia(visit.localId);
         await _store.remove(visit.localId);
         synced++;
       } catch (e) {
@@ -137,23 +135,6 @@ class VisitSyncService {
       textNote: current.textNote,
       formAnswers: current.formAnswers,
     );
-  }
-
-  Future<void> _cleanupMedia(PendingVisit visit) async {
-    if (kIsWeb) return;
-    final paths = [
-      ...visit.photoPaths,
-      if (visit.voiceNotePath != null) visit.voiceNotePath!,
-    ];
-    for (final path in paths) {
-      if (path.startsWith('http')) continue;
-      try {
-        final file = File(path);
-        if (await file.exists()) await file.delete();
-      } catch (_) {
-        // Leftover temp files are harmless.
-      }
-    }
   }
 }
 
