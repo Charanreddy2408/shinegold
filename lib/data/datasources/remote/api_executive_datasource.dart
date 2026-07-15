@@ -25,7 +25,6 @@ class ApiExecutiveDataSource implements ExecutiveDataSource {
     final response = await _client.dio.post(
       ApiEndpoints.users,
       data: {
-        'employee_id': request.employeeId,
         'name': request.name,
         'mobile_number': request.mobile,
         'password': request.password,
@@ -36,7 +35,7 @@ class ApiExecutiveDataSource implements ExecutiveDataSource {
     final data = response.data as Map<String, dynamic>;
     return Executive(
       id: data['id']?.toString() ?? '',
-      employeeId: data['employee_id'] as String? ?? request.employeeId,
+      employeeId: data['employee_id'] as String? ?? '',
       name: data['name'] as String? ?? request.name,
       mobile: request.mobile,
     );

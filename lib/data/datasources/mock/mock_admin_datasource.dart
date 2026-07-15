@@ -19,9 +19,17 @@ class MockExecutiveDataSource implements ExecutiveDataSource {
   @override
   Future<Executive> create(CreateExecutiveRequest request) async {
     await Future<void>.delayed(AppConfig.mockNetworkDelay);
+    final nextNum = _executives
+            .map((e) {
+              final m = RegExp(r'^EXEC(\d+)$', caseSensitive: false)
+                  .firstMatch(e.employeeId);
+              return m == null ? 0 : int.tryParse(m.group(1)!) ?? 0;
+            })
+            .fold<int>(0, (a, b) => a > b ? a : b) +
+        1;
     final exec = Executive(
       id: 'exec-${DateTime.now().millisecondsSinceEpoch}',
-      employeeId: request.employeeId,
+      employeeId: 'EXEC${nextNum.toString().padLeft(3, '0')}',
       name: request.name,
       mobile: request.mobile,
     );
