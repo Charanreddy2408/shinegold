@@ -182,14 +182,12 @@ class ExecutiveDashboard {
 
 class CreateExecutiveRequest {
   const CreateExecutiveRequest({
-    required this.employeeId,
     required this.name,
     required this.mobile,
     required this.password,
     required this.address,
   });
 
-  final String employeeId;
   final String name;
   final String mobile;
   final String password;
