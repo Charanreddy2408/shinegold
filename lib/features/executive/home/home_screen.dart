@@ -266,6 +266,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Harvest ${DateFormat('dd MMM yyyy').format(farm.harvestDate)}',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelSmall
+                                      ?.copyWith(
+                                        color: AppColors.primaryDark,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                ),
                                 const SizedBox(height: AppSpacing.sm),
                                 StatusChip(status: farm.status),
                               ],
