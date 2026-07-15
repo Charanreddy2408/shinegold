@@ -11,6 +11,7 @@ import '../services/notification_service.dart';
 import 'repository_providers.dart';
 
 const _sessionKey = 'auth_session';
+const _lastEmployeeIdKey = 'last_employee_id';
 
 class AuthNotifier extends StateNotifier<AsyncValue<AuthSession?>> {
   AuthNotifier(this._repository, this._dio) : super(const AsyncValue.loading()) {
@@ -89,9 +90,20 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthSession?>> {
     _dio.updateToken(session.token);
   }
 
+  static Future<String?> loadLastEmployeeId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_lastEmployeeIdKey);
+  }
+
+  static Future<void> saveLastEmployeeId(String employeeId) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_lastEmployeeIdKey, employeeId.trim());
+  }
+
   Future<void> login(String employeeId, String password) async {
     try {
       final session = await _repository.login(employeeId, password);
+      await saveLastEmployeeId(employeeId);
       await _persistSession(session);
       // Login user payload lacks stats — refresh from /users/me.
       final user = await _repository.getMe();

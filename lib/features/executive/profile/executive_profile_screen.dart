@@ -9,6 +9,8 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../shared/providers/app_refresh_provider.dart';
 import '../../../shared/providers/auth_provider.dart';
+import '../../../shared/providers/harvest_reminder_provider.dart';
+import '../../../shared/services/notification_service.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/profile_photo_editor.dart';
 import '../../../shared/widgets/shine_buttons.dart';
@@ -23,6 +25,7 @@ class ExecutiveProfileScreen extends ConsumerStatefulWidget {
 
 class _ExecutiveProfileScreenState extends ConsumerState<ExecutiveProfileScreen> {
   bool _refreshing = true;
+  bool _testingNotification = false;
 
   @override
   void initState() {
@@ -37,6 +40,40 @@ class _ExecutiveProfileScreenState extends ConsumerState<ExecutiveProfileScreen>
       // Keep cached profile if refresh fails.
     } finally {
       if (mounted) setState(() => _refreshing = false);
+    }
+  }
+
+  Future<void> _syncHarvestReminders() async {
+    setState(() => _testingNotification = true);
+    try {
+      final count = await ref.read(harvestReminderSyncProvider).sync(
+            showTestNotification: true,
+          );
+      if (!mounted) return;
+      final message = switch (count) {
+        -1 => 'Could not sync harvest reminders. Check network and try again.',
+        0 => 'No upcoming harvests in the next 90 days.',
+        1 => '1 harvest reminder scheduled. Test notification sent.',
+        _ => '$count harvest reminders scheduled. Test notification sent.',
+      };
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    } finally {
+      if (mounted) setState(() => _testingNotification = false);
+    }
+  }
+
+  Future<void> _sendTestNotification() async {
+    setState(() => _testingNotification = true);
+    try {
+      await NotificationService.instance.showTestHarvestNotification();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Test notification sent')),
+      );
+    } finally {
+      if (mounted) setState(() => _testingNotification = false);
     }
   }
 
@@ -113,6 +150,18 @@ class _ExecutiveProfileScreenState extends ConsumerState<ExecutiveProfileScreen>
                     employeeId: user.employeeId,
                   ),
                   const SizedBox(height: 24),
+                  ShineSecondaryButton(
+                    label: _testingNotification
+                        ? 'Syncing…'
+                        : 'Sync harvest reminders',
+                    onPressed: _testingNotification ? null : _syncHarvestReminders,
+                  ),
+                  const SizedBox(height: 10),
+                  ShineSecondaryButton(
+                    label: 'Send test notification',
+                    onPressed: _testingNotification ? null : _sendTestNotification,
+                  ),
+                  const SizedBox(height: 10),
                   ShineSecondaryButton(
                     label: 'Logout',
                     onPressed: () async {

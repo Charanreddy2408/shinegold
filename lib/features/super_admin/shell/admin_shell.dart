@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -63,7 +64,9 @@ class _AdminShellState extends ConsumerState<AdminShell> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(adminNearbyFarmsProvider.notifier).start();
-      unawaited(ref.read(harvestReminderSyncProvider).sync());
+      unawaited(
+        ref.read(harvestReminderSyncProvider).sync(showTestNotification: kDebugMode),
+      );
     });
   }
 

@@ -147,6 +147,45 @@ class NotificationService {
     await _plugin.cancelAll();
   }
 
+  /// Shows an immediate notification to verify permissions and channel setup.
+  Future<void> showTestHarvestNotification({HarvestReminder? reminder}) async {
+    await initialize();
+
+    final sample = reminder ??
+        HarvestReminder(
+          farmId: 'test-farm',
+          farmName: 'Test Farm',
+          crop: 'Paddy',
+          harvestType: 'Manual',
+          harvestDate: DateTime.now().add(const Duration(days: 5)),
+          remindOn: DateTime.now(),
+          daysUntilHarvest: 5,
+        );
+
+    final cropLabel =
+        sample.crop.trim().isEmpty ? 'crop' : sample.crop.trim();
+
+    await _plugin.show(
+      id: 0x7ffffffe,
+      title: 'Test: Harvest in ${sample.daysBefore} days',
+      body:
+          '${sample.farmName} ($cropLabel) harvest is on '
+          '${_formatDate(sample.harvestDate)}',
+      notificationDetails: const NotificationDetails(
+        android: AndroidNotificationDetails(
+          _channelId,
+          _channelName,
+          channelDescription: 'Alerts 5 days before farm harvest dates',
+          importance: Importance.high,
+          priority: Priority.high,
+          icon: '@mipmap/ic_launcher',
+        ),
+        iOS: DarwinNotificationDetails(),
+      ),
+      payload: sample.toPayload(),
+    );
+  }
+
   static String _formatDate(DateTime d) =>
       '${d.day.toString().padLeft(2, '0')}/'
       '${d.month.toString().padLeft(2, '0')}/'

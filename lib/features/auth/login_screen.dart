@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/config/app_config.dart';
 import '../../core/network/api_exception.dart';
 import '../../core/router/app_router.dart';
 import '../../core/theme/app_colors.dart';
@@ -26,6 +27,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _obscure = true;
   bool _loading = false;
   String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedEmployeeId();
+  }
+
+  Future<void> _loadSavedEmployeeId() async {
+    final saved = await AuthNotifier.loadLastEmployeeId();
+    final employeeId = saved ?? AppConfig.defaultEmployeeId;
+    if (!mounted || employeeId.isEmpty) return;
+    _employeeIdController.text = employeeId;
+  }
 
   @override
   void dispose() {
@@ -113,7 +127,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         onChanged: (_) => _clearError(),
                         decoration: const InputDecoration(
                           labelText: 'Employee ID',
-                          hintText: 'EMP001',
+                          hintText: 'EXEC001',
                           prefixIcon: Icon(Icons.badge_outlined),
                         ),
                         textInputAction: TextInputAction.next,

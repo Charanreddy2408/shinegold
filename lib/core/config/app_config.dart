@@ -34,4 +34,11 @@ class AppConfig {
   static const String logoUrl = logoAsset;
 
   static const Duration mockNetworkDelay = Duration.zero;
+
+  /// Pre-fills login when no saved employee ID exists (debug / local dev).
+  /// Override: `--dart-define=DEFAULT_EMPLOYEE_ID=EXEC002`
+  static const String defaultEmployeeId = String.fromEnvironment(
+    'DEFAULT_EMPLOYEE_ID',
+    defaultValue: 'EXEC001',
+  );
 }

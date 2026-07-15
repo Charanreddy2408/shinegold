@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -29,8 +30,25 @@ class _ExecutiveShellState extends ConsumerState<ExecutiveShell> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       unawaited(_bootstrapLocation());
-      unawaited(ref.read(harvestReminderSyncProvider).sync());
+      unawaited(_syncHarvestReminders());
     });
+  }
+
+  Future<void> _syncHarvestReminders() async {
+    final count = await ref.read(harvestReminderSyncProvider).sync(
+          showTestNotification: kDebugMode,
+        );
+    if (!mounted || count <= 0) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          count == 1
+              ? '1 harvest reminder scheduled'
+              : '$count harvest reminders scheduled',
+        ),
+        duration: const Duration(seconds: 3),
+      ),
+    );
   }
 
   Future<void> _bootstrapLocation() async {

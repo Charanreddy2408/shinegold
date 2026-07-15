@@ -16,22 +16,29 @@ class HarvestReminderSync {
 
   final Ref _ref;
 
-  Future<void> sync() async {
+  Future<int> sync({bool showTestNotification = false}) async {
     final session = _ref.read(authProvider).valueOrNull;
     final role = session?.user.role;
     if (session == null ||
         (role != UserRole.executive && role != UserRole.superAdmin)) {
       await NotificationService.instance.clearAll();
-      return;
+      return 0;
     }
 
     try {
       final reminders = await _fetchReminders();
       await NotificationService.instance.syncHarvestReminders(reminders);
+      if (showTestNotification && reminders.isNotEmpty) {
+        await NotificationService.instance.showTestHarvestNotification(
+          reminder: reminders.first,
+        );
+      }
+      return reminders.length;
     } catch (e) {
       // Non-fatal — permission or network failures shouldn't block the UI.
       // ignore: avoid_print
       print('Harvest reminder sync skipped: $e');
+      return -1;
     }
   }
 
