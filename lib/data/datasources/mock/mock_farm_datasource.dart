@@ -44,11 +44,14 @@ class MockFarmDataSource implements FarmDataSource {
               .where((f) => f.status == FarmVisitStatus.pending)
               .toList();
         case QuickFarmFilter.harvestSoon:
+          final now = DateTime.now();
+          final today = DateTime(now.year, now.month, now.day);
+          final cutoff = today.add(const Duration(days: 14));
           result = result
               .where(
-                (f) => f.harvestDate.isBefore(
-                  DateTime.now().add(const Duration(days: 14)),
-                ),
+                (f) =>
+                    !f.harvestDate.isBefore(today) &&
+                    f.harvestDate.isBefore(cutoff),
               )
               .toList();
         case QuickFarmFilter.recentlyVisited:

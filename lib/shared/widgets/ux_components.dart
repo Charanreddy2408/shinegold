@@ -547,7 +547,9 @@ class _VoiceNotePlayerState extends State<VoiceNotePlayer> {
             volume: 1.0,
             mode: PlayerMode.mediaPlayer,
           );
-          played = true;
+          final duration = await _player.getDuration();
+          played = duration != null && duration.inMilliseconds >= 50;
+          if (!played) await _player.stop();
         } catch (_) {}
 
         if (!played) {
@@ -557,7 +559,9 @@ class _VoiceNotePlayerState extends State<VoiceNotePlayer> {
               volume: 1.0,
               mode: PlayerMode.mediaPlayer,
             );
-            played = true;
+            final duration = await _player.getDuration();
+            played = duration != null && duration.inMilliseconds >= 50;
+            if (!played) await _player.stop();
           } catch (_) {}
         }
 

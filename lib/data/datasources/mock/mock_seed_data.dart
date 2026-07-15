@@ -10,7 +10,7 @@ class MockSeedData {
 
   static const executiveUser = User(
     id: 'exec-1',
-    employeeId: 'EMP001',
+    employeeId: 'EXEC001',
     name: 'Rahul Sharma',
     role: UserRole.executive,
     profilePhotoUrl:
@@ -35,7 +35,7 @@ class MockSeedData {
   static final executives = [
     const Executive(
       id: 'exec-1',
-      employeeId: 'EMP001',
+      employeeId: 'EXEC001',
       name: 'Rahul Sharma',
       mobile: '+91 98765 43210',
       profilePhotoUrl: 'https://i.pravatar.cc/150?u=rahul',
@@ -44,7 +44,7 @@ class MockSeedData {
     ),
     const Executive(
       id: 'exec-2',
-      employeeId: 'EMP002',
+      employeeId: 'EXEC002',
       name: 'Anita Desai',
       mobile: '+91 87654 32109',
       profilePhotoUrl: 'https://i.pravatar.cc/150?u=anita',
@@ -350,7 +350,7 @@ class MockSeedData {
     ),
   ];
 
-  static const demoPassword = 'password123';
+  static const demoPassword = 'ChangeMe123!';
 
   static VisitFormTemplate get visitFormTemplate => VisitFormTemplate(
         id: 'mock-template',

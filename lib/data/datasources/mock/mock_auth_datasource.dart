@@ -25,7 +25,8 @@ class MockAuthDataSource implements AuthDataSource {
       );
     }
 
-    if (employeeId.toUpperCase() == 'EMP001') {
+    if (employeeId.toUpperCase() == 'EXEC001' ||
+        employeeId.toUpperCase() == 'EMP001') {
       return AuthSession(
         token: 'mock-token-exec',
         user: MockSeedData.executiveUser,

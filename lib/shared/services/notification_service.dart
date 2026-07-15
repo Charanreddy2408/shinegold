@@ -59,17 +59,18 @@ class NotificationService {
     await initialize();
 
     if (defaultTargetPlatform == TargetPlatform.android) {
-      final status = await Permission.notification.status;
-      if (status.isGranted) return true;
-      final result = await Permission.notification.request();
-      if (!result.isGranted) return false;
-
       final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin>();
-      await androidPlugin?.requestNotificationsPermission();
-      // Best-effort: exact alarms help fire at the planned time.
+
+      var granted = (await Permission.notification.status).isGranted;
+      if (!granted) {
+        granted = (await Permission.notification.request()).isGranted;
+        await androidPlugin?.requestNotificationsPermission();
+      }
+      // Always attempt exact alarms — timing depends on this, even when
+      // notification permission was already granted.
       await androidPlugin?.requestExactAlarmsPermission();
-      return true;
+      return granted;
     }
 
     if (defaultTargetPlatform == TargetPlatform.iOS) {
@@ -114,10 +115,19 @@ class NotificationService {
       final cropLabel =
           reminder.crop.trim().isEmpty ? 'crop' : reminder.crop.trim();
 
+      final daysLeft = reminder.daysUntilHarvest >= 0
+          ? reminder.daysUntilHarvest
+          : reminder.daysBefore;
+      final title = daysLeft == 0
+          ? 'Harvest today'
+          : daysLeft == 1
+              ? 'Harvest tomorrow'
+              : 'Harvest in $daysLeft days';
+
       try {
         await _plugin.zonedSchedule(
           id: id,
-          title: 'Harvest in ${reminder.daysBefore} days',
+          title: title,
           body:
               '${reminder.farmName} ($cropLabel) harvest is on '
               '${_formatDate(reminder.harvestDate)}',
@@ -133,11 +143,36 @@ class NotificationService {
             ),
             iOS: DarwinNotificationDetails(),
           ),
-          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
           payload: reminder.toPayload(),
         );
       } catch (e) {
-        debugPrint('Failed to schedule harvest reminder: $e');
+        // Exact alarms may be denied — fall back to inexact scheduling.
+        try {
+          await _plugin.zonedSchedule(
+            id: id,
+            title: title,
+            body:
+                '${reminder.farmName} ($cropLabel) harvest is on '
+                '${_formatDate(reminder.harvestDate)}',
+            scheduledDate: when,
+            notificationDetails: const NotificationDetails(
+              android: AndroidNotificationDetails(
+                _channelId,
+                _channelName,
+                channelDescription: 'Alerts 5 days before farm harvest dates',
+                importance: Importance.high,
+                priority: Priority.high,
+                icon: '@mipmap/ic_launcher',
+              ),
+              iOS: DarwinNotificationDetails(),
+            ),
+            androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+            payload: reminder.toPayload(),
+          );
+        } catch (fallbackError) {
+          debugPrint('Failed to schedule harvest reminder: $fallbackError');
+        }
       }
     }
   }
@@ -165,9 +200,18 @@ class NotificationService {
     final cropLabel =
         sample.crop.trim().isEmpty ? 'crop' : sample.crop.trim();
 
+    final daysLeft = sample.daysUntilHarvest >= 0
+        ? sample.daysUntilHarvest
+        : sample.daysBefore;
+    final title = daysLeft == 0
+        ? 'Test: Harvest today'
+        : daysLeft == 1
+            ? 'Test: Harvest tomorrow'
+            : 'Test: Harvest in $daysLeft days';
+
     await _plugin.show(
       id: 0x7ffffffe,
-      title: 'Test: Harvest in ${sample.daysBefore} days',
+      title: title,
       body:
           '${sample.farmName} ($cropLabel) harvest is on '
           '${_formatDate(sample.harvestDate)}',

@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -22,23 +21,36 @@ class ExecutiveShell extends ConsumerStatefulWidget {
   ConsumerState<ExecutiveShell> createState() => _ExecutiveShellState();
 }
 
-class _ExecutiveShellState extends ConsumerState<ExecutiveShell> {
+class _ExecutiveShellState extends ConsumerState<ExecutiveShell>
+    with WidgetsBindingObserver {
   int _index = 0;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       unawaited(_bootstrapLocation());
-      unawaited(_syncHarvestReminders());
+      unawaited(_syncHarvestReminders(showSnack: true));
     });
   }
 
-  Future<void> _syncHarvestReminders() async {
-    final count = await ref.read(harvestReminderSyncProvider).sync(
-          showTestNotification: kDebugMode,
-        );
-    if (!mounted || count <= 0) return;
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(_syncHarvestReminders());
+    }
+  }
+
+  Future<void> _syncHarvestReminders({bool showSnack = false}) async {
+    final count = await ref.read(harvestReminderSyncProvider).sync();
+    if (!mounted || !showSnack || count <= 0) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(

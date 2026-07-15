@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -21,7 +20,8 @@ class AdminShell extends ConsumerStatefulWidget {
   ConsumerState<AdminShell> createState() => _AdminShellState();
 }
 
-class _AdminShellState extends ConsumerState<AdminShell> {
+class _AdminShellState extends ConsumerState<AdminShell>
+    with WidgetsBindingObserver {
   int _index = 0;
 
   late final _screens = [
@@ -62,12 +62,24 @@ class _AdminShellState extends ConsumerState<AdminShell> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(adminNearbyFarmsProvider.notifier).start();
-      unawaited(
-        ref.read(harvestReminderSyncProvider).sync(showTestNotification: kDebugMode),
-      );
+      unawaited(ref.read(harvestReminderSyncProvider).sync());
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(ref.read(harvestReminderSyncProvider).sync());
+    }
   }
 
   void _openMore() {

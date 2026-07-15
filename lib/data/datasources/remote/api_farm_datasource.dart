@@ -46,8 +46,15 @@ class ApiFarmDataSource implements FarmDataSource {
           .where((f) => f.status == FarmVisitStatus.pending)
           .toList();
     } else if (filter.quickFilter == QuickFarmFilter.harvestSoon) {
-      final cutoff = DateTime.now().add(const Duration(days: 14));
-      farms = farms.where((f) => f.harvestDate.isBefore(cutoff)).toList();
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final cutoff = today.add(const Duration(days: 14));
+      farms = farms
+          .where(
+            (f) =>
+                !f.harvestDate.isBefore(today) && f.harvestDate.isBefore(cutoff),
+          )
+          .toList();
     } else if (filter.quickFilter == QuickFarmFilter.recentlyVisited) {
       final cutoff = DateTime.now().subtract(const Duration(days: 14));
       farms = farms
