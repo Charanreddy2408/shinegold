@@ -13,6 +13,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../data/models/enums.dart';
 import '../../../features/super_admin/farms/admin_farm_assign_sheet.dart';
 import '../../../data/models/farm.dart';
+import '../../../data/models/harvest_date_change.dart';
 import '../../../shared/providers/app_refresh_provider.dart';
 import '../../../shared/providers/auth_provider.dart';
 import '../../../shared/providers/repository_providers.dart';
@@ -38,7 +39,9 @@ class FarmDetailScreen extends ConsumerStatefulWidget {
 
 class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
   Farm? _farm;
+  List<HarvestDateChange> _harvestHistory = [];
   bool _loading = true;
+  bool _updatingHarvest = false;
   String? _error;
 
   @override
@@ -65,9 +68,20 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
           ),
         );
       }
+
+      List<HarvestDateChange> history = [];
+      try {
+        history = await ref
+            .read(farmRepositoryProvider)
+            .getHarvestDateHistory(widget.farmId);
+      } catch (_) {
+        // History is optional for first paint.
+      }
+
       if (mounted) {
         setState(() {
           _farm = farm;
+          _harvestHistory = history;
           _loading = false;
           if (farm == null) {
             _error = 'Farm not found.';
@@ -81,6 +95,139 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
           _error = formatApiError(e);
         });
       }
+    }
+  }
+
+  Future<void> _editHarvestDate() async {
+    final farm = _farm;
+    if (farm == null || _updatingHarvest) return;
+
+    final reasonController = TextEditingController();
+    DateTime selected = farm.harvestDate;
+
+    final confirmed = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.surfaceCard,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 20,
+                bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'Update harvest date',
+                    style: Theme.of(ctx).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Current: ${DateFormat('dd MMM yyyy').format(farm.harvestDate)}',
+                    style: Theme.of(ctx).textTheme.bodyMedium?.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                  ),
+                  const SizedBox(height: 16),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.event_rounded, color: AppColors.primary),
+                    title: Text(DateFormat('dd MMM yyyy').format(selected)),
+                    subtitle: const Text('Tap to pick a new date'),
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: ctx,
+                        initialDate: selected,
+                        firstDate: DateTime(2020),
+                        lastDate: DateTime.now().add(const Duration(days: 365 * 3)),
+                      );
+                      if (picked != null) {
+                        setModalState(() => selected = picked);
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: reasonController,
+                    maxLines: 2,
+                    maxLength: 500,
+                    decoration: const InputDecoration(
+                      labelText: 'Reason (optional)',
+                      hintText: 'Why is the harvest date changing?',
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  ShinePrimaryButton(
+                    label: 'Save harvest date',
+                    onPressed: () => Navigator.pop(ctx, true),
+                  ),
+                  const SizedBox(height: 8),
+                  ShineSecondaryButton(
+                    label: 'Cancel',
+                    onPressed: () => Navigator.pop(ctx, false),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    final reason = reasonController.text.trim();
+    reasonController.dispose();
+    if (confirmed != true || !mounted) return;
+
+    final sameDay = selected.year == farm.harvestDate.year &&
+        selected.month == farm.harvestDate.month &&
+        selected.day == farm.harvestDate.day;
+    if (sameDay) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Pick a different date to save a change'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _updatingHarvest = true);
+    try {
+      await ref.read(farmRepositoryProvider).updateHarvestDate(
+            farm.id,
+            harvestDate: selected,
+            reason: reason.isEmpty ? null : reason,
+          );
+      bumpAppRefresh(ref);
+      await _load();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Harvest date updated'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(formatApiError(e)),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _updatingHarvest = false);
     }
   }
 
@@ -273,6 +420,57 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
             color: AppColors.secondary,
             fullWidth: true,
           ),
+          if (isExecutive || isAdmin) ...[
+            const SizedBox(height: 10),
+            ShineSecondaryButton(
+              label: _updatingHarvest ? 'Updating…' : 'Update harvest date',
+              onPressed: _updatingHarvest ? null : _editHarvestDate,
+            ),
+          ],
+          if (_harvestHistory.isNotEmpty) ...[
+            const SizedBox(height: 20),
+            Text(
+              'Harvest date history',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+            ),
+            const SizedBox(height: 10),
+            ..._harvestHistory.take(10).map(
+                  (change) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: ShineCard(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${dateFormat.format(change.oldDate)} → ${dateFormat.format(change.newDate)}',
+                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'By ${change.changedByName} · ${DateFormat('dd MMM yyyy, hh:mm a').format(change.changedAt.toLocal())}',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: AppColors.textSecondary,
+                                ),
+                          ),
+                          if (change.reason != null &&
+                              change.reason!.trim().isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              change.reason!,
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+          ],
           const SizedBox(height: 16),
           CollapsibleSection(
             title: 'Map',
