@@ -38,6 +38,9 @@ class ApiEndpoints {
   static String farmById(String id) => '$_v1/farms/$id';
   static String assignFarm(String id) => '$_v1/farms/$id/assign';
   static String acceptFarm(String id) => '$_v1/farms/$id/accept';
+  static String farmHarvestDate(String id) => '$_v1/farms/$id/harvest-date';
+  static String farmHarvestDateHistory(String id) =>
+      '$_v1/farms/$id/harvest-date-history';
 
   // Visits
   static const visitCheckin = '$_v1/visits/checkin';
