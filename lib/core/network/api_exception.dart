@@ -17,6 +17,25 @@ class ApiException implements Exception {
   String toString() => message;
 }
 
+/// True when the failure is connectivity-level (no HTTP response), meaning
+/// the request can be retried once the device is back online.
+bool isNetworkError(Object error) {
+  if (error is DioException) {
+    if (error.type == DioExceptionType.connectionError ||
+        error.type == DioExceptionType.connectionTimeout ||
+        error.type == DioExceptionType.sendTimeout ||
+        error.type == DioExceptionType.receiveTimeout) {
+      return true;
+    }
+    // DioClient wraps failures; no status code means no server response.
+    final nested = error.error;
+    if (nested is ApiException) return nested.statusCode == null;
+    return error.response == null;
+  }
+  if (error is ApiException) return error.statusCode == null;
+  return false;
+}
+
 /// Extract a user-facing message from any API / network failure.
 String userFacingErrorMessage(Object error) {
   if (error is ApiException) return error.message;
