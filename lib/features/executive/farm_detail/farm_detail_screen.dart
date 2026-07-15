@@ -408,17 +408,85 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
                 ),
           ),
           const SizedBox(height: 10),
-          HarvestInfoRow(
-            type: farm.harvestType,
-            date: dateFormat.format(farm.harvestDate),
-          ),
-          const SizedBox(height: 10),
-          InfoMetricTile(
-            icon: Icons.fact_check_rounded,
-            label: 'Harvest Status',
-            value: farm.harvestStatus.label,
-            color: AppColors.secondary,
-            fullWidth: true,
+          ShineCard(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: AppColors.primarySoft.withValues(alpha: 0.7),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.event_available_rounded,
+                        color: AppColors.primaryDark,
+                        size: 22,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'SET HARVEST DATE',
+                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                  color: AppColors.textMuted,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.4,
+                                ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            dateFormat.format(farm.harvestDate),
+                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.primaryDark,
+                                ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: InfoMetricTile(
+                        icon: Icons.spa_outlined,
+                        label: 'Type',
+                        value: farm.harvestType.isNotEmpty
+                            ? farm.harvestType
+                            : '—',
+                        color: AppColors.secondary,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: InfoMetricTile(
+                        icon: Icons.grass_rounded,
+                        label: 'Crop',
+                        value: farm.crop.isNotEmpty ? farm.crop : '—',
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                InfoMetricTile(
+                  icon: Icons.fact_check_rounded,
+                  label: 'Harvest Status',
+                  value: farm.harvestStatus.label,
+                  color: AppColors.secondary,
+                  fullWidth: true,
+                ),
+              ],
+            ),
           ),
           if (isExecutive || isAdmin) ...[
             const SizedBox(height: 10),
