@@ -71,25 +71,19 @@ class _ExecutivesScreenState extends ConsumerState<ExecutivesScreen> {
   }
 
   Future<void> _showAddSheet() async {
-    final empId = TextEditingController();
     final name = TextEditingController();
     final mobile = TextEditingController();
     final address = TextEditingController();
     final password = TextEditingController();
+    String? assignedEmployeeId;
 
     final created = await showAdminFormSheet<bool>(
       context: context,
       title: 'Add Executive',
-      subtitle: 'Onboard a new field team member',
+      subtitle: 'Employee ID is assigned automatically (EXEC001, EXEC002, …)',
       icon: Icons.person_add_alt_1_rounded,
       submitLabel: 'Create Executive',
       fields: [
-        AdminFormField(
-          controller: empId,
-          label: 'Employee ID',
-          icon: Icons.badge_outlined,
-          hint: 'e.g. EMP004',
-        ),
         AdminFormField(
           controller: name,
           label: 'Full Name',
@@ -116,9 +110,8 @@ class _ExecutivesScreenState extends ConsumerState<ExecutivesScreen> {
         ),
       ],
       onSubmit: () async {
-        await ref.read(executiveRepositoryProvider).create(
+        final exec = await ref.read(executiveRepositoryProvider).create(
               CreateExecutiveRequest(
-                employeeId: empId.text.trim(),
                 name: name.text.trim(),
                 mobile: mobile.text.trim(),
                 password: password.text,
@@ -127,16 +120,20 @@ class _ExecutivesScreenState extends ConsumerState<ExecutivesScreen> {
                     : address.text.trim(),
               ),
             );
+        assignedEmployeeId = exec.employeeId;
       },
     );
 
-    disposeSheetControllers([empId, name, mobile, address, password]);
+    disposeSheetControllers([name, mobile, address, password]);
 
     if (created == true && mounted) {
       await _load();
       if (!mounted) return;
+      final idNote = assignedEmployeeId == null || assignedEmployeeId!.isEmpty
+          ? 'Executive created successfully'
+          : 'Executive created — ID: $assignedEmployeeId';
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Executive created successfully')),
+        SnackBar(content: Text(idNote)),
       );
     }
   }
