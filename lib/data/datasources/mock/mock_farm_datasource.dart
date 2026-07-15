@@ -3,6 +3,7 @@ import 'dart:math';
 import '../../../core/config/app_config.dart';
 import '../../models/enums.dart';
 import '../../models/farm.dart';
+import '../../models/harvest_date_change.dart';
 import '../../models/visit_form.dart';
 import '../contracts.dart';
 import 'mock_seed_data.dart';
@@ -11,6 +12,7 @@ class MockFarmDataSource implements FarmDataSource {
   MockFarmDataSource() : _farms = List.of(MockSeedData.farms);
 
   final List<Farm> _farms;
+  final List<HarvestDateChange> _history = [];
   final _random = Random();
 
   Future<List<Farm>> getFarms(
@@ -241,6 +243,43 @@ class MockFarmDataSource implements FarmDataSource {
   }) async {
     await Future<void>.delayed(AppConfig.mockNetworkDelay);
     return executiveIds;
+  }
+
+  @override
+  Future<HarvestDateChange> updateHarvestDate(
+    String farmId, {
+    required DateTime harvestDate,
+    String? reason,
+  }) async {
+    await Future<void>.delayed(AppConfig.mockNetworkDelay);
+    final index = _farms.indexWhere((f) => f.id == farmId);
+    if (index < 0) throw Exception('Farm not found');
+    final farm = _farms[index];
+    final oldDate = farm.harvestDate;
+    if (oldDate.year == harvestDate.year &&
+        oldDate.month == harvestDate.month &&
+        oldDate.day == harvestDate.day) {
+      throw Exception('Harvest date is unchanged');
+    }
+    _farms[index] = farm.copyWith(harvestDate: harvestDate);
+    final change = HarvestDateChange(
+      id: 'mock-hdc-${_history.length + 1}',
+      farmId: farmId,
+      oldDate: oldDate,
+      newDate: harvestDate,
+      changedById: 'exec-1',
+      changedByName: 'Rahul Sharma',
+      changedAt: DateTime.now(),
+      reason: reason,
+    );
+    _history.insert(0, change);
+    return change;
+  }
+
+  @override
+  Future<List<HarvestDateChange>> getHarvestDateHistory(String farmId) async {
+    await Future<void>.delayed(AppConfig.mockNetworkDelay);
+    return _history.where((h) => h.farmId == farmId).toList();
   }
 
   Future<void> updateFarmStatus(String farmId, FarmVisitStatus status) async {

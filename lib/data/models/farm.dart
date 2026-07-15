@@ -315,6 +315,7 @@ class Farm {
   Farm copyWith({
     FarmVisitStatus? status,
     DateTime? lastVisited,
+    DateTime? harvestDate,
     List<VisitLog>? visitLogs,
     double? distanceKm,
     HarvestStatus? harvestStatus,
@@ -327,7 +328,7 @@ class Farm {
         latitude: latitude,
         longitude: longitude,
         crop: crop,
-        harvestDate: harvestDate,
+        harvestDate: harvestDate ?? this.harvestDate,
         harvestType: harvestType,
         totalAcres: totalAcres,
         assignedExecutiveId: assignedExecutiveId,

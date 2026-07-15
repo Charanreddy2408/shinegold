@@ -2,6 +2,7 @@ import '../../core/network/json_helpers.dart';
 import '../models/enums.dart';
 import '../models/executive.dart';
 import '../models/farm.dart';
+import '../models/harvest_date_change.dart';
 import '../models/password_reset_request.dart';
 import '../models/user.dart';
 import '../models/visit.dart';
@@ -78,6 +79,14 @@ abstract class FarmDataSource {
     required List<String> executiveIds,
     String mode = 'replace',
   });
+
+  Future<HarvestDateChange> updateHarvestDate(
+    String farmId, {
+    required DateTime harvestDate,
+    String? reason,
+  });
+
+  Future<List<HarvestDateChange>> getHarvestDateHistory(String farmId);
 }
 
 abstract class VisitDataSource {

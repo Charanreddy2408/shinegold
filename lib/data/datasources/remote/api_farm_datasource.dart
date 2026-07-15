@@ -4,6 +4,7 @@ import '../../../core/network/json_helpers.dart';
 import '../../../core/network/upload_service.dart';
 import '../../models/enums.dart';
 import '../../models/farm.dart';
+import '../../models/harvest_date_change.dart';
 import '../../models/visit_form.dart';
 import '../contracts.dart';
 
@@ -181,5 +182,35 @@ class ApiFarmDataSource implements FarmDataSource {
     final data = response.data as Map<String, dynamic>;
     final ids = data['assigned_executive_ids'] as List<dynamic>?;
     return ids?.map((e) => e.toString()).toList() ?? executiveIds;
+  }
+
+  @override
+  Future<HarvestDateChange> updateHarvestDate(
+    String farmId, {
+    required DateTime harvestDate,
+    String? reason,
+  }) async {
+    final response = await _client.dio.patch(
+      ApiEndpoints.farmHarvestDate(farmId),
+      data: {
+        'harvest_date': harvestDate.toIso8601String().split('T').first,
+        if (reason != null && reason.trim().isNotEmpty) 'reason': reason.trim(),
+      },
+    );
+    final data = response.data as Map<String, dynamic>;
+    final change = data['change'];
+    if (change is Map<String, dynamic>) {
+      return HarvestDateChange.fromJson(change);
+    }
+    throw Exception('Invalid harvest date update response');
+  }
+
+  @override
+  Future<List<HarvestDateChange>> getHarvestDateHistory(String farmId) async {
+    final response = await _client.dio.get(
+      ApiEndpoints.farmHarvestDateHistory(farmId),
+      queryParameters: {'page': 1, 'page_size': 50},
+    );
+    return parseList(response.data, HarvestDateChange.fromJson);
   }
 }

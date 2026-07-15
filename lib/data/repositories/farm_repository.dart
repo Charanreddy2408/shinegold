@@ -1,6 +1,7 @@
 import '../datasources/contracts.dart';
 import '../models/enums.dart';
 import '../models/farm.dart';
+import '../models/harvest_date_change.dart';
 import '../models/visit_form.dart';
 
 class FarmRepository {
@@ -86,4 +87,18 @@ class FarmRepository {
         executiveIds: executiveIds,
         mode: mode,
       );
+
+  Future<HarvestDateChange> updateHarvestDate(
+    String farmId, {
+    required DateTime harvestDate,
+    String? reason,
+  }) =>
+      _dataSource.updateHarvestDate(
+        farmId,
+        harvestDate: harvestDate,
+        reason: reason,
+      );
+
+  Future<List<HarvestDateChange>> getHarvestDateHistory(String farmId) =>
+      _dataSource.getHarvestDateHistory(farmId);
 }
