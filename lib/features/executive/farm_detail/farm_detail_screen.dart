@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,6 +16,7 @@ import '../../../data/models/farm.dart';
 import '../../../shared/providers/app_refresh_provider.dart';
 import '../../../shared/providers/auth_provider.dart';
 import '../../../shared/providers/repository_providers.dart';
+import '../../../shared/services/farm_brief_cache.dart';
 import '../../../shared/widgets/animated_loading.dart';
 import '../../../shared/widgets/farm_map_preview.dart';
 import '../../../shared/widgets/info_metric_tile.dart';
@@ -52,6 +55,16 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
     try {
       final farm =
           await ref.read(farmRepositoryProvider).getFarmById(widget.farmId);
+      if (farm != null) {
+        unawaited(
+          FarmBriefCache.instance.save(
+            id: farm.id,
+            name: farm.name,
+            latitude: farm.latitude,
+            longitude: farm.longitude,
+          ),
+        );
+      }
       if (mounted) {
         setState(() {
           _farm = farm;
