@@ -7,6 +7,7 @@ import '../../../core/network/api_endpoints.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/network/json_helpers.dart';
 import '../../../core/network/upload_service.dart';
+import '../../../shared/services/visit_form_cache.dart';
 import '../../models/enums.dart';
 import '../../models/visit.dart';
 import '../../models/visit_form.dart';
@@ -48,7 +49,13 @@ class ApiVisitDataSource implements VisitDataSource {
     final response = await _client.dio.get(
       ApiEndpoints.visitFormContext(visitId),
     );
-    return VisitFormContext.fromJson(response.data as Map<String, dynamic>);
+    final data = response.data as Map<String, dynamic>;
+    final templateJson = data['template'];
+    if (templateJson is Map<String, dynamic>) {
+      // Keep the latest template available for offline visits.
+      await VisitFormCache.instance.saveTemplateJson(templateJson);
+    }
+    return VisitFormContext.fromJson(data);
   }
 
   @override
