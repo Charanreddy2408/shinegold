@@ -13,6 +13,9 @@ import '../profile/executive_profile_screen.dart';
 import '../../../shared/providers/auth_provider.dart';
 import '../../../shared/providers/harvest_reminder_provider.dart';
 import '../../../shared/providers/location_provider.dart';
+import '../../../shared/providers/visit_sync_provider.dart';
+import '../../../shared/services/offline_visit_store.dart';
+import '../../../shared/services/visit_sync_service.dart';
 
 class ExecutiveShell extends ConsumerStatefulWidget {
   const ExecutiveShell({super.key});
@@ -30,8 +33,11 @@ class _ExecutiveShellState extends ConsumerState<ExecutiveShell>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Keep the coordinator alive so connectivity changes drain the queue.
+      ref.read(visitSyncCoordinatorProvider);
       unawaited(_bootstrapLocation());
       unawaited(_syncHarvestReminders(showSnack: true));
+      unawaited(_syncOfflineVisits(showSnack: true));
     });
   }
 
@@ -45,7 +51,34 @@ class _ExecutiveShellState extends ConsumerState<ExecutiveShell>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       unawaited(_syncHarvestReminders());
+      unawaited(_syncOfflineVisits());
     }
+  }
+
+  Future<void> _syncOfflineVisits({bool showSnack = false}) async {
+    if (OfflineVisitStore.instance.pendingCount.value == 0) {
+      // Still load disk queue so count is accurate after cold start.
+      await OfflineVisitStore.instance.all();
+      if (OfflineVisitStore.instance.pendingCount.value == 0) return;
+    }
+
+    final result = await ref.read(visitSyncCoordinatorProvider).syncNow();
+    if (!mounted || !showSnack) return;
+    _showSyncSnack(result);
+  }
+
+  void _showSyncSnack(VisitSyncResult result) {
+    if (result.synced <= 0) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          result.synced == 1
+              ? '1 offline visit synced'
+              : '${result.synced} offline visits synced',
+        ),
+        duration: const Duration(seconds: 3),
+      ),
+    );
   }
 
   Future<void> _syncHarvestReminders({bool showSnack = false}) async {

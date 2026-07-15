@@ -27,7 +27,9 @@ class VisitSyncCoordinator {
   Future<void> _onConnectivityChanged(List<ConnectivityResult> results) async {
     final online = results.any((r) => r != ConnectivityResult.none);
     if (!online) return;
-    if (OfflineVisitStore.instance.pendingCount.value == 0) return;
+    // Ensure disk queue is loaded after cold start before skipping.
+    final pending = await OfflineVisitStore.instance.all();
+    if (pending.isEmpty) return;
     await syncNow();
   }
 
