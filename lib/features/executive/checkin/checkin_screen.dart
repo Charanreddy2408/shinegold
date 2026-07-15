@@ -14,12 +14,18 @@ import 'package:uuid/uuid.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../data/models/enums.dart';
+import '../../../data/models/pending_visit.dart';
 import '../../../data/models/visit.dart';
 import '../../../data/models/visit_form.dart';
 import '../../../shared/providers/app_refresh_provider.dart';
 import '../../../shared/providers/auth_provider.dart';
 import '../../../shared/providers/location_provider.dart';
 import '../../../shared/providers/repository_providers.dart';
+import '../../../shared/providers/visit_sync_provider.dart';
+import '../../../shared/services/farm_brief_cache.dart';
+import '../../../shared/services/offline_visit_store.dart';
+import '../../../shared/services/visit_form_cache.dart';
 import '../../../shared/widgets/shine_buttons.dart';
 import '../../../shared/widgets/ux_components.dart';
 import '../../visits/presentation/widgets/dynamic_visit_form.dart';
@@ -46,12 +52,15 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
   bool _voiceMarked = false;
   bool _submitted = false;
   bool _cancelling = false;
+  bool _offlineMode = false;
   String? _voicePath;
   String? _uploadedVoiceUrl;
   final _audioRecorder = AudioRecorder();
   String? _apiErrorMessage;
   final List<XFile> _photos = [];
   String? _farmName;
+  double? _farmLat;
+  double? _farmLng;
   Timer? _saveDebounce;
 
   static const _stepLabels = ['Start', 'Report', 'Media', 'Submit'];
@@ -80,13 +89,18 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
         await ref.read(visitRepositoryProvider).cancelVisit(ongoing.id);
       }
     } catch (e) {
-      // Non-fatal cleanup — keep going into check-in.
+      // Non-fatal cleanup — keep going into check-in (including offline).
       debugPrint('Stale visit cleanup skipped: $e');
     }
   }
 
   Future<void> _cancelActiveVisit() async {
     if (_submitted || _visit == null || _cancelling) return;
+    if (_offlineMode) {
+      // Local-only session — nothing to cancel on the server.
+      _cancelling = false;
+      return;
+    }
     _cancelling = true;
     try {
       await ref.read(visitRepositoryProvider).cancelVisit(_visit!.id);
@@ -165,42 +179,138 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
     });
     try {
       final user = ref.read(currentUserProvider)!;
-      final farm =
-          await ref.read(farmRepositoryProvider).getFarmById(widget.farmId);
-      if (farm == null) {
-        setState(() => _apiErrorMessage = 'Farm not found.');
-        return;
-      }
-
-      _farmName = farm.name;
       final loc = ref.read(locationProvider);
-      final lat = loc.position?.latitude ?? farm.latitude;
-      final lng = loc.position?.longitude ?? farm.longitude;
 
-      final ongoing =
-          await ref.read(visitRepositoryProvider).getOngoingVisit(user.id);
-      if (ongoing != null) {
-        await ref.read(visitRepositoryProvider).cancelVisit(ongoing.id);
+      String farmName;
+      double farmLat;
+      double farmLng;
+
+      try {
+        final farm =
+            await ref.read(farmRepositoryProvider).getFarmById(widget.farmId);
+        if (farm == null) {
+          setState(() => _apiErrorMessage = 'Farm not found.');
+          return;
+        }
+        farmName = farm.name;
+        farmLat = farm.latitude;
+        farmLng = farm.longitude;
+        unawaited(
+          FarmBriefCache.instance.save(
+            id: farm.id,
+            name: farm.name,
+            latitude: farm.latitude,
+            longitude: farm.longitude,
+          ),
+        );
+      } catch (e) {
+        if (!isNetworkError(e)) rethrow;
+        final brief = await FarmBriefCache.instance.load(widget.farmId);
+        if (brief == null) {
+          setState(
+            () => _apiErrorMessage =
+                'No internet and this farm is not cached yet. Open the farm once while online, then try again.',
+          );
+          return;
+        }
+        farmName = brief.name;
+        farmLat = brief.latitude;
+        farmLng = brief.longitude;
       }
 
-      _visit = await ref.read(visitRepositoryProvider).startVisit(
-            farmId: farm.id,
-            farmName: farm.name,
-            executiveId: user.id,
-            executiveName: user.name,
-            latitude: lat,
-            longitude: lng,
-          );
+      _farmName = farmName;
+      _farmLat = farmLat;
+      _farmLng = farmLng;
+      final lat = loc.position?.latitude ?? farmLat;
+      final lng = loc.position?.longitude ?? farmLng;
 
-      _formContext = await ref
-          .read(visitRepositoryProvider)
-          .getVisitFormContext(_visit!.id);
-      _goToStep(1);
+      try {
+        final ongoing =
+            await ref.read(visitRepositoryProvider).getOngoingVisit(user.id);
+        if (ongoing != null) {
+          await ref.read(visitRepositoryProvider).cancelVisit(ongoing.id);
+        }
+
+        _visit = await ref.read(visitRepositoryProvider).startVisit(
+              farmId: widget.farmId,
+              farmName: farmName,
+              executiveId: user.id,
+              executiveName: user.name,
+              latitude: lat,
+              longitude: lng,
+            );
+
+        _formContext = await ref
+            .read(visitRepositoryProvider)
+            .getVisitFormContext(_visit!.id);
+        _offlineMode = false;
+        _goToStep(1);
+      } catch (e) {
+        if (!isNetworkError(e)) rethrow;
+        final started = await _beginOfflineVisit(
+          userName: user.name,
+          latitude: lat,
+          longitude: lng,
+        );
+        if (!started) return;
+        _goToStep(1);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Offline mode — visit will sync when internet returns',
+              ),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
     } catch (e) {
       setState(() => _apiErrorMessage = formatApiError(e));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  /// Starts a local-only visit using the cached form template.
+  Future<bool> _beginOfflineVisit({
+    required String userName,
+    required double latitude,
+    required double longitude,
+  }) async {
+    final template = await VisitFormCache.instance.loadTemplate();
+    if (template == null) {
+      setState(
+        () => _apiErrorMessage =
+            'No internet and no saved visit form yet. Complete one online visit first so the form can be cached.',
+      );
+      return false;
+    }
+
+    final localId = 'local-${const Uuid().v4()}';
+    final now = DateTime.now();
+    _offlineMode = true;
+    _visit = Visit(
+      id: localId,
+      farmId: widget.farmId,
+      farmName: _farmName ?? 'Farm',
+      executiveId: ref.read(currentUserProvider)?.id ?? '',
+      executiveName: userName,
+      startedAt: now,
+      status: VisitStatus.ongoing,
+      latitude: latitude,
+      longitude: longitude,
+      syncStatus: SyncStatus.pendingSync,
+    );
+    _formContext = VisitFormContext(
+      template: template,
+      prefill: VisitFormPrefill(
+        executiveName: userName,
+        visitDate: now.toIso8601String().split('T').first,
+        checkinTime: now,
+      ),
+    );
+    return true;
   }
 
   void _onAnswersChanged(FormAnswersMap answers) {
@@ -227,7 +337,7 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
   }
 
   Future<void> _saveFormProgress() async {
-    if (_visit == null || _formContext == null) return;
+    if (_visit == null || _formContext == null || _offlineMode) return;
     try {
       final entries = DynamicVisitForm.toFormAnswers(
         _formContext!.template,
@@ -324,6 +434,11 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
 
   Future<void> _uploadVoiceNote(String path) async {
     if (_visit == null) return;
+    if (_offlineMode) {
+      // Keep the local path; sync will upload after connectivity returns.
+      if (mounted) setState(() => _uploadedVoiceUrl = null);
+      return;
+    }
     try {
       final uploads = ref.read(uploadServiceProvider);
       final url = kIsWeb || path.startsWith('blob:')
@@ -346,6 +461,16 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
       if (mounted) setState(() => _uploadedVoiceUrl = url);
     } catch (e) {
       if (!mounted) return;
+      if (isNetworkError(e)) {
+        // Keep local path for offline enqueue on submit.
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Voice saved locally — will upload when online'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Voice upload failed: ${formatApiError(e)}'),
@@ -436,24 +561,54 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
     try {
       final loc = ref.read(locationProvider);
       final checkoutLat =
-          loc.position?.latitude ?? _visit!.latitude ?? 17.385;
+          loc.position?.latitude ?? _visit!.latitude ?? _farmLat ?? 17.385;
       final checkoutLng =
-          loc.position?.longitude ?? _visit!.longitude ?? 78.4867;
+          loc.position?.longitude ?? _visit!.longitude ?? _farmLng ?? 78.4867;
 
       final formAnswers = _formContext != null
           ? DynamicVisitForm.toFormAnswers(_formContext!.template, _answers)
           : null;
       final actionPlan = _answers['action_plan']?.toString();
+      final photoPaths = _photos.map((photo) => photo.path).toList();
+      final voicePath = _uploadedVoiceUrl ?? _voicePath;
 
-      await ref.read(visitRepositoryProvider).submitVisit(
-            visitId: _visit!.id,
-            photos: _photos.map((photo) => photo.path).toList(),
-            checkoutLat: checkoutLat,
-            checkoutLng: checkoutLng,
-            voiceNotePath: _uploadedVoiceUrl ?? _voicePath,
-            textNote: actionPlan,
-            formAnswers: formAnswers,
-          );
+      if (_offlineMode) {
+        await _enqueuePendingVisit(
+          checkoutLat: checkoutLat,
+          checkoutLng: checkoutLng,
+          formAnswers: formAnswers ?? const [],
+          photoPaths: photoPaths,
+          voiceNotePath: voicePath,
+          textNote: actionPlan,
+          serverVisitId: null,
+        );
+        return;
+      }
+
+      try {
+        await ref.read(visitRepositoryProvider).submitVisit(
+              visitId: _visit!.id,
+              photos: photoPaths,
+              checkoutLat: checkoutLat,
+              checkoutLng: checkoutLng,
+              voiceNotePath: voicePath,
+              textNote: actionPlan,
+              formAnswers: formAnswers,
+            );
+      } catch (e) {
+        if (!isNetworkError(e)) rethrow;
+        // Dropped mid-submit — keep server visit id so sync resumes there.
+        await _enqueuePendingVisit(
+          checkoutLat: checkoutLat,
+          checkoutLng: checkoutLng,
+          formAnswers: formAnswers ?? const [],
+          photoPaths: photoPaths,
+          voiceNotePath: voicePath,
+          textNote: actionPlan,
+          serverVisitId: _visit!.id,
+        );
+        return;
+      }
 
       if (!mounted) return;
       setState(() => _submitted = true);
@@ -473,6 +628,58 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  Future<void> _enqueuePendingVisit({
+    required double checkoutLat,
+    required double checkoutLng,
+    required List<FormAnswerEntry> formAnswers,
+    required List<String> photoPaths,
+    required String? voiceNotePath,
+    required String? textNote,
+    required String? serverVisitId,
+  }) async {
+    final visit = _visit!;
+    final localId =
+        visit.id.startsWith('local-') ? visit.id : 'local-${const Uuid().v4()}';
+
+    var pending = PendingVisit(
+      localId: localId,
+      farmId: visit.farmId,
+      farmName: visit.farmName,
+      checkinLat: visit.latitude ?? checkoutLat,
+      checkinLng: visit.longitude ?? checkoutLng,
+      checkinAt: visit.startedAt,
+      checkoutLat: checkoutLat,
+      checkoutLng: checkoutLng,
+      checkoutAt: DateTime.now(),
+      formAnswers: formAnswers,
+      photoPaths: photoPaths,
+      voiceNotePath: voiceNotePath,
+      textNote: textNote,
+      serverVisitId: serverVisitId,
+    );
+
+    pending = await OfflineVisitStore.instance.persistMedia(pending);
+    await OfflineVisitStore.instance.enqueue(pending);
+
+    if (!mounted) return;
+    setState(() => _submitted = true);
+    bumpAppRefresh(ref);
+    // Kick sync in case connectivity already recovered.
+    unawaited(ref.read(visitSyncCoordinatorProvider).syncNow());
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text(
+          'Visit saved offline. It will sync automatically when internet returns.',
+        ),
+        backgroundColor: AppColors.info,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 4),
+      ),
+    );
+    context.pop(true);
   }
 
   @override
@@ -545,6 +752,27 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
       ),
       body: Column(
         children: [
+          if (_offlineMode)
+            Container(
+              width: double.infinity,
+              color: AppColors.info.withValues(alpha: 0.15),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                children: [
+                  Icon(Icons.cloud_off_rounded, size: 18, color: AppColors.info),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Offline — answers & media stay on this device until sync',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppColors.primaryDark,
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           if (_apiErrorMessage != null)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
