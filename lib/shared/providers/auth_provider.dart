@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/network/dio_client.dart';
 import '../../data/models/enums.dart';
+import '../../data/models/password_reset_request.dart';
 import '../../data/models/user.dart';
 import '../../data/repositories/auth_repository.dart';
 import '../services/notification_service.dart';
@@ -137,11 +138,30 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthSession?>> {
   Future<void> requestPasswordReset(String employeeId) =>
       _repository.requestPasswordReset(employeeId);
 
-  Future<bool> checkPasswordResetApproved(String employeeId) =>
-      _repository.checkPasswordResetApproved(employeeId);
+  Future<PasswordResetStatusInfo> checkPasswordResetStatus(String employeeId) =>
+      _repository.checkPasswordResetStatus(employeeId);
 
-  Future<void> setNewPassword(String employeeId, String newPassword) =>
-      _repository.setNewPassword(employeeId, newPassword);
+  Future<void> setNewPassword({
+    required String employeeId,
+    required String newPassword,
+    required String confirmPassword,
+  }) =>
+      _repository.setNewPassword(
+        employeeId: employeeId,
+        newPassword: newPassword,
+        confirmPassword: confirmPassword,
+      );
+
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+    required String confirmPassword,
+  }) =>
+      _repository.changePassword(
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+        confirmPassword: confirmPassword,
+      );
 
   Future<void> refreshUser() async {
     final session = state.valueOrNull;
@@ -172,6 +192,29 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthSession?>> {
       homeLat: homeLat ?? session.user.homeLat ?? 17.3850,
       homeLng: homeLng ?? session.user.homeLng ?? 78.4867,
       address: session.user.address,
+    );
+    final updated = AuthSession(
+      token: session.token,
+      refreshToken: session.refreshToken,
+      user: user,
+    );
+    await _persistSession(updated);
+    state = AsyncValue.data(updated);
+  }
+
+  /// Updates home GPS + address anytime from profile.
+  Future<void> updateHomeLocation({
+    required double homeLat,
+    required double homeLng,
+    String? address,
+  }) async {
+    final session = state.valueOrNull;
+    if (session == null) return;
+
+    final user = await _repository.updateProfile(
+      address: address,
+      homeLat: homeLat,
+      homeLng: homeLng,
     );
     final updated = AuthSession(
       token: session.token,

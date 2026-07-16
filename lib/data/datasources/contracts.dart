@@ -19,7 +19,7 @@ abstract class AuthDataSource {
     String? address,
   });
   Future<void> requestPasswordReset(String employeeId);
-  Future<bool> checkPasswordResetApproved(String employeeId);
+  Future<PasswordResetStatusInfo> checkPasswordResetStatus(String employeeId);
   Future<PaginatedResult<PasswordResetRequestItem>> listPasswordResetRequests({
     String? status,
     int page = 1,
@@ -27,9 +27,12 @@ abstract class AuthDataSource {
   });
   Future<void> approvePasswordReset({
     required String requestId,
-    required String tempPassword,
   });
-  Future<void> setNewPassword(String employeeId, String newPassword);
+  Future<void> setNewPassword({
+    required String employeeId,
+    required String newPassword,
+    required String confirmPassword,
+  });
   Future<void> changePassword({
     required String currentPassword,
     required String newPassword,
@@ -40,6 +43,8 @@ abstract class AuthDataSource {
     String? address,
     String? mobileNumber,
     String? profilePhotoUrl,
+    double? homeLat,
+    double? homeLng,
   });
 }
 

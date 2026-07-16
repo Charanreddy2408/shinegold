@@ -14,7 +14,7 @@ import '../../../data/models/farm.dart';
 import '../../../shared/providers/repository_providers.dart';
 import '../../../shared/utils/list_search.dart';
 import '../../../shared/widgets/app_background.dart';
-import '../../../shared/widgets/gold_shimmer.dart';
+import '../../../shared/widgets/animated_loading.dart';
 import '../../../shared/widgets/status_chip.dart';
 import '../../../shared/widgets/ux_components.dart';
 import '../../../shared/widgets/shine_empty_state.dart';
@@ -110,14 +110,7 @@ class _FarmersScreenState extends ConsumerState<FarmersScreen> {
               ),
             Expanded(
               child: _loading
-                  ? ListView.builder(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: 4,
-                      itemBuilder: (_, __) => const Padding(
-                        padding: EdgeInsets.only(bottom: 12),
-                        child: ShimmerBox(height: 72),
-                      ),
-                    )
+                  ? const ListLoadingSkeleton(itemCount: 5, itemHeight: 80)
                   : _error != null
                       ? Center(
                           child: Padding(

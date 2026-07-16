@@ -33,8 +33,8 @@ class AuthRepository {
   Future<void> requestPasswordReset(String employeeId) =>
       _dataSource.requestPasswordReset(employeeId);
 
-  Future<bool> checkPasswordResetApproved(String employeeId) =>
-      _dataSource.checkPasswordResetApproved(employeeId);
+  Future<PasswordResetStatusInfo> checkPasswordResetStatus(String employeeId) =>
+      _dataSource.checkPasswordResetStatus(employeeId);
 
   Future<PaginatedResult<PasswordResetRequestItem>> listPasswordResetRequests({
     String? status,
@@ -49,15 +49,19 @@ class AuthRepository {
 
   Future<void> approvePasswordReset({
     required String requestId,
-    required String tempPassword,
   }) =>
-      _dataSource.approvePasswordReset(
-        requestId: requestId,
-        tempPassword: tempPassword,
-      );
+      _dataSource.approvePasswordReset(requestId: requestId);
 
-  Future<void> setNewPassword(String employeeId, String newPassword) =>
-      _dataSource.setNewPassword(employeeId, newPassword);
+  Future<void> setNewPassword({
+    required String employeeId,
+    required String newPassword,
+    required String confirmPassword,
+  }) =>
+      _dataSource.setNewPassword(
+        employeeId: employeeId,
+        newPassword: newPassword,
+        confirmPassword: confirmPassword,
+      );
 
   Future<void> changePassword({
     required String currentPassword,
@@ -75,11 +79,15 @@ class AuthRepository {
     String? address,
     String? mobileNumber,
     String? profilePhotoUrl,
+    double? homeLat,
+    double? homeLng,
   }) =>
       _dataSource.updateProfile(
         name: name,
         address: address,
         mobileNumber: mobileNumber,
         profilePhotoUrl: profilePhotoUrl,
+        homeLat: homeLat,
+        homeLng: homeLng,
       );
 }

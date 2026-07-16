@@ -201,6 +201,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         isLoading: _loading,
                         onPressed: _loading ? null : _login,
                       ),
+                      const SizedBox(height: AppSpacing.md),
+                      Align(
+                        alignment: Alignment.center,
+                        child: TextButton(
+                          onPressed: _loading
+                              ? null
+                              : () => context.push(AppRoutes.forgotPassword),
+                          child: Text(
+                            'Forgot password?',
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  color: AppColors.primaryDark,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),

@@ -186,10 +186,16 @@ class CreateExecutiveRequest {
     required this.mobile,
     required this.password,
     required this.address,
+    this.homeLat,
+    this.homeLng,
   });
 
   final String name;
   final String mobile;
   final String password;
+  /// Free-text address for records (include area / city / PIN when possible).
   final String address;
+  /// GPS home pin used for nearby-farm ranking. Both must be set together.
+  final double? homeLat;
+  final double? homeLng;
 }

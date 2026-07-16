@@ -60,13 +60,34 @@ class MockAuthDataSource implements AuthDataSource {
   }
 
   @override
-  Future<bool> checkPasswordResetApproved(String employeeId) async {
+  Future<PasswordResetStatusInfo> checkPasswordResetStatus(
+    String employeeId,
+  ) async {
     await Future<void>.delayed(AppConfig.mockNetworkDelay);
     if (_pendingResetEmployeeId?.toUpperCase() == employeeId.toUpperCase()) {
       _passwordResetApproved = true;
-      return true;
     }
-    return _passwordResetApproved;
+    if (_passwordResetApproved) {
+      return PasswordResetStatusInfo(
+        employeeId: employeeId,
+        status: 'approved',
+        approved: true,
+        message: 'Reset approved. Open your profile and set a new password.',
+      );
+    }
+    if (_pendingResetEmployeeId?.toUpperCase() == employeeId.toUpperCase()) {
+      return PasswordResetStatusInfo(
+        employeeId: employeeId,
+        status: 'pending',
+        approved: false,
+        message: 'Reset request is pending admin approval',
+      );
+    }
+    return PasswordResetStatusInfo(
+      employeeId: employeeId,
+      approved: false,
+      message: 'No password reset request found',
+    );
   }
 
   @override
@@ -95,12 +116,8 @@ class MockAuthDataSource implements AuthDataSource {
   @override
   Future<void> approvePasswordReset({
     required String requestId,
-    required String tempPassword,
   }) async {
     await Future<void>.delayed(AppConfig.mockNetworkDelay);
-    if (tempPassword.length < 6) {
-      throw Exception('Temporary password must be at least 6 characters');
-    }
     final index = _resetRequests.indexWhere((r) => r.id == requestId);
     if (index == -1) {
       throw Exception('Password reset request not found');
@@ -122,10 +139,20 @@ class MockAuthDataSource implements AuthDataSource {
   }
 
   @override
-  Future<void> setNewPassword(String employeeId, String newPassword) async {
+  Future<void> setNewPassword({
+    required String employeeId,
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
     await Future<void>.delayed(AppConfig.mockNetworkDelay);
     if (!_passwordResetApproved) {
       throw Exception('Password reset not yet approved by super admin');
+    }
+    if (newPassword != confirmPassword) {
+      throw Exception('Passwords do not match');
+    }
+    if (newPassword.length < 6) {
+      throw Exception('Password must be at least 6 characters');
     }
     _passwordResetApproved = false;
     _pendingResetEmployeeId = null;
@@ -180,6 +207,8 @@ class MockAuthDataSource implements AuthDataSource {
     String? address,
     String? mobileNumber,
     String? profilePhotoUrl,
+    double? homeLat,
+    double? homeLng,
   }) async {
     await Future<void>.delayed(AppConfig.mockNetworkDelay);
     final user = MockSeedData.executiveUser;
@@ -191,11 +220,13 @@ class MockAuthDataSource implements AuthDataSource {
       profilePhotoUrl: profilePhotoUrl ?? user.profilePhotoUrl,
       address: address ?? user.address,
       mobile: mobileNumber ?? user.mobile,
-      homeLat: user.homeLat,
-      homeLng: user.homeLng,
+      homeLat: homeLat ?? user.homeLat,
+      homeLng: homeLng ?? user.homeLng,
       farmsVisitedCount: user.farmsVisitedCount,
       onboardingCount: user.onboardingCount,
-      requiresLocationSetup: user.requiresLocationSetup,
+      requiresLocationSetup: homeLat == null || homeLng == null
+          ? user.requiresLocationSetup
+          : false,
     );
   }
 }

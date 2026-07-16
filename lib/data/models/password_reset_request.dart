@@ -29,3 +29,30 @@ class PasswordResetRequestItem {
     );
   }
 }
+
+class PasswordResetStatusInfo {
+  const PasswordResetStatusInfo({
+    required this.employeeId,
+    required this.approved,
+    required this.message,
+    this.status,
+  });
+
+  final String employeeId;
+  final String? status;
+  final bool approved;
+  final String message;
+
+  bool get isPending => status == 'pending';
+  bool get isApproved => approved;
+  bool get isCompleted => status == 'completed';
+
+  factory PasswordResetStatusInfo.fromJson(Map<String, dynamic> json) {
+    return PasswordResetStatusInfo(
+      employeeId: json['employee_id'] as String? ?? '',
+      status: json['status'] as String?,
+      approved: json['approved'] as bool? ?? false,
+      message: json['message'] as String? ?? '',
+    );
+  }
+}

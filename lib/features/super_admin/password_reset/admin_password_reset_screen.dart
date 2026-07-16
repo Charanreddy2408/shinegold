@@ -7,9 +7,8 @@ import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../data/models/password_reset_request.dart';
 import '../../../shared/providers/repository_providers.dart';
-import '../../../shared/widgets/admin_ui.dart';
+import '../../../shared/widgets/animated_loading.dart';
 import '../../../shared/widgets/app_background.dart';
-import '../../../shared/widgets/gold_shimmer.dart';
 import '../../../shared/widgets/shine_buttons.dart';
 import '../../../shared/widgets/shine_empty_state.dart';
 
@@ -61,45 +60,50 @@ class _AdminPasswordResetScreenState
   }
 
   Future<void> _approve(PasswordResetRequestItem request) async {
-    final tempPassword = TextEditingController();
-    final approved = await showAdminFormSheet<bool>(
+    final confirmed = await showDialog<bool>(
       context: context,
-      title: 'Approve Reset',
-      subtitle: 'Set a temporary password for ${request.employeeId}',
-      icon: Icons.lock_reset_rounded,
-      submitLabel: 'Approve & Set Password',
-      fields: [
-        AdminFormField(
-          controller: tempPassword,
-          label: 'Temporary password',
-          icon: Icons.key_rounded,
-          obscureText: true,
-          hint: 'Min. 6 characters — share with the executive',
+      builder: (ctx) => AlertDialog(
+        title: const Text('Approve password reset?'),
+        content: Text(
+          'Allow ${request.userName} (${request.employeeId}) to set a new '
+          'password from their profile. You will not set a temporary password.',
         ),
-      ],
-      onSubmit: () async {
-        final password = tempPassword.text.trim();
-        if (password.length < 6) {
-          throw Exception('Temporary password must be at least 6 characters');
-        }
-        await ref.read(authRepositoryProvider).approvePasswordReset(
-              requestId: request.id,
-              tempPassword: password,
-            );
-      },
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Approve'),
+          ),
+        ],
+      ),
     );
-    disposeSheetControllers([tempPassword]);
+    if (confirmed != true || !mounted) return;
 
-    if (approved == true && mounted) {
+    try {
+      await ref.read(authRepositoryProvider).approvePasswordReset(
+            requestId: request.id,
+          );
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Password reset approved for ${request.employeeId}',
+            'Approved — ${request.employeeId} can now set a new password',
           ),
           behavior: SnackBarBehavior.floating,
         ),
       );
       await _load();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(formatApiError(e)),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
   }
 
@@ -152,7 +156,7 @@ class _AdminPasswordResetScreenState
                 children: [
                   Expanded(
                     child: Text(
-                      'Review executive forgot-password requests and issue temporary passwords.',
+                      'Review executive password-reset requests. Approve so they can set a new password themselves.',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: AppColors.textMuted,
                           ),
@@ -186,12 +190,7 @@ class _AdminPasswordResetScreenState
             const SizedBox(height: 12),
             Expanded(
               child: _loading
-                  ? ListView.separated(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: 5,
-                      separatorBuilder: (_, __) => const SizedBox(height: 10),
-                      itemBuilder: (_, __) => const ShimmerBox(height: 120),
-                    )
+                  ? const ListLoadingSkeleton(itemCount: 5, itemHeight: 120)
                   : _error != null
                       ? ShineEmptyState(
                           icon: Icons.error_outline_rounded,
@@ -314,7 +313,7 @@ class _AdminPasswordResetScreenState
                                           if (request.isPending) ...[
                                             const SizedBox(height: 14),
                                             ShinePrimaryButton(
-                                              label: 'Approve with temp password',
+                                              label: 'Approve',
                                               icon: Icons.check_circle_outline,
                                               onPressed: () =>
                                                   _approve(request),

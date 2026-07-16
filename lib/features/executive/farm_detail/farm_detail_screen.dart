@@ -240,7 +240,7 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
     if (_loading) {
       return Scaffold(
         backgroundColor: AppColors.canvasDeep,
-        body: const ListLoadingSkeleton(itemCount: 5, itemHeight: 64),
+        body: const DetailLoadingSkeleton(),
       );
     }
 

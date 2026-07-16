@@ -7,6 +7,7 @@ import 'package:latlong2/latlong.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/network/dio_client.dart';
 import '../../../shared/models/farm_boundary.dart';
 import '../../../shared/providers/location_provider.dart';
 import '../../../shared/utils/geo_area.dart';
@@ -40,9 +41,11 @@ class _FarmBoundaryPickerScreenState
     extends ConsumerState<FarmBoundaryPickerScreen> {
   final _mapController = MapController();
   final _searchController = TextEditingController();
-  final _geocoding = GeocodingService();
   final List<LatLng> _pins = [];
   final List<GeocodingResult> _searchResults = [];
+
+  GeocodingService get _geocoding =>
+      GeocodingService(dio: ref.read(dioClientProvider).dio);
 
   Timer? _searchDebounce;
   bool _searching = false;

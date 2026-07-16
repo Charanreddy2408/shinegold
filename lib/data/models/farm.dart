@@ -154,12 +154,9 @@ class Farm {
   final List<String> photoUrls;
 
   factory Farm.fromUpcomingHarvest(Map<String, dynamic> json) {
-    final harvestDateRaw = json['harvest_date'];
-    final harvestDate = harvestDateRaw is String
-        ? DateTime.parse(harvestDateRaw)
-        : DateTime.now();
-  final harvestLabel = harvestDateRaw is String
-        ? 'Harvest: ${harvestDateRaw.split('T').first}'
+    final harvestDate = _parseApiDate(json['harvest_date']);
+    final harvestLabel = harvestDate != null
+        ? 'Harvest: ${harvestDate.toIso8601String().split('T').first}'
         : '';
     return Farm(
       id: json['farm_id']?.toString() ?? json['id']?.toString() ?? '',
@@ -168,7 +165,7 @@ class Farm {
       latitude: 0,
       longitude: 0,
       crop: json['crop'] as String? ?? '',
-      harvestDate: harvestDate,
+      harvestDate: harvestDate ?? DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
       harvestType: json['harvest_type'] as String? ?? '',
       totalAcres: 0,
       assignedExecutiveId: '',
@@ -185,7 +182,8 @@ class Farm {
         latitude: 0,
         longitude: 0,
         crop: json['crop'] as String? ?? '',
-        harvestDate: DateTime.now(),
+        harvestDate: _parseApiDate(json['harvest_date']) ??
+            DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
         harvestType: json['harvest_type'] as String? ?? '',
         totalAcres: 0,
         assignedExecutiveId: '',
@@ -249,10 +247,12 @@ class Farm {
         ? Farmer.fromJson(farmerJson)
         : const Farmer(id: '', name: '—', mobile: '');
 
-    final harvestDateRaw = json['harvest_date'];
-    final harvestDate = harvestDateRaw is String
-        ? DateTime.parse(harvestDateRaw)
-        : DateTime.now();
+    final harvestDate = _parseApiDate(json['harvest_date']);
+    if (harvestDate == null) {
+      throw FormatException(
+        'Farm ${json['id']} is missing a valid harvest_date',
+      );
+    }
 
     return Farm(
       id: json['id'].toString(),
@@ -291,6 +291,21 @@ class Farm {
               .toList() ??
           [],
     );
+  }
+
+  /// Parses API date / datetime values without inventing "today".
+  static DateTime? _parseApiDate(dynamic value) {
+    if (value == null) return null;
+    final raw = value.toString().trim();
+    if (raw.isEmpty || raw == 'null') return null;
+    try {
+      if (raw.length == 10) {
+        return DateTime.parse('${raw}T00:00:00');
+      }
+      return DateTime.parse(raw);
+    } catch (_) {
+      return null;
+    }
   }
 
   static FarmVisitStatus _parseFarmVisitStatus(String value) {

@@ -80,13 +80,16 @@ class ApiAuthDataSource implements AuthDataSource {
   }
 
   @override
-  Future<bool> checkPasswordResetApproved(String employeeId) async {
+  Future<PasswordResetStatusInfo> checkPasswordResetStatus(
+    String employeeId,
+  ) async {
     final response = await _client.dio.get(
       ApiEndpoints.passwordResetStatus,
       queryParameters: {'employee_id': employeeId},
     );
-    final data = response.data as Map<String, dynamic>;
-    return data['approved'] as bool? ?? false;
+    return PasswordResetStatusInfo.fromJson(
+      response.data as Map<String, dynamic>,
+    );
   }
 
   @override
@@ -112,18 +115,25 @@ class ApiAuthDataSource implements AuthDataSource {
   @override
   Future<void> approvePasswordReset({
     required String requestId,
-    required String tempPassword,
   }) async {
     await _client.dio.post(
       ApiEndpoints.approvePasswordReset(requestId),
-      data: {'temp_password': tempPassword},
     );
   }
 
   @override
-  Future<void> setNewPassword(String employeeId, String newPassword) async {
-    throw UnsupportedError(
-      'Password reset must be approved by admin before setting a new password.',
+  Future<void> setNewPassword({
+    required String employeeId,
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
+    await _client.dio.post(
+      ApiEndpoints.setPasswordAfterReset,
+      data: {
+        'employee_id': employeeId,
+        'new_password': newPassword,
+        'confirm_password': confirmPassword,
+      },
     );
   }
 
@@ -149,6 +159,8 @@ class ApiAuthDataSource implements AuthDataSource {
     String? address,
     String? mobileNumber,
     String? profilePhotoUrl,
+    double? homeLat,
+    double? homeLng,
   }) async {
     final response = await _client.dio.patch(
       ApiEndpoints.usersMe,
@@ -157,6 +169,8 @@ class ApiAuthDataSource implements AuthDataSource {
         if (address != null) 'address': address,
         if (mobileNumber != null) 'mobile_number': mobileNumber,
         if (profilePhotoUrl != null) 'profile_photo_url': profilePhotoUrl,
+        if (homeLat != null) 'home_lat': homeLat,
+        if (homeLng != null) 'home_lng': homeLng,
       },
     );
     return User.fromJson(response.data as Map<String, dynamic>);

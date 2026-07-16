@@ -6,6 +6,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../data/models/executive.dart';
 import '../../../data/models/farm.dart';
 import '../../../shared/providers/repository_providers.dart';
+import '../../../shared/widgets/animated_loading.dart';
 import '../../../shared/widgets/shine_buttons.dart';
 
 Future<bool?> showAdminFarmAssignSheet(
@@ -124,9 +125,9 @@ class _AdminFarmAssignSheetState extends ConsumerState<_AdminFarmAssignSheet> {
               ),
             ),
           if (_loading)
-            const Padding(
-              padding: EdgeInsets.all(24),
-              child: Center(child: CircularProgressIndicator()),
+            const SizedBox(
+              height: 160,
+              child: ListLoadingSkeleton(itemCount: 2, itemHeight: 56),
             )
           else
             Flexible(

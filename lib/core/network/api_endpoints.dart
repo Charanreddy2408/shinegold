@@ -10,6 +10,7 @@ class ApiEndpoints {
   static const refresh = '$_v1/auth/refresh';
   static const authMe = '$_v1/auth/me';
   static const changePassword = '$_v1/auth/change-password';
+  static const setPasswordAfterReset = '$_v1/auth/set-password-after-reset';
   static const forgotPassword = '$_v1/auth/forgot-password';
   static const passwordResetRequests = '$_v1/auth/password-reset-requests';
   static const passwordResetStatus = '$_v1/auth/password-reset-requests/status';
@@ -63,6 +64,9 @@ class ApiEndpoints {
   // Harvests
   static const harvestsCalendar = '$_v1/harvests/calendar';
   static const harvestsReminders = '$_v1/harvests/reminders';
+
+  // Geo (Nominatim proxy — works when device cannot reach public internet)
+  static const geoSearch = '$_v1/geo/search';
 
   static const health = '/health';
 }

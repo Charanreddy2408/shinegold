@@ -7,6 +7,9 @@ import '../../core/theme/app_colors.dart';
 import 'shine_buttons.dart';
 
 /// Slide-up form sheet with gradient header — replaces plain AlertDialogs.
+///
+/// Validation / API errors stay inside the sheet (field messages + sticky
+/// banner). Never shows a SnackBar on the screen behind the modal.
 Future<T?> showAdminFormSheet<T>({
   required BuildContext context,
   required String title,
@@ -16,19 +19,38 @@ Future<T?> showAdminFormSheet<T>({
   required String submitLabel,
   required Future<void> Function() onSubmit,
 }) {
+  // Clear any leftover snackbars from the parent Team / shell scaffold so
+  // they cannot sit under / above the modal.
+  ScaffoldMessenger.maybeOf(context)?.clearSnackBars();
+
   return showModalBottomSheet<T>(
     context: context,
     isScrollControlled: true,
+    useSafeArea: true,
     backgroundColor: Colors.transparent,
     barrierColor: Colors.black.withValues(alpha: 0.45),
-    builder: (ctx) => _AdminFormSheet(
-      title: title,
-      subtitle: subtitle,
-      icon: icon,
-      fields: fields,
-      submitLabel: submitLabel,
-      onSubmit: onSubmit,
-    ),
+    builder: (ctx) {
+      // Local messenger so accidental SnackBars stay off the Team list.
+      // Align bottom — a full-screen Scaffold body otherwise parks the
+      // DraggableScrollableSheet at the top (under the status bar).
+      return ScaffoldMessenger(
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          resizeToAvoidBottomInset: true,
+          body: Align(
+            alignment: Alignment.bottomCenter,
+            child: _AdminFormSheet(
+              title: title,
+              subtitle: subtitle,
+              icon: icon,
+              fields: fields,
+              submitLabel: submitLabel,
+              onSubmit: onSubmit,
+            ),
+          ),
+        ),
+      );
+    },
   );
 }
 
@@ -68,175 +90,238 @@ class _AdminFormSheet extends StatefulWidget {
 
 class _AdminFormSheetState extends State<_AdminFormSheet> {
   bool _submitting = false;
+  String? _error;
+  bool _attemptedSubmit = false;
+  final _formKey = GlobalKey<FormState>();
+  ScrollController? _scrollController;
 
   Future<void> _handleSubmit() async {
     if (_submitting) return;
-    setState(() => _submitting = true);
+    FocusManager.instance.primaryFocus?.unfocus();
+    // Never leak toast onto Team while validating / submitting.
+    ScaffoldMessenger.maybeOf(context)?.clearSnackBars();
+
+    setState(() => _attemptedSubmit = true);
+
+    final form = _formKey.currentState;
+    if (form == null || !form.validate()) {
+      setState(() => _error = 'Please fix the highlighted fields above');
+      if (_scrollController != null && _scrollController!.hasClients) {
+        _scrollController!.animateTo(
+          0,
+          duration: const Duration(milliseconds: 280),
+          curve: Curves.easeOutCubic,
+        );
+      }
+      return;
+    }
+
+    setState(() {
+      _submitting = true;
+      _error = null;
+    });
     try {
       await widget.onSubmit();
       if (!mounted) return;
-      // Unfocus before pop so IME hide doesn't rebuild disposed fields.
-      FocusManager.instance.primaryFocus?.unfocus();
       await Future<void>.delayed(const Duration(milliseconds: 80));
       if (!mounted) return;
       Navigator.of(context).pop(true);
     } catch (e) {
-      if (mounted) {
-        setState(() => _submitting = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(formatApiError(e)),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
+      if (!mounted) return;
+      // In-sheet banner only — never SnackBar (that paints on Team behind).
+      setState(() {
+        _submitting = false;
+        _error = formatApiError(e);
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final bottom = MediaQuery.viewInsetsOf(context).bottom;
+    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
+    final screenHeight = MediaQuery.sizeOf(context).height;
+    // Cap sheet height so the rounded top stays below the status bar.
+    final maxHeight = (screenHeight * 0.88).clamp(360.0, screenHeight - 48);
 
     return Padding(
-      padding: EdgeInsets.only(bottom: bottom),
-      child: DraggableScrollableSheet(
-        initialChildSize: 0.72,
-        minChildSize: 0.45,
-        maxChildSize: 0.92,
-        expand: false,
-        builder: (_, scrollController) => Container(
-          decoration: const BoxDecoration(
-            color: AppColors.surfaceCard,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.shadowGold,
-                blurRadius: 32,
-                offset: Offset(0, -8),
-              ),
-            ],
-          ),
-          child: Column(
-            children: [
-              const SizedBox(height: 10),
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.borderSubtle,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              Container(
-                margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  gradient: AppColors.gradientHeader,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: AppColors.shadowGold,
-                      blurRadius: 16,
-                      offset: Offset(0, 6),
+      padding: EdgeInsets.only(bottom: bottomInset),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: maxHeight),
+        child: DraggableScrollableSheet(
+          initialChildSize: 1,
+          minChildSize: 0.72,
+          maxChildSize: 1,
+          expand: false,
+          builder: (_, scrollController) {
+            _scrollController = scrollController;
+            return Material(
+              color: AppColors.surfaceCard,
+              elevation: 12,
+              shadowColor: AppColors.shadowGold,
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(28)),
+              clipBehavior: Clip.antiAlias,
+              child: Column(
+                children: [
+                  const SizedBox(height: 10),
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: AppColors.borderSubtle,
+                      borderRadius: BorderRadius.circular(2),
                     ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.18),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Icon(widget.icon, color: Colors.white, size: 24),
+                  ),
+                  Container(
+                    margin: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      gradient: AppColors.gradientHeader,
+                      borderRadius: BorderRadius.circular(18),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: AppColors.shadowGold,
+                          blurRadius: 14,
+                          offset: Offset(0, 5),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.title,
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleLarge
-                                ?.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w800,
-                                ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.18),
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            widget.subtitle,
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall
-                                ?.copyWith(
-                                  color: Colors.white.withValues(alpha: 0.85),
-                                ),
+                          child: Icon(
+                            widget.icon,
+                            color: Colors.white,
+                            size: 22,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                widget.title,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                widget.subtitle,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(
+                                      color: Colors.white
+                                          .withValues(alpha: 0.88),
+                                    ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: Form(
+                      key: _formKey,
+                      autovalidateMode: _attemptedSubmit
+                          ? AutovalidateMode.always
+                          : AutovalidateMode.onUserInteraction,
+                      child: ListView(
+                        controller: scrollController,
+                        padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                        children: [
+                          for (final field in widget.fields)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 14),
+                              child: field,
+                            ),
+                          const SizedBox(height: 8),
+                        ],
+                      ),
+                    ),
+                  ),
+                  if (_error != null)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppColors.errorSoft,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: AppColors.error.withValues(alpha: 0.35),
+                          ),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Icon(
+                              Icons.error_outline_rounded,
+                              color: AppColors.error,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                _error!,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(
+                                      color: AppColors.error,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  SafeArea(
+                    top: false,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                      child: Column(
+                        children: [
+                          ShinePrimaryButton(
+                            label: widget.submitLabel,
+                            icon: Icons.check_rounded,
+                            isLoading: _submitting,
+                            onPressed: _submitting ? null : _handleSubmit,
+                          ),
+                          const SizedBox(height: 8),
+                          ShineSecondaryButton(
+                            label: 'Cancel',
+                            onPressed: _submitting
+                                ? null
+                                : () => Navigator.pop(context),
                           ),
                         ],
                       ),
                     ),
-                  ],
-                ),
-              )
-                  .animate()
-                  .fadeIn(duration: 300.ms)
-                  .slideY(begin: 0.08, end: 0, curve: Curves.easeOutCubic),
-              Expanded(
-                child: ListView(
-                  controller: scrollController,
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
-                  children: [
-                    ...widget.fields.asMap().entries.map(
-                          (e) => Padding(
-                            padding: const EdgeInsets.only(bottom: 14),
-                            child: e.value
-                                .animate()
-                                .fadeIn(
-                                  delay: Duration(milliseconds: 80 * e.key),
-                                  duration: 350.ms,
-                                )
-                                .slideX(
-                                  begin: 0.04,
-                                  end: 0,
-                                  delay: Duration(milliseconds: 80 * e.key),
-                                  curve: Curves.easeOutCubic,
-                                ),
-                          ),
-                        ),
-                    const SizedBox(height: 8),
-                    ShinePrimaryButton(
-                      label: widget.submitLabel,
-                      icon: Icons.check_rounded,
-                      isLoading: _submitting,
-                      onPressed: _submitting ? null : _handleSubmit,
-                    )
-                        .animate()
-                        .fadeIn(delay: 320.ms, duration: 400.ms)
-                        .slideY(begin: 0.1, end: 0, curve: Curves.easeOutBack),
-                    const SizedBox(height: 8),
-                    ShineSecondaryButton(
-                      label: 'Cancel',
-                      onPressed:
-                          _submitting ? null : () => Navigator.pop(context),
-                    ).animate().fadeIn(delay: 380.ms, duration: 350.ms),
-                    const SizedBox(height: 16),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            );
+          },
         ),
       ),
-    ).animate().fadeIn(duration: 250.ms).slideY(
-          begin: 0.12,
-          end: 0,
-          duration: 400.ms,
-          curve: Curves.easeOutCubic,
-        );
+    );
   }
 }
 
@@ -251,6 +336,8 @@ class AdminFormField extends StatefulWidget {
     this.obscureText = false,
     this.keyboardType,
     this.hint,
+    this.validator,
+    this.textInputAction,
   });
 
   final TextEditingController controller;
@@ -259,6 +346,8 @@ class AdminFormField extends StatefulWidget {
   final bool obscureText;
   final TextInputType? keyboardType;
   final String? hint;
+  final String? Function(String?)? validator;
+  final TextInputAction? textInputAction;
 
   @override
   State<AdminFormField> createState() => _AdminFormFieldState();
@@ -283,16 +372,20 @@ class _AdminFormFieldState extends State<AdminFormField> {
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
+    return TextFormField(
       controller: widget.controller,
       obscureText: widget.obscureText && _obscured,
       keyboardType: widget.keyboardType,
+      textInputAction: widget.textInputAction,
+      validator: widget.validator,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
             fontWeight: FontWeight.w600,
           ),
       decoration: InputDecoration(
         labelText: widget.label,
         hintText: widget.hint,
+        errorMaxLines: 3,
         prefixIcon: Container(
           margin: const EdgeInsets.all(10),
           padding: const EdgeInsets.all(8),
@@ -328,6 +421,19 @@ class _AdminFormFieldState extends State<AdminFormField> {
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: AppColors.error, width: 1.4),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: AppColors.error, width: 1.6),
+        ),
+        errorStyle: const TextStyle(
+          color: AppColors.error,
+          fontWeight: FontWeight.w700,
+          height: 1.25,
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       ),
@@ -676,6 +782,7 @@ class AdminHarvestRow extends StatelessWidget {
   final String crop;
   final String harvestType;
   final bool isLast;
+  /// Kept for call-site compatibility; entrance animation lives in list parents.
   final Duration delay;
 
   @override
@@ -773,10 +880,7 @@ class AdminHarvestRow extends StatelessWidget {
           ),
         ],
       ),
-    )
-        .animate()
-        .fadeIn(delay: delay, duration: 350.ms)
-        .slideX(begin: 0.04, end: 0, delay: delay, curve: Curves.easeOutCubic);
+    );
   }
 }
 

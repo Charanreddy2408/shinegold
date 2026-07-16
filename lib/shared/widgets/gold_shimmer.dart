@@ -1,24 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:shimmer/shimmer.dart';
 
-import '../../core/theme/app_colors.dart';
+import 'animated_loading.dart';
 
+/// Back-compat alias — prefer [ShineShimmer] / [ListLoadingSkeleton].
 class GoldShimmer extends StatelessWidget {
   const GoldShimmer({super.key, required this.child});
 
   final Widget child;
 
   @override
-  Widget build(BuildContext context) {
-    return Shimmer.fromColors(
-      baseColor: AppColors.surfaceElevated,
-      highlightColor: AppColors.primarySoft,
-      period: const Duration(milliseconds: 1100),
-      child: child,
-    );
-  }
+  Widget build(BuildContext context) => ShineShimmer(child: child);
 }
 
+/// Back-compat bone — prefer [SkeletonBone] inside a single [ShineShimmer].
 class ShimmerBox extends StatelessWidget {
   const ShimmerBox({
     super.key,
@@ -33,14 +27,11 @@ class ShimmerBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GoldShimmer(
-      child: Container(
+    return ShineShimmer(
+      child: SkeletonBone(
         height: height,
         width: width,
-        decoration: BoxDecoration(
-          color: AppColors.surfaceElevated,
-          borderRadius: BorderRadius.circular(radius),
-        ),
+        radius: radius,
       ),
     );
   }

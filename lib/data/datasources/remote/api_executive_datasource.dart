@@ -30,6 +30,8 @@ class ApiExecutiveDataSource implements ExecutiveDataSource {
         'password': request.password,
         'address': request.address,
         'role': 'executive',
+        if (request.homeLat != null) 'home_lat': request.homeLat,
+        if (request.homeLng != null) 'home_lng': request.homeLng,
       },
     );
     final data = response.data as Map<String, dynamic>;

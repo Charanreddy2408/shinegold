@@ -628,8 +628,8 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
         TextField(
           controller: _location,
           decoration: const InputDecoration(
-            labelText: 'Location address',
-            hintText: 'Auto-filled from map search',
+            labelText: 'Location address (optional)',
+            hintText: 'Area, city, PIN — display only; map pin drives distance',
           ),
         ),
         const SizedBox(height: AppSpacing.md),
