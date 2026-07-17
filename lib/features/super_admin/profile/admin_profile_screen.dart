@@ -21,36 +21,22 @@ class AdminProfileScreen extends ConsumerWidget {
     final photoUrl = user.profilePhotoUrl ??
         'https://i.pravatar.cc/150?u=${user.employeeId}';
 
-    Future<void> editProfile() async {
-      final name = TextEditingController(text: user.name);
+    Future<void> editMobile() async {
       final mobile = TextEditingController(text: user.mobile ?? '');
-      final address = TextEditingController(text: user.address ?? '');
 
       final saved = await showAdminFormSheet<bool>(
         context: context,
-        title: 'Edit Profile',
-        subtitle: 'Update your administrator details',
-        icon: Icons.manage_accounts_rounded,
-        submitLabel: 'Save Changes',
+        title: 'Edit Mobile Number',
+        subtitle: 'Update your contact number',
+        icon: Icons.phone_rounded,
+        submitLabel: 'Save Mobile Number',
         fields: [
-          AdminFormField(
-            controller: name,
-            label: 'Full Name',
-            icon: Icons.person_outline_rounded,
-            textInputAction: TextInputAction.next,
-            validator: (value) {
-              if (value == null || value.trim().isEmpty) {
-                return 'Enter your name';
-              }
-              return null;
-            },
-          ),
           AdminFormField(
             controller: mobile,
             label: 'Mobile Number',
             icon: Icons.phone_rounded,
             keyboardType: TextInputType.phone,
-            textInputAction: TextInputAction.next,
+            textInputAction: TextInputAction.done,
             validator: (value) {
               final digits = value?.replaceAll(RegExp(r'\D'), '') ?? '';
               if (digits.isEmpty) return 'Enter your mobile number';
@@ -58,9 +44,39 @@ class AdminProfileScreen extends ConsumerWidget {
               return null;
             },
           ),
+        ],
+        onSubmit: () async {
+          await ref.read(authProvider.notifier).updateProfile(
+                mobileNumber: mobile.text.trim(),
+              );
+        },
+      );
+
+      disposeSheetControllers([mobile]);
+
+      if (saved == true && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Mobile number updated'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+
+    Future<void> editAddress() async {
+      final address = TextEditingController(text: user.address ?? '');
+
+      final saved = await showAdminFormSheet<bool>(
+        context: context,
+        title: 'Edit Office Address',
+        subtitle: 'Update your administrator address',
+        icon: Icons.location_on_rounded,
+        submitLabel: 'Save Address',
+        fields: [
           AdminFormField(
             controller: address,
-            label: 'Address',
+            label: 'Office Address',
             icon: Icons.location_on_outlined,
             textInputAction: TextInputAction.done,
             validator: (value) {
@@ -73,19 +89,17 @@ class AdminProfileScreen extends ConsumerWidget {
         ],
         onSubmit: () async {
           await ref.read(authProvider.notifier).updateProfile(
-                name: name.text.trim(),
-                mobileNumber: mobile.text.trim(),
                 address: address.text.trim(),
               );
         },
       );
 
-      disposeSheetControllers([name, mobile, address]);
+      disposeSheetControllers([address]);
 
       if (saved == true && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Profile updated successfully'),
+            content: Text('Office address updated'),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -133,13 +147,9 @@ class AdminProfileScreen extends ConsumerWidget {
                 mobile: user.mobile ?? '—',
                 address: user.address ?? '—',
                 employeeId: user.employeeId,
+                onEditMobile: editMobile,
+                onEditAddress: editAddress,
               ),
-              const SizedBox(height: 20),
-              ShinePrimaryButton(
-                label: 'Edit Profile',
-                icon: Icons.edit_rounded,
-                onPressed: editProfile,
-              ).animate().fadeIn(delay: 280.ms, duration: 400.ms),
               const SizedBox(height: 24),
               ShineSecondaryButton(
                 label: 'Logout',

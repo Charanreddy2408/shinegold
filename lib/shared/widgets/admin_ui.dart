@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../core/network/api_exception.dart';
@@ -891,11 +890,15 @@ class AdminContactHub extends StatelessWidget {
     required this.mobile,
     required this.address,
     required this.employeeId,
+    this.onEditMobile,
+    this.onEditAddress,
   });
 
   final String mobile;
   final String address;
   final String employeeId;
+  final VoidCallback? onEditMobile;
+  final VoidCallback? onEditAddress;
 
   @override
   Widget build(BuildContext context) {
@@ -933,10 +936,10 @@ class AdminContactHub extends StatelessWidget {
                 label: 'Mobile',
                 value: mobile,
                 color: AppColors.info,
-                actionIcon: Icons.content_copy_rounded,
-                actionHint: 'Copy number',
+                actionIcon: Icons.edit_rounded,
+                actionHint: 'Edit mobile',
                 delay: 80.ms,
-                onTap: () => _copy(context, mobile, 'Phone number copied'),
+                onTap: onEditMobile,
               ),
             ),
             const SizedBox(width: 10),
@@ -946,10 +949,7 @@ class AdminContactHub extends StatelessWidget {
                 label: 'Employee ID',
                 value: employeeId,
                 color: AppColors.primary,
-                actionIcon: Icons.content_copy_rounded,
-                actionHint: 'Copy ID',
                 delay: 140.ms,
-                onTap: () => _copy(context, employeeId, 'Employee ID copied'),
               ),
             ),
           ],
@@ -960,11 +960,11 @@ class AdminContactHub extends StatelessWidget {
           label: 'Office Address',
           value: address,
           color: AppColors.secondary,
-          actionIcon: Icons.map_rounded,
-          actionHint: 'Headquarters',
+          actionIcon: Icons.edit_rounded,
+          actionHint: 'Edit address',
           delay: 200.ms,
           fullWidth: true,
-          onTap: () => _copy(context, address, 'Address copied'),
+          onTap: onEditAddress,
         ),
         const SizedBox(height: 10),
         Container(
@@ -1027,20 +1027,6 @@ class AdminContactHub extends StatelessWidget {
       ],
     );
   }
-
-  void _copy(BuildContext context, String text, String message) {
-    if (text == '—') return;
-    Clipboard.setData(ClipboardData(text: text));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        backgroundColor: AppColors.textPrimary,
-        duration: const Duration(seconds: 2),
-      ),
-    );
-  }
 }
 
 class _ContactTile extends StatefulWidget {
@@ -1049,10 +1035,10 @@ class _ContactTile extends StatefulWidget {
     required this.label,
     required this.value,
     required this.color,
-    required this.actionIcon,
-    required this.actionHint,
     required this.delay,
-    required this.onTap,
+    this.actionIcon,
+    this.actionHint,
+    this.onTap,
     this.fullWidth = false,
   });
 
@@ -1060,10 +1046,10 @@ class _ContactTile extends StatefulWidget {
   final String label;
   final String value;
   final Color color;
-  final IconData actionIcon;
-  final String actionHint;
+  final IconData? actionIcon;
+  final String? actionHint;
   final Duration delay;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final bool fullWidth;
 
   @override
@@ -1076,9 +1062,12 @@ class _ContactTileState extends State<_ContactTile> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTapDown: (_) => setState(() => _pressed = true),
-      onTapUp: (_) => setState(() => _pressed = false),
-      onTapCancel: () => setState(() => _pressed = false),
+      onTapDown:
+          widget.onTap == null ? null : (_) => setState(() => _pressed = true),
+      onTapUp:
+          widget.onTap == null ? null : (_) => setState(() => _pressed = false),
+      onTapCancel:
+          widget.onTap == null ? null : () => setState(() => _pressed = false),
       onTap: widget.onTap,
       child: AnimatedScale(
         scale: _pressed ? 0.97 : 1.0,
@@ -1123,21 +1112,22 @@ class _ContactTileState extends State<_ContactTile> {
                     child: Icon(widget.icon, color: widget.color, size: 20),
                   ),
                   const Spacer(),
-                  Tooltip(
-                    message: widget.actionHint,
-                    child: Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: widget.color.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Icon(
-                        widget.actionIcon,
-                        size: 14,
-                        color: widget.color,
+                  if (widget.actionIcon != null)
+                    Tooltip(
+                      message: widget.actionHint ?? '',
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: widget.color.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          widget.actionIcon,
+                          size: 14,
+                          color: widget.color,
+                        ),
                       ),
                     ),
-                  ),
                 ],
               ),
               const SizedBox(height: 14),
@@ -1160,14 +1150,16 @@ class _ContactTileState extends State<_ContactTile> {
                 maxLines: widget.fullWidth ? 3 : 2,
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 8),
-              Text(
-                widget.actionHint,
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: widget.color,
-                      fontWeight: FontWeight.w600,
-                    ),
-              ),
+              if (widget.actionHint != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  widget.actionHint!,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: widget.color,
+                        fontWeight: FontWeight.w600,
+                      ),
+                ),
+              ],
             ],
           ),
         ),
