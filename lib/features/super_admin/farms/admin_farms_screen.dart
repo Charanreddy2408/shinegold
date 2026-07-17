@@ -35,9 +35,10 @@ class _AdminFarmsScreenState extends ConsumerState<AdminFarmsScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(locationProvider.notifier).requestLocation();
-      _load(isRefresh: false);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await ref.read(locationProvider.notifier).requestLocation();
+      if (!mounted) return;
+      await _load(isRefresh: false);
     });
     _searchController.addListener(_onSearchChanged);
   }
@@ -94,6 +95,11 @@ class _AdminFarmsScreenState extends ConsumerState<AdminFarmsScreen> {
     ref.listen<int>(appRefreshProvider, (previous, next) {
       if (previous != null && previous != next) {
         _load(isRefresh: true);
+      }
+    });
+    ref.listen<LocationState>(locationProvider, (previous, next) {
+      if (previous?.position == null && next.position != null) {
+        _load(isRefresh: _farms.isNotEmpty);
       }
     });
 
