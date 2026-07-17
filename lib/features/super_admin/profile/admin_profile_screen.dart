@@ -21,6 +21,77 @@ class AdminProfileScreen extends ConsumerWidget {
     final photoUrl = user.profilePhotoUrl ??
         'https://i.pravatar.cc/150?u=${user.employeeId}';
 
+    Future<void> editProfile() async {
+      final name = TextEditingController(text: user.name);
+      final mobile = TextEditingController(text: user.mobile ?? '');
+      final address = TextEditingController(text: user.address ?? '');
+
+      final saved = await showAdminFormSheet<bool>(
+        context: context,
+        title: 'Edit Profile',
+        subtitle: 'Update your administrator details',
+        icon: Icons.manage_accounts_rounded,
+        submitLabel: 'Save Changes',
+        fields: [
+          AdminFormField(
+            controller: name,
+            label: 'Full Name',
+            icon: Icons.person_outline_rounded,
+            textInputAction: TextInputAction.next,
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return 'Enter your name';
+              }
+              return null;
+            },
+          ),
+          AdminFormField(
+            controller: mobile,
+            label: 'Mobile Number',
+            icon: Icons.phone_rounded,
+            keyboardType: TextInputType.phone,
+            textInputAction: TextInputAction.next,
+            validator: (value) {
+              final digits = value?.replaceAll(RegExp(r'\D'), '') ?? '';
+              if (digits.isEmpty) return 'Enter your mobile number';
+              if (digits.length < 10) return 'Enter a valid mobile number';
+              return null;
+            },
+          ),
+          AdminFormField(
+            controller: address,
+            label: 'Address',
+            icon: Icons.location_on_outlined,
+            textInputAction: TextInputAction.done,
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return 'Enter your address';
+              }
+              return null;
+            },
+          ),
+        ],
+        onSubmit: () async {
+          await ref.read(authProvider.notifier).updateProfile(
+                name: name.text.trim(),
+                mobileNumber: mobile.text.trim(),
+                address: address.text.trim(),
+              );
+        },
+      );
+
+      disposeSheetControllers([name, mobile, address]);
+
+      if (saved == true && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Profile updated successfully'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+
     return Scaffold(
       backgroundColor: AppColors.canvasDeep,
       body: AppBackground(
@@ -63,6 +134,12 @@ class AdminProfileScreen extends ConsumerWidget {
                 address: user.address ?? '—',
                 employeeId: user.employeeId,
               ),
+              const SizedBox(height: 20),
+              ShinePrimaryButton(
+                label: 'Edit Profile',
+                icon: Icons.edit_rounded,
+                onPressed: editProfile,
+              ).animate().fadeIn(delay: 280.ms, duration: 400.ms),
               const SizedBox(height: 24),
               ShineSecondaryButton(
                 label: 'Logout',

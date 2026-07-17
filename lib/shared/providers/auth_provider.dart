@@ -15,7 +15,8 @@ const _sessionKey = 'auth_session';
 const _lastEmployeeIdKey = 'last_employee_id';
 
 class AuthNotifier extends StateNotifier<AsyncValue<AuthSession?>> {
-  AuthNotifier(this._repository, this._dio) : super(const AsyncValue.loading()) {
+  AuthNotifier(this._repository, this._dio)
+      : super(const AsyncValue.loading()) {
     _loadSession();
   }
 
@@ -167,6 +168,28 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthSession?>> {
     final session = state.valueOrNull;
     if (session == null) return;
     final user = await _repository.getMe();
+    final updated = AuthSession(
+      token: session.token,
+      refreshToken: session.refreshToken,
+      user: user,
+    );
+    await _persistSession(updated);
+    state = AsyncValue.data(updated);
+  }
+
+  Future<void> updateProfile({
+    String? name,
+    String? address,
+    String? mobileNumber,
+  }) async {
+    final session = state.valueOrNull;
+    if (session == null) return;
+
+    final user = await _repository.updateProfile(
+      name: name,
+      address: address,
+      mobileNumber: mobileNumber,
+    );
     final updated = AuthSession(
       token: session.token,
       refreshToken: session.refreshToken,
