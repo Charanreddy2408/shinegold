@@ -53,7 +53,9 @@ class ApiFarmDataSource implements FarmDataSource {
       farms = farms
           .where(
             (f) =>
-                !f.harvestDate.isBefore(today) && f.harvestDate.isBefore(cutoff),
+                f.hasHarvestDate &&
+                !f.harvestDate.isBefore(today) &&
+                f.harvestDate.isBefore(cutoff),
           )
           .toList();
     } else if (filter.quickFilter == QuickFarmFilter.recentlyVisited) {

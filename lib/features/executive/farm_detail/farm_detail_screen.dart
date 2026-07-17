@@ -103,7 +103,8 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
     if (farm == null || _updatingHarvest) return;
 
     final reasonController = TextEditingController();
-    DateTime selected = farm.harvestDate;
+    DateTime selected =
+        farm.hasHarvestDate ? farm.harvestDate : DateTime.now();
 
     final confirmed = await showModalBottomSheet<bool>(
       context: context,
@@ -134,7 +135,9 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Current: ${DateFormat('dd MMM yyyy').format(farm.harvestDate)}',
+                    farm.hasHarvestDate
+                        ? 'Current: ${DateFormat('dd MMM yyyy').format(farm.harvestDate)}'
+                        : 'Current: Not set',
                     style: Theme.of(ctx).textTheme.bodyMedium?.copyWith(
                           color: AppColors.textSecondary,
                         ),
@@ -189,7 +192,8 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
     reasonController.dispose();
     if (confirmed != true || !mounted) return;
 
-    final sameDay = selected.year == farm.harvestDate.year &&
+    final sameDay = farm.hasHarvestDate &&
+        selected.year == farm.harvestDate.year &&
         selected.month == farm.harvestDate.month &&
         selected.day == farm.harvestDate.day;
     if (sameDay) {
@@ -442,7 +446,9 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            dateFormat.format(farm.harvestDate),
+                            farm.hasHarvestDate
+                                ? dateFormat.format(farm.harvestDate)
+                                : 'Not set',
                             style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                   fontWeight: FontWeight.w800,
                                   color: AppColors.primaryDark,

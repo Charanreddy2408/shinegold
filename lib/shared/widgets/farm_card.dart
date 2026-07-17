@@ -126,44 +126,46 @@ class FarmCard extends StatelessWidget {
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ],
-                                  const SizedBox(height: AppSpacing.sm),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 6,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.primarySoft
-                                          .withValues(alpha: 0.55),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        const Icon(
-                                          Icons.event_rounded,
-                                          size: 14,
-                                          color: AppColors.primaryDark,
-                                        ),
-                                        const SizedBox(width: 6),
-                                        Expanded(
-                                          child: Text(
-                                            farm.harvestType.isNotEmpty
-                                                ? 'Harvest ${dateFormat.format(farm.harvestDate)} · ${farm.harvestType}'
-                                                : 'Harvest ${dateFormat.format(farm.harvestDate)}',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .labelSmall
-                                                ?.copyWith(
-                                                  color: AppColors.primaryDark,
-                                                  fontWeight: FontWeight.w700,
-                                                ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
+                                  if (farm.hasHarvestDate) ...[
+                                    const SizedBox(height: AppSpacing.sm),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 6,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primarySoft
+                                            .withValues(alpha: 0.55),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.event_rounded,
+                                            size: 14,
+                                            color: AppColors.primaryDark,
                                           ),
-                                        ),
-                                      ],
+                                          const SizedBox(width: 6),
+                                          Expanded(
+                                            child: Text(
+                                              farm.harvestType.isNotEmpty
+                                                  ? 'Harvest ${dateFormat.format(farm.harvestDate)} · ${farm.harvestType}'
+                                                  : 'Harvest ${dateFormat.format(farm.harvestDate)}',
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .labelSmall
+                                                  ?.copyWith(
+                                                    color: AppColors.primaryDark,
+                                                    fontWeight: FontWeight.w700,
+                                                  ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
+                                  ],
                                   const SizedBox(height: AppSpacing.sm),
                                   Row(
                                     children: [

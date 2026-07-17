@@ -52,6 +52,7 @@ class MockFarmDataSource implements FarmDataSource {
           result = result
               .where(
                 (f) =>
+                    f.hasHarvestDate &&
                     !f.harvestDate.isBefore(today) &&
                     f.harvestDate.isBefore(cutoff),
               )
