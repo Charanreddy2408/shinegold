@@ -19,7 +19,7 @@ class FarmRepository {
   Future<List<Farm>> getNearbyFarms({
     required double lat,
     required double lng,
-    double radiusKm = 5,
+    double radiusKm = 25,
     int pageSize = 100,
   }) async {
     final farms = await getFarms(

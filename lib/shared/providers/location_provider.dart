@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -15,6 +16,8 @@ class LocationState {
   final bool permissionGranted;
   final bool loading;
   final String? error;
+
+  bool get hasFix => position != null;
 
   LocationState copyWith({
     Position? position,
@@ -35,14 +38,35 @@ class LocationNotifier extends StateNotifier<LocationState> {
   LocationNotifier() : super(const LocationState());
 
   Timer? _trackingTimer;
+  Future<void>? _inFlightRequest;
 
   Future<void> requestLocation() async {
-    if (state.loading) return;
+    // Coalesce concurrent callers (admin shell + nearby refresh) so one prompt
+    // / fix is shared instead of the second call exiting while loading.
+    final existing = _inFlightRequest;
+    if (existing != null) {
+      await existing;
+      return;
+    }
 
+    final future = _requestLocationInternal();
+    _inFlightRequest = future;
+    try {
+      await future;
+    } finally {
+      if (identical(_inFlightRequest, future)) {
+        _inFlightRequest = null;
+      }
+    }
+  }
+
+  Future<void> _requestLocationInternal() async {
     state = state.copyWith(loading: true, clearError: true);
 
+    // On web, isLocationServiceEnabled() is unreliable and often false even
+    // after the user grants browser location access. Still try GPS.
     final serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
+    if (!serviceEnabled && !kIsWeb) {
       final lastKnown = await Geolocator.getLastKnownPosition();
       if (lastKnown != null) {
         state = LocationState(
@@ -117,10 +141,14 @@ class LocationNotifier extends StateNotifier<LocationState> {
         return;
       }
 
-      // Permission granted but no GPS fix (common on emulators without mock location).
-      state = const LocationState(
+      // Permission granted but no GPS fix (common on emulators / some browsers).
+      state = LocationState(
+        position: state.position,
         permissionGranted: true,
         loading: false,
+        error: state.position == null
+            ? 'Could not read your current location. Try again or set a home pin in Profile.'
+            : null,
       );
     } catch (_) {
       if (state.position != null) {
@@ -130,6 +158,8 @@ class LocationNotifier extends StateNotifier<LocationState> {
       state = const LocationState(
         permissionGranted: true,
         loading: false,
+        error:
+            'Could not read your current location. Try again or set a home pin in Profile.',
       );
     }
   }
@@ -141,7 +171,8 @@ class LocationNotifier extends StateNotifier<LocationState> {
         permission == LocationPermission.deniedForever) {
       return;
     }
-    if (!await Geolocator.isLocationServiceEnabled()) return;
+    // Web: service-enabled check is flaky; always attempt a fresh fix.
+    if (!kIsWeb && !await Geolocator.isLocationServiceEnabled()) return;
 
     try {
       final position = await Geolocator.getCurrentPosition(
@@ -157,7 +188,7 @@ class LocationNotifier extends StateNotifier<LocationState> {
       );
     } catch (_) {
       final lastKnown = await Geolocator.getLastKnownPosition();
-      if (lastKnown != null && state.position == null) {
+      if (lastKnown != null) {
         state = LocationState(
           position: lastKnown,
           permissionGranted: true,

@@ -111,7 +111,9 @@ class AdminNearbyFarmsSection extends ConsumerWidget {
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                 child: FriendlyErrorBanner(
                   message: nearby.error!,
-                  icon: Icons.location_off_outlined,
+                  icon: nearby.error!.toLowerCase().contains('location')
+                      ? Icons.location_off_outlined
+                      : Icons.error_outline_rounded,
                   onRetry: () =>
                       ref.read(adminNearbyFarmsProvider.notifier).refresh(),
                 ),
@@ -120,7 +122,9 @@ class AdminNearbyFarmsSection extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                 child: Text(
-                  'No farms within ${AdminNearbyConfig.radiusKm.toStringAsFixed(0)} km of your current location.',
+                  nearby.closestOutsideKm == null
+                      ? 'No farms within ${AdminNearbyConfig.radiusKm.toStringAsFixed(0)} km of your current location.'
+                      : 'No farms within ${AdminNearbyConfig.radiusKm.toStringAsFixed(0)} km. Closest farm is ${nearby.closestOutsideKm!.toStringAsFixed(1)} km away.',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: AppColors.textSecondary,
                       ),
@@ -228,14 +232,15 @@ class AdminNearbyFarmsScreen extends ConsumerWidget {
                           ? ShineEmptyState(
                               icon: Icons.explore_off_rounded,
                               title: 'No farms nearby',
-                              subtitle:
-                                  'Move closer to farm areas or check that location is enabled.',
+                              subtitle: nearby.closestOutsideKm == null
+                                  ? 'No farms found near your current position yet.'
+                                  : 'Closest farm is ${nearby.closestOutsideKm!.toStringAsFixed(1)} km away (outside the ${AdminNearbyConfig.radiusKm.toStringAsFixed(0)} km radius).',
                               action: FilledButton.icon(
                                 onPressed: () => ref
-                                    .read(locationProvider.notifier)
-                                    .requestLocation(),
-                                icon: const Icon(Icons.my_location_rounded),
-                                label: const Text('Enable location'),
+                                    .read(adminNearbyFarmsProvider.notifier)
+                                    .refresh(),
+                                icon: const Icon(Icons.refresh_rounded),
+                                label: const Text('Refresh nearby'),
                               ),
                             )
                           : RefreshIndicator(
@@ -287,8 +292,20 @@ class _LocationStatusRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tracking = location.permissionGranted && location.position != null;
-    final statusColor = tracking ? AppColors.success : AppColors.warning;
+    final hasFix = location.hasFix;
+    final waiting = location.loading && !hasFix;
+    final statusColor = hasFix
+        ? AppColors.success
+        : waiting
+            ? AppColors.info
+            : AppColors.warning;
+    final statusLabel = hasFix
+        ? 'Location active'
+        : waiting
+            ? 'Getting location…'
+            : location.permissionGranted
+                ? 'Waiting for GPS fix'
+                : 'Location needed';
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -300,7 +317,11 @@ class _LocationStatusRow extends StatelessWidget {
       child: Row(
         children: [
           Icon(
-            tracking ? Icons.gps_fixed_rounded : Icons.gps_off_rounded,
+            hasFix
+                ? Icons.gps_fixed_rounded
+                : waiting
+                    ? Icons.gps_not_fixed_rounded
+                    : Icons.gps_off_rounded,
             size: 18,
             color: statusColor,
           ),
@@ -310,7 +331,7 @@ class _LocationStatusRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  tracking ? 'Location active' : 'Location off',
+                  statusLabel,
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
                         fontWeight: FontWeight.w700,
                         color: statusColor,
