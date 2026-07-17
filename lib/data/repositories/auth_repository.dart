@@ -74,6 +74,15 @@ class AuthRepository {
         confirmPassword: confirmPassword,
       );
 
+  Future<void> changeAdminPassword({
+    required String newPassword,
+    required String confirmPassword,
+  }) =>
+      _dataSource.changeAdminPassword(
+        newPassword: newPassword,
+        confirmPassword: confirmPassword,
+      );
+
   Future<User> updateProfile({
     String? name,
     String? address,

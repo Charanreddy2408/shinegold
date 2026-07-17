@@ -106,6 +106,66 @@ class AdminProfileScreen extends ConsumerWidget {
       }
     }
 
+    Future<void> changePassword() async {
+      final newPassword = TextEditingController();
+      final confirmPassword = TextEditingController();
+
+      final changed = await showAdminFormSheet<bool>(
+        context: context,
+        title: 'Change Password',
+        subtitle: 'Choose a new password for your admin account',
+        icon: Icons.lock_reset_rounded,
+        submitLabel: 'Change Password',
+        fields: [
+          AdminFormField(
+            controller: newPassword,
+            label: 'New Password',
+            icon: Icons.lock_outline_rounded,
+            obscureText: true,
+            textInputAction: TextInputAction.next,
+            validator: (value) {
+              if (value == null || value.isEmpty) return 'Enter a new password';
+              if (value.length < 6) {
+                return 'Password must be at least 6 characters';
+              }
+              return null;
+            },
+          ),
+          AdminFormField(
+            controller: confirmPassword,
+            label: 'Confirm New Password',
+            icon: Icons.lock_rounded,
+            obscureText: true,
+            textInputAction: TextInputAction.done,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Confirm your new password';
+              }
+              if (value != newPassword.text) return 'Passwords do not match';
+              return null;
+            },
+          ),
+        ],
+        onSubmit: () async {
+          await ref.read(authProvider.notifier).changeAdminPassword(
+                newPassword: newPassword.text,
+                confirmPassword: confirmPassword.text,
+              );
+        },
+      );
+
+      disposeSheetControllers([newPassword, confirmPassword]);
+
+      if (changed == true && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Password changed successfully'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+
     return Scaffold(
       backgroundColor: AppColors.canvasDeep,
       body: AppBackground(
@@ -151,6 +211,11 @@ class AdminProfileScreen extends ConsumerWidget {
                 onEditAddress: editAddress,
               ),
               const SizedBox(height: 24),
+              ShineSecondaryButton(
+                label: 'Change Password',
+                onPressed: changePassword,
+              ).animate().fadeIn(delay: 280.ms, duration: 400.ms),
+              const SizedBox(height: 10),
               ShineSecondaryButton(
                 label: 'Logout',
                 onPressed: () async {

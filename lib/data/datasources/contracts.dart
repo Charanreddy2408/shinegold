@@ -38,6 +38,10 @@ abstract class AuthDataSource {
     required String newPassword,
     required String confirmPassword,
   });
+  Future<void> changeAdminPassword({
+    required String newPassword,
+    required String confirmPassword,
+  });
   Future<User> updateProfile({
     String? name,
     String? address,

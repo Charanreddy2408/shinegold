@@ -154,6 +154,20 @@ class ApiAuthDataSource implements AuthDataSource {
   }
 
   @override
+  Future<void> changeAdminPassword({
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
+    await _client.dio.post(
+      ApiEndpoints.adminChangePassword,
+      data: {
+        'new_password': newPassword,
+        'confirm_password': confirmPassword,
+      },
+    );
+  }
+
+  @override
   Future<User> updateProfile({
     String? name,
     String? address,

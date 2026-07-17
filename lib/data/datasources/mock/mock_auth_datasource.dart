@@ -202,6 +202,17 @@ class MockAuthDataSource implements AuthDataSource {
   }
 
   @override
+  Future<void> changeAdminPassword({
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
+    await Future<void>.delayed(AppConfig.mockNetworkDelay);
+    if (newPassword != confirmPassword) {
+      throw Exception('Passwords do not match');
+    }
+  }
+
+  @override
   Future<User> updateProfile({
     String? name,
     String? address,

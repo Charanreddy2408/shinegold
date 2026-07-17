@@ -10,6 +10,7 @@ class ApiEndpoints {
   static const refresh = '$_v1/auth/refresh';
   static const authMe = '$_v1/auth/me';
   static const changePassword = '$_v1/auth/change-password';
+  static const adminChangePassword = '$_v1/auth/admin/change-password';
   static const setPasswordAfterReset = '$_v1/auth/set-password-after-reset';
   static const forgotPassword = '$_v1/auth/forgot-password';
   static const passwordResetRequests = '$_v1/auth/password-reset-requests';

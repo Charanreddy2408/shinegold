@@ -164,6 +164,15 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthSession?>> {
         confirmPassword: confirmPassword,
       );
 
+  Future<void> changeAdminPassword({
+    required String newPassword,
+    required String confirmPassword,
+  }) =>
+      _repository.changeAdminPassword(
+        newPassword: newPassword,
+        confirmPassword: confirmPassword,
+      );
+
   Future<void> refreshUser() async {
     final session = state.valueOrNull;
     if (session == null) return;
