@@ -153,6 +153,13 @@ class Farm {
   final double? distanceKm;
   final List<String> photoUrls;
 
+  static final DateTime unsetHarvestDate =
+      DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
+
+  bool get hasHarvestDate =>
+      harvestDate.toUtc().millisecondsSinceEpoch !=
+      unsetHarvestDate.millisecondsSinceEpoch;
+
   factory Farm.fromUpcomingHarvest(Map<String, dynamic> json) {
     final harvestDate = _parseApiDate(json['harvest_date']);
     final harvestLabel = harvestDate != null
@@ -165,7 +172,7 @@ class Farm {
       latitude: 0,
       longitude: 0,
       crop: json['crop'] as String? ?? '',
-      harvestDate: harvestDate ?? DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+      harvestDate: harvestDate ?? unsetHarvestDate,
       harvestType: json['harvest_type'] as String? ?? '',
       totalAcres: 0,
       assignedExecutiveId: '',
@@ -182,8 +189,7 @@ class Farm {
         latitude: 0,
         longitude: 0,
         crop: json['crop'] as String? ?? '',
-        harvestDate: _parseApiDate(json['harvest_date']) ??
-            DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+        harvestDate: _parseApiDate(json['harvest_date']) ?? unsetHarvestDate,
         harvestType: json['harvest_type'] as String? ?? '',
         totalAcres: 0,
         assignedExecutiveId: '',
@@ -247,13 +253,6 @@ class Farm {
         ? Farmer.fromJson(farmerJson)
         : const Farmer(id: '', name: '—', mobile: '');
 
-    final harvestDate = _parseApiDate(json['harvest_date']);
-    if (harvestDate == null) {
-      throw FormatException(
-        'Farm ${json['id']} is missing a valid harvest_date',
-      );
-    }
-
     return Farm(
       id: json['id'].toString(),
       name: json['name'] as String? ?? '',
@@ -261,7 +260,7 @@ class Farm {
       latitude: latitude,
       longitude: longitude,
       crop: json['crop'] as String? ?? '',
-      harvestDate: harvestDate,
+      harvestDate: _parseApiDate(json['harvest_date']) ?? unsetHarvestDate,
       harvestType: json['harvest_type'] as String? ?? '',
       totalAcres: (json['total_acres'] as num?)?.toDouble() ?? 0,
       assignedExecutiveId: assignedExecutiveId,
