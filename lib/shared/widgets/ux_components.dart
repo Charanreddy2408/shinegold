@@ -455,6 +455,7 @@ class _VoiceNotePlayerState extends State<VoiceNotePlayer> {
   bool _loading = false;
   String? _error;
   Duration? _duration;
+  final List<StreamSubscription<dynamic>> _subs = [];
 
   @override
   void initState() {
@@ -482,24 +483,28 @@ class _VoiceNotePlayerState extends State<VoiceNotePlayer> {
       );
     }
 
-    _player.onPlayerStateChanged.listen((state) {
+    _subs.add(_player.onPlayerStateChanged.listen((state) {
       if (!mounted) return;
       setState(() => _playing = state == PlayerState.playing);
-    });
+    }));
 
-    _player.onPlayerComplete.listen((_) {
+    _subs.add(_player.onPlayerComplete.listen((_) {
       if (!mounted) return;
       setState(() => _playing = false);
-    });
+    }));
 
-    _player.onDurationChanged.listen((duration) {
+    _subs.add(_player.onDurationChanged.listen((duration) {
       if (!mounted) return;
       setState(() => _duration = duration);
-    });
+    }));
   }
 
   @override
   void dispose() {
+    for (final sub in _subs) {
+      sub.cancel();
+    }
+    _subs.clear();
     _player.dispose();
     super.dispose();
   }
@@ -547,9 +552,7 @@ class _VoiceNotePlayerState extends State<VoiceNotePlayer> {
             volume: 1.0,
             mode: PlayerMode.mediaPlayer,
           );
-          final duration = await _player.getDuration();
-          played = duration != null && duration.inMilliseconds >= 50;
-          if (!played) await _player.stop();
+          played = true;
         } catch (_) {}
 
         if (!played) {
@@ -559,9 +562,7 @@ class _VoiceNotePlayerState extends State<VoiceNotePlayer> {
               volume: 1.0,
               mode: PlayerMode.mediaPlayer,
             );
-            final duration = await _player.getDuration();
-            played = duration != null && duration.inMilliseconds >= 50;
-            if (!played) await _player.stop();
+            played = true;
           } catch (_) {}
         }
 

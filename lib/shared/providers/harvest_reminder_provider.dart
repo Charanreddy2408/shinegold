@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/network/api_endpoints.dart';
@@ -17,6 +18,9 @@ class HarvestReminderSync {
   final Ref _ref;
 
   Future<int> sync({bool showTestNotification = false}) async {
+    // Scheduled local notifications are unsupported on Flutter web.
+    if (kIsWeb) return 0;
+
     final session = _ref.read(authProvider).valueOrNull;
     final role = session?.user.role;
     if (session == null ||

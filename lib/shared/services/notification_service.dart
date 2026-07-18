@@ -22,6 +22,12 @@ class NotificationService {
   Future<void> initialize() async {
     if (_initialized) return;
 
+    // Local scheduled notifications are not supported on Flutter web.
+    if (kIsWeb) {
+      _initialized = true;
+      return;
+    }
+
     tzdata.initializeTimeZones();
     try {
       tz.setLocalLocation(tz.getLocation('Asia/Kolkata'));
@@ -57,6 +63,7 @@ class NotificationService {
   /// Requests notification permission at app start (Android 13+ / iOS).
   Future<bool> requestPermissionAtStartup() async {
     await initialize();
+    if (kIsWeb) return false;
 
     if (defaultTargetPlatform == TargetPlatform.android) {
       final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
@@ -90,6 +97,8 @@ class NotificationService {
 
   Future<void> syncHarvestReminders(List<HarvestReminder> reminders) async {
     await initialize();
+    if (kIsWeb) return;
+
     await _plugin.cancelAll();
 
     final now = tz.TZDateTime.now(tz.local);
@@ -179,12 +188,17 @@ class NotificationService {
 
   Future<void> clearAll() async {
     await initialize();
+    if (kIsWeb) return;
     await _plugin.cancelAll();
   }
 
   /// Shows an immediate notification to verify permissions and channel setup.
   Future<void> showTestHarvestNotification({HarvestReminder? reminder}) async {
     await initialize();
+    if (kIsWeb) {
+      debugPrint('Test harvest notification skipped on web');
+      return;
+    }
 
     final sample = reminder ??
         HarvestReminder(

@@ -99,14 +99,11 @@ class _AdminShellState extends ConsumerState<AdminShell>
 
     return Scaffold(
       backgroundColor: AppColors.canvasDeep,
-      body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 280),
-        switchInCurve: Curves.easeOutCubic,
-        switchOutCurve: Curves.easeInCubic,
-        child: KeyedSubtree(
-          key: ValueKey<int>(_index),
-          child: _screens[_index],
-        ),
+      // IndexedStack avoids AnimatedSwitcher teardown of InheritedWidgets
+      // while dependents are still attached (debug _dependents.isEmpty).
+      body: IndexedStack(
+        index: _index,
+        children: _screens,
       ),
       bottomNavigationBar: ShineBottomNav(
         currentIndex: _index,
