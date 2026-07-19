@@ -33,7 +33,11 @@ class _StaggeredListItemState extends State<StaggeredListItem> {
     return widget.child
         .animate(
           onComplete: (_) {
-            if (mounted) setState(() => _played = true);
+            // Defer removing the Animate subtree until after this frame so
+            // InheritedElement dependents can unregister cleanly.
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted && !_played) setState(() => _played = true);
+            });
           },
         )
         .fadeIn(

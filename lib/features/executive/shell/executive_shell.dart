@@ -69,31 +69,37 @@ class _ExecutiveShellState extends ConsumerState<ExecutiveShell>
 
   void _showSyncSnack(VisitSyncResult result) {
     if (result.synced <= 0) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          result.synced == 1
-              ? '1 offline visit synced'
-              : '${result.synced} offline visits synced',
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            result.synced == 1
+                ? '1 offline visit synced'
+                : '${result.synced} offline visits synced',
+          ),
+          duration: const Duration(seconds: 3),
         ),
-        duration: const Duration(seconds: 3),
-      ),
-    );
+      );
+    });
   }
 
   Future<void> _syncHarvestReminders({bool showSnack = false}) async {
     final count = await ref.read(harvestReminderSyncProvider).sync();
     if (!mounted || !showSnack || count <= 0) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          count == 1
-              ? '1 harvest reminder scheduled'
-              : '$count harvest reminders scheduled',
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            count == 1
+                ? '1 harvest reminder scheduled'
+                : '$count harvest reminders scheduled',
+          ),
+          duration: const Duration(seconds: 3),
         ),
-        duration: const Duration(seconds: 3),
-      ),
-    );
+      );
+    });
   }
 
   Future<void> _bootstrapLocation() async {

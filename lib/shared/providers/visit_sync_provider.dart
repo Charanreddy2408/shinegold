@@ -19,33 +19,51 @@ class VisitSyncCoordinator {
 
   final Ref _ref;
   StreamSubscription<List<ConnectivityResult>>? _subscription;
+  bool _disposed = false;
+  bool _syncing = false;
 
   /// Latest sync outcome for UI feedback (snackbars, badges).
   final ValueNotifier<VisitSyncResult?> lastResult =
       ValueNotifier<VisitSyncResult?>(null);
 
   Future<void> _onConnectivityChanged(List<ConnectivityResult> results) async {
+    if (_disposed) return;
     final online = results.any((r) => r != ConnectivityResult.none);
     if (!online) return;
     // Ensure disk queue is loaded after cold start before skipping.
     final pending = await OfflineVisitStore.instance.all();
-    if (pending.isEmpty) return;
+    if (_disposed || pending.isEmpty) return;
     await syncNow();
   }
 
   Future<VisitSyncResult> syncNow() async {
-    final result = await _ref.read(visitSyncServiceProvider).sync();
-    lastResult.value = result;
-    if (result.synced > 0) {
-      // Refresh dashboards / visit lists that now include synced visits.
-      _ref.read(appRefreshProvider.notifier).bump();
+    if (_disposed) {
+      return const VisitSyncResult(synced: 0, failed: 0, remaining: 0);
     }
-    return result;
+    if (_syncing) {
+      return lastResult.value ??
+          const VisitSyncResult(synced: 0, failed: 0, remaining: 0);
+    }
+    _syncing = true;
+    try {
+      final result = await _ref.read(visitSyncServiceProvider).sync();
+      if (_disposed) return result;
+      lastResult.value = result;
+      if (result.synced > 0) {
+        // Refresh dashboards / visit lists that now include synced visits.
+        _ref.read(appRefreshProvider.notifier).bump();
+      }
+      return result;
+    } finally {
+      _syncing = false;
+    }
   }
 
   void dispose() {
+    _disposed = true;
     _subscription?.cancel();
     _subscription = null;
+    lastResult.dispose();
   }
 }
 

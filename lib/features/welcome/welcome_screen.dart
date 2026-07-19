@@ -29,14 +29,21 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
   late final AnimationController _floatController;
   late final AnimationController _exitController;
 
-  late final Animation<double> _logoScale;
+  late final CurvedAnimation _logoScale;
+  late final CurvedAnimation _logoOpacityCurve;
+  late final CurvedAnimation _titleOpacityCurve;
+  late final CurvedAnimation _titleSlideCurve;
+  late final CurvedAnimation _taglineOpacityCurve;
+  late final CurvedAnimation _taglineSlideCurve;
+  late final CurvedAnimation _footerOpacityCurve;
+  late final CurvedAnimation _progressEase;
+
   late final Animation<double> _logoOpacity;
   late final Animation<double> _titleOpacity;
   late final Animation<double> _titleSlide;
   late final Animation<double> _taglineOpacity;
   late final Animation<double> _taglineSlide;
   late final Animation<double> _footerOpacity;
-  late final Animation<double> _progressEase;
 
   bool _navigated = false;
 
@@ -83,42 +90,39 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
       parent: _entranceController,
       curve: const Interval(0.0, 0.55, curve: Curves.easeOutQuint),
     );
-    _logoOpacity = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(
-        parent: _entranceController,
-        curve: const Interval(0.0, 0.42, curve: ease),
-      ),
+    _logoOpacityCurve = CurvedAnimation(
+      parent: _entranceController,
+      curve: const Interval(0.0, 0.42, curve: ease),
     );
-    _titleOpacity = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(
-        parent: _entranceController,
-        curve: const Interval(0.28, 0.68, curve: ease),
-      ),
+    _logoOpacity = Tween<double>(begin: 0, end: 1).animate(_logoOpacityCurve);
+    _titleOpacityCurve = CurvedAnimation(
+      parent: _entranceController,
+      curve: const Interval(0.28, 0.68, curve: ease),
     );
-    _titleSlide = Tween<double>(begin: 28, end: 0).animate(
-      CurvedAnimation(
-        parent: _entranceController,
-        curve: const Interval(0.28, 0.72, curve: Curves.easeOutQuint),
-      ),
+    _titleOpacity = Tween<double>(begin: 0, end: 1).animate(_titleOpacityCurve);
+    _titleSlideCurve = CurvedAnimation(
+      parent: _entranceController,
+      curve: const Interval(0.28, 0.72, curve: Curves.easeOutQuint),
     );
-    _taglineOpacity = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(
-        parent: _entranceController,
-        curve: const Interval(0.48, 0.88, curve: soft),
-      ),
+    _titleSlide = Tween<double>(begin: 28, end: 0).animate(_titleSlideCurve);
+    _taglineOpacityCurve = CurvedAnimation(
+      parent: _entranceController,
+      curve: const Interval(0.48, 0.88, curve: soft),
     );
-    _taglineSlide = Tween<double>(begin: 16, end: 0).animate(
-      CurvedAnimation(
-        parent: _entranceController,
-        curve: const Interval(0.48, 0.9, curve: ease),
-      ),
+    _taglineOpacity =
+        Tween<double>(begin: 0, end: 1).animate(_taglineOpacityCurve);
+    _taglineSlideCurve = CurvedAnimation(
+      parent: _entranceController,
+      curve: const Interval(0.48, 0.9, curve: ease),
     );
-    _footerOpacity = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(
-        parent: _entranceController,
-        curve: const Interval(0.62, 1.0, curve: soft),
-      ),
+    _taglineSlide =
+        Tween<double>(begin: 16, end: 0).animate(_taglineSlideCurve);
+    _footerOpacityCurve = CurvedAnimation(
+      parent: _entranceController,
+      curve: const Interval(0.62, 1.0, curve: soft),
     );
+    _footerOpacity =
+        Tween<double>(begin: 0, end: 1).animate(_footerOpacityCurve);
 
     _progressController = AnimationController(
       vsync: this,
@@ -130,13 +134,24 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
       curve: Curves.easeInOutCubic,
     );
 
-    _progressController.addStatusListener((status) {
-      if (status == AnimationStatus.completed) _goNext();
-    });
+    _progressController.addStatusListener(_onProgressStatus);
+  }
+
+  void _onProgressStatus(AnimationStatus status) {
+    if (status == AnimationStatus.completed) _goNext();
   }
 
   @override
   void dispose() {
+    _progressController.removeStatusListener(_onProgressStatus);
+    _logoScale.dispose();
+    _logoOpacityCurve.dispose();
+    _titleOpacityCurve.dispose();
+    _titleSlideCurve.dispose();
+    _taglineOpacityCurve.dispose();
+    _taglineSlideCurve.dispose();
+    _footerOpacityCurve.dispose();
+    _progressEase.dispose();
     _orbitController.dispose();
     _pulseController.dispose();
     _entranceController.dispose();

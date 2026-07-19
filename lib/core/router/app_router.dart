@@ -105,7 +105,7 @@ String? _resolveRedirect(GoRouterState state, AsyncValue<AuthSession?> authState
 final routerProvider = Provider<GoRouter>((ref) {
   final refresh = _RouterRefreshNotifier(ref);
 
-  return GoRouter(
+  final router = GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: AppRoutes.welcome,
     refreshListenable: refresh,
@@ -179,4 +179,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
     ],
   );
+
+  ref.onDispose(() {
+    refresh.dispose();
+    router.dispose();
+  });
+
+  return router;
 });
