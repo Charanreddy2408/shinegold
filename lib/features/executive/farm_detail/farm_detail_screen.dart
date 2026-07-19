@@ -25,6 +25,7 @@ import '../../../shared/widgets/shine_buttons.dart';
 import '../../../shared/widgets/shine_card.dart';
 import '../../../shared/widgets/status_chip.dart';
 import '../../../shared/widgets/ux_components.dart';
+import '../../../shared/utils/contact_launcher.dart';
 import '../../../shared/utils/media_url.dart';
 import '../../../shared/widgets/visit_log_tile.dart';
 
@@ -307,53 +308,105 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
           FadeSlideIn(
             child: ShineCard(
               padding: const EdgeInsets.all(14),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  CircleAvatar(
-                    radius: 28,
-                    backgroundColor: AppColors.primarySoft,
-                    backgroundImage: farmerPhoto != null
-                        ? CachedNetworkImageProvider(farmerPhoto)
-                        : null,
-                    child: farmerPhoto == null
-                        ? Text(
-                            farm.farmer.name.isNotEmpty
-                                ? farm.farmer.name[0].toUpperCase()
-                                : '?',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.primaryDark,
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      CircleAvatar(
+                        radius: 28,
+                        backgroundColor: AppColors.primarySoft,
+                        backgroundImage: farmerPhoto != null
+                            ? CachedNetworkImageProvider(farmerPhoto)
+                            : null,
+                        child: farmerPhoto == null
+                            ? Text(
+                                farm.farmer.name.isNotEmpty
+                                    ? farm.farmer.name[0].toUpperCase()
+                                    : '?',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.primaryDark,
+                                ),
+                              )
+                            : null,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              farm.farmer.name,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.w700),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          )
-                        : null,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          farm.farmer.name,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w700,
+                            const SizedBox(height: 4),
+                            InkWell(
+                              onTap: farm.farmer.mobile.trim().isEmpty
+                                  ? null
+                                  : () => ContactLauncher.callOrSnack(
+                                        context,
+                                        farm.farmer.mobile,
+                                      ),
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.phone_rounded,
+                                    size: 16,
+                                    color: AppColors.secondary,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Flexible(
+                                    child: Text(
+                                      farm.farmer.mobile.isEmpty
+                                          ? 'No mobile number'
+                                          : farm.farmer.mobile,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.copyWith(
+                                            color: AppColors.secondary,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
                               ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                            ),
+                            if (farm.farmer.aadharNumber != null &&
+                                farm.farmer.aadharNumber!.isNotEmpty) ...[
+                              const SizedBox(height: 2),
+                              Text(
+                                'Aadhar: ${farm.farmer.aadharNumber}',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(color: AppColors.textMuted),
+                              ),
+                            ],
+                            const SizedBox(height: 8),
+                            StatusChip(status: farm.status),
+                          ],
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          farm.farmer.mobile,
-                          style: Theme.of(context).textTheme.bodyMedium,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 8),
-                        StatusChip(status: farm.status),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
+                  if (farm.farmer.mobile.trim().isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    FarmerContactActions(
+                      mobile: farm.farmer.mobile,
+                      farmerName: farm.farmer.name,
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -385,6 +438,12 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
                 label: 'Acres',
                 value: '${farm.totalAcres} ac',
                 color: AppColors.primary,
+              ),
+              InfoMetricTile(
+                icon: Icons.spa_rounded,
+                label: 'Plants',
+                value: farm.plantCount != null ? '${farm.plantCount}' : '—',
+                color: AppColors.secondary,
               ),
               InfoMetricTile(
                 icon: Icons.location_on_rounded,

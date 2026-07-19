@@ -12,6 +12,7 @@ import '../../../data/models/enums.dart';
 import '../../../data/models/executive.dart';
 import '../../../data/models/farm.dart';
 import '../../../shared/providers/repository_providers.dart';
+import '../../../shared/utils/contact_launcher.dart';
 import '../../../shared/utils/list_search.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/animated_loading.dart';
@@ -325,6 +326,20 @@ class _FarmerExpansionTileState extends ConsumerState<_FarmerExpansionTile> {
                   label: 'Age',
                   value: '${farmer.age} years',
                 ),
+              if (farmer.aadharNumber != null &&
+                  farmer.aadharNumber!.isNotEmpty)
+                _DetailRow(
+                  icon: Icons.badge_outlined,
+                  label: 'Aadhar',
+                  value: farmer.aadharNumber!,
+                ),
+              if (farmer.mobile.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                FarmerContactActions(
+                  mobile: farmer.mobile,
+                  farmerName: farmer.name,
+                ),
+              ],
               const SizedBox(height: 12),
               Text(
                 'Linked Farms',

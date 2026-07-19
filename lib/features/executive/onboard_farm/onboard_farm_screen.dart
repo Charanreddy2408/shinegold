@@ -52,6 +52,8 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
   final _farmerName = TextEditingController();
   final _farmerMobile = TextEditingController();
   final _farmerAge = TextEditingController();
+  final _farmerAadhar = TextEditingController();
+  final _plantCount = TextEditingController();
   DateTime _harvestDate = DateTime.now().add(const Duration(days: 90));
   Gender? _gender;
   final List<XFile> _farmPhotos = [];
@@ -108,6 +110,8 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
     _farmerName.dispose();
     _farmerMobile.dispose();
     _farmerAge.dispose();
+    _farmerAadhar.dispose();
+    _plantCount.dispose();
     super.dispose();
   }
 
@@ -123,6 +127,8 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
     _farmerName.clear();
     _farmerMobile.clear();
     _farmerAge.clear();
+    _farmerAadhar.clear();
+    _plantCount.clear();
     _gender = null;
     _farmPhotos.clear();
     _previewMapCentered = false;
@@ -231,6 +237,11 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
       _showError('Enter crop name');
       return false;
     }
+    final plants = int.tryParse(_plantCount.text.trim());
+    if (plants == null || plants < 1) {
+      _showError('Enter number of plants');
+      return false;
+    }
     return true;
   }
 
@@ -241,6 +252,11 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
     }
     if (_farmerMobile.text.trim().isEmpty) {
       _showError('Enter farmer mobile number');
+      return false;
+    }
+    final aadhar = _farmerAadhar.text.replaceAll(RegExp(r'\D'), '');
+    if (aadhar.length != 12) {
+      _showError('Enter a valid 12-digit Aadhar number');
       return false;
     }
     if (_gender == null) {
@@ -381,11 +397,13 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
         harvestDate: _harvestDate,
         harvestType: _harvestType.text.trim(),
         totalAcres: boundary.totalAcres,
+        plantCount: int.parse(_plantCount.text.trim()),
         boundaryGeojson: boundary.boundaryGeojson,
         farmerName: _farmerName.text.trim(),
         farmerMobile: _farmerMobile.text.trim(),
         farmerGender: _gender!,
         farmerAge: int.parse(_farmerAge.text.trim()),
+        farmerAadhar: _farmerAadhar.text.replaceAll(RegExp(r'\D'), ''),
       );
 
       if (widget.isAdminCreate) {
@@ -675,6 +693,15 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
                 : null,
           ),
         ),
+        const SizedBox(height: AppSpacing.md),
+        TextField(
+          controller: _plantCount,
+          keyboardType: TextInputType.number,
+          decoration: const InputDecoration(
+            labelText: 'Number of Plants',
+            hintText: 'Total plants on this farm',
+          ),
+        ),
       ],
     );
   }
@@ -774,6 +801,17 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
           controller: _farmerMobile,
           keyboardType: TextInputType.phone,
           decoration: const InputDecoration(labelText: 'Mobile Number'),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        TextField(
+          controller: _farmerAadhar,
+          keyboardType: TextInputType.number,
+          maxLength: 12,
+          decoration: const InputDecoration(
+            labelText: 'Aadhar Number',
+            hintText: '12-digit Aadhar',
+            counterText: '',
+          ),
         ),
         const SizedBox(height: AppSpacing.md),
         DropdownButtonFormField<Gender>(

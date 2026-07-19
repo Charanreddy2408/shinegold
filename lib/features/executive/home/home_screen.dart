@@ -8,6 +8,7 @@ import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../data/models/enums.dart';
+import '../../../data/models/executive.dart';
 import '../../../data/models/farm.dart';
 import '../../../shared/providers/app_refresh_provider.dart';
 import '../../../shared/providers/auth_provider.dart';
@@ -30,10 +31,12 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   List<Farm> _todayFarms = [];
+  List<OnboardedFarmSummary> _onboardedFarms = [];
   int _total = 0;
   int _visited = 0;
   int _pending = 0;
   int _upcoming = 0;
+  int _onboardedCount = 0;
   bool _loading = true;
   String? _error;
   String _firstName = '';
@@ -89,6 +92,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         _visited = dashboard.visitedCount;
         _pending = dashboard.pendingCount;
         _upcoming = dashboard.harvestSoonCount;
+        _onboardedCount = dashboard.onboardedFarmsCount;
+        _onboardedFarms = dashboard.onboardedFarms;
         _todayFarms = priorityFarms;
         _loading = false;
         _error = null;
@@ -150,7 +155,57 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         completed: _visited,
                         pending: _pending,
                         harvestSoon: _upcoming,
+                        onboardedCount: _onboardedCount,
                       ),
+                      SectionHeader(
+                        label: 'ONBOARDED',
+                        title: 'Farms you onboarded',
+                        trailing: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.sm,
+                            vertical: AppSpacing.xs,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.secondaryMuted,
+                            borderRadius:
+                                BorderRadius.circular(AppSpacing.radiusXl),
+                          ),
+                          child: Text(
+                            '$_onboardedCount',
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelSmall
+                                ?.copyWith(
+                                  color: AppColors.secondary,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                          ),
+                        ),
+                      ),
+                      if (_onboardedFarms.isEmpty)
+                        const Padding(
+                          padding: EdgeInsets.fromLTRB(16, 0, 16, 8),
+                          child: ShineEmptyState(
+                            icon: Icons.add_business_outlined,
+                            title: 'No farms onboarded yet',
+                            subtitle:
+                                'Farms you add from the Onboard tab will show here',
+                          ),
+                        )
+                      else ...[
+                        ..._onboardedFarms.take(5).map(_onboardedTile),
+                        if (_onboardedCount > 5)
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                            child: Text(
+                              '+${_onboardedCount - 5} more onboarded farms',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(color: AppColors.textMuted),
+                            ),
+                          ),
+                      ],
                       if (_todayFarms.isEmpty)
                         const Padding(
                           padding: EdgeInsets.fromLTRB(16, 8, 16, 0),
@@ -192,6 +247,43 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ],
                   ),
                 ),
+    );
+  }
+
+  Widget _onboardedTile(OnboardedFarmSummary farm) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        0,
+        AppSpacing.lg,
+        AppSpacing.sm,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => context.push(
+            AppRoutes.farmDetail.replaceFirst(':id', farm.farmId),
+          ),
+          borderRadius: BorderRadius.circular(AppColors.cardRadius),
+          child: Ink(
+            decoration: AppColors.cardDecoration(),
+            child: ListTile(
+              leading: CircleAvatar(
+                backgroundColor: AppColors.secondaryMuted,
+                child: const Icon(Icons.eco_rounded, color: AppColors.secondary),
+              ),
+              title: Text(
+                farm.farmName,
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
+              subtitle: Text(
+                '${farm.crop.isEmpty ? 'Crop n/a' : farm.crop} · ${farm.totalAcres} ac',
+              ),
+              trailing: const Icon(Icons.chevron_right_rounded),
+            ),
+          ),
+        ),
+      ),
     );
   }
 

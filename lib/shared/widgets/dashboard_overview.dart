@@ -11,12 +11,14 @@ class DashboardOverviewCard extends StatelessWidget {
     required this.completed,
     required this.pending,
     required this.harvestSoon,
+    this.onboardedCount = 0,
   });
 
   final int totalFarms;
   final int completed;
   final int pending;
   final int harvestSoon;
+  final int onboardedCount;
 
   double get _progress =>
       totalFarms == 0 ? 0 : (completed / totalFarms).clamp(0.0, 1.0);
@@ -79,6 +81,44 @@ class DashboardOverviewCard extends StatelessWidget {
                       background: const Color(0xFFE3F2FD),
                     ),
                   ],
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.secondaryMuted,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.add_business_rounded,
+                        color: AppColors.secondary,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Farms you onboarded',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                      Text(
+                        '$onboardedCount',
+                        style: AppTypography.statNumber.copyWith(
+                          fontSize: 20,
+                          color: AppColors.secondary,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 Row(

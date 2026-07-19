@@ -112,12 +112,46 @@ class DashboardStats {
     required this.totalExecutives,
     required this.totalVisits,
     required this.farmersOnboarded,
+    this.totalAcres = 0,
   });
 
   final int totalFarms;
   final int totalExecutives;
   final int totalVisits;
   final int farmersOnboarded;
+  final double totalAcres;
+}
+
+class OnboardedFarmSummary {
+  const OnboardedFarmSummary({
+    required this.farmId,
+    required this.farmName,
+    required this.crop,
+    required this.totalAcres,
+    required this.status,
+    required this.harvestDate,
+  });
+
+  final String farmId;
+  final String farmName;
+  final String crop;
+  final double totalAcres;
+  final String status;
+  final DateTime harvestDate;
+
+  factory OnboardedFarmSummary.fromJson(Map<String, dynamic> json) {
+    final harvestRaw = json['harvest_date'] as String?;
+    return OnboardedFarmSummary(
+      farmId: json['farm_id']?.toString() ?? '',
+      farmName: json['farm_name'] as String? ?? '',
+      crop: json['crop'] as String? ?? '',
+      totalAcres: (json['total_acres'] as num?)?.toDouble() ?? 0,
+      status: json['status'] as String? ?? '',
+      harvestDate: harvestRaw != null
+          ? DateTime.tryParse(harvestRaw) ?? DateTime.now()
+          : DateTime.now(),
+    );
+  }
 }
 
 class ExecutiveDashboard {
@@ -128,6 +162,8 @@ class ExecutiveDashboard {
     required this.visitedCount,
     required this.pendingCount,
     required this.harvestSoonCount,
+    this.onboardedFarmsCount = 0,
+    this.onboardedFarms = const [],
     this.priorityFarms = const [],
   });
 
@@ -137,6 +173,8 @@ class ExecutiveDashboard {
   final int visitedCount;
   final int pendingCount;
   final int harvestSoonCount;
+  final int onboardedFarmsCount;
+  final List<OnboardedFarmSummary> onboardedFarms;
   final List<Farm> priorityFarms;
 
   factory ExecutiveDashboard.fromJson(Map<String, dynamic> json) {
@@ -158,6 +196,22 @@ class ExecutiveDashboard {
             .toList()
         : const <Farm>[];
 
+    final onboardedRaw = json['onboarded_farms'];
+    final onboardedFarms = <OnboardedFarmSummary>[];
+    if (onboardedRaw is List) {
+      for (final e in onboardedRaw) {
+        if (e is Map) {
+          try {
+            onboardedFarms.add(
+              OnboardedFarmSummary.fromJson(Map<String, dynamic>.from(e)),
+            );
+          } catch (_) {
+            // Skip malformed rows; keep the rest of the dashboard usable.
+          }
+        }
+      }
+    }
+
     final dateRaw = json['date'] as String?;
     final dashboardDate = dateRaw != null
         ? DateTime.tryParse(dateRaw) ?? DateTime.now()
@@ -165,6 +219,11 @@ class ExecutiveDashboard {
 
     // Backend sets total_farms_to_visit = pending only; UI needs assigned workload.
     final assignedTotal = pending + visited;
+
+    final onboardedCountRaw = json['onboarded_farms_count'];
+    final onboardedCount = onboardedCountRaw is num
+        ? onboardedCountRaw.toInt()
+        : onboardedFarms.length;
 
     return ExecutiveDashboard(
       greetingName: json['greeting_name'] as String? ?? '',
@@ -175,6 +234,8 @@ class ExecutiveDashboard {
       visitedCount: visited,
       pendingCount: pending,
       harvestSoonCount: json['harvest_soon_count'] as int? ?? harvestSoon,
+      onboardedFarmsCount: onboardedCount,
+      onboardedFarms: onboardedFarms,
       priorityFarms: priorityFarms,
     );
   }

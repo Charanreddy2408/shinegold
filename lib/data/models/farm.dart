@@ -8,6 +8,7 @@ class Farmer {
     required this.mobile,
     this.gender,
     this.age,
+    this.aadharNumber,
     this.photoUrl,
     this.farmsCount = 0,
   });
@@ -17,6 +18,7 @@ class Farmer {
   final String mobile;
   final Gender? gender;
   final int? age;
+  final String? aadharNumber;
   final String? photoUrl;
   final int farmsCount;
 
@@ -30,6 +32,8 @@ class Farmer {
             '',
         gender: _parseGender(json['gender']),
         age: json['age'] as int?,
+        aadharNumber: json['aadhar_number'] as String? ??
+            json['aadhaar_number'] as String?,
         photoUrl: json['photo_url'] as String?,
         farmsCount: json['farms_count'] as int? ?? 0,
       );
@@ -49,6 +53,8 @@ class Farmer {
         'mobile_number': mobile,
         if (gender != null) 'gender': gender!.name,
         if (age != null) 'age': age,
+        if (aadharNumber != null && aadharNumber!.isNotEmpty)
+          'aadhar_number': aadharNumber,
         if (photoUrl != null) 'photo_url': photoUrl,
       };
 }
@@ -123,6 +129,7 @@ class Farm {
     required this.assignedExecutiveName,
     required this.farmer,
     required this.status,
+    this.plantCount,
     this.assignedExecutives = const [],
     this.healthStatus = FarmHealthStatus.healthy,
     this.lastVisited,
@@ -141,6 +148,7 @@ class Farm {
   final DateTime harvestDate;
   final String harvestType;
   final double totalAcres;
+  final int? plantCount;
   final String assignedExecutiveId;
   final String assignedExecutiveName;
   final List<AssignedExecutive> assignedExecutives;
@@ -206,20 +214,26 @@ class Farm {
     double longitude = 0;
     String locationAddress = '';
 
-    if (locationObj is Map<String, dynamic>) {
-      latitude = (locationObj['lat'] as num?)?.toDouble() ?? 0;
-      longitude = (locationObj['lng'] as num?)?.toDouble() ?? 0;
-      locationAddress = locationObj['address'] as String? ?? '';
-    } else {
+    if (locationObj is Map) {
+      final loc = Map<String, dynamic>.from(locationObj);
+      latitude = (loc['lat'] as num?)?.toDouble() ?? 0;
+      longitude = (loc['lng'] as num?)?.toDouble() ?? 0;
+      locationAddress = loc['address'] as String? ?? '';
+    } else if (locationObj is String) {
+      locationAddress = locationObj;
+    }
+
+    // Always fall back to top-level API fields (location_lat / location_lng).
+    if (latitude == 0 && longitude == 0) {
       latitude = (json['latitude'] as num?)?.toDouble() ??
           (json['location_lat'] as num?)?.toDouble() ??
           0;
       longitude = (json['longitude'] as num?)?.toDouble() ??
           (json['location_lng'] as num?)?.toDouble() ??
           0;
-      locationAddress = json['location'] as String? ??
-          json['location_address'] as String? ??
-          '';
+    }
+    if (locationAddress.isEmpty) {
+      locationAddress = json['location_address'] as String? ?? '';
     }
 
     final assignedExecutive = json['assigned_executive'];
@@ -263,6 +277,7 @@ class Farm {
       harvestDate: _parseApiDate(json['harvest_date']) ?? unsetHarvestDate,
       harvestType: json['harvest_type'] as String? ?? '',
       totalAcres: (json['total_acres'] as num?)?.toDouble() ?? 0,
+      plantCount: json['plant_count'] as int?,
       assignedExecutiveId: assignedExecutiveId,
       assignedExecutiveName: assignedExecutiveName,
       assignedExecutives: assignedExecutives,
@@ -345,6 +360,7 @@ class Farm {
         harvestDate: harvestDate ?? this.harvestDate,
         harvestType: harvestType,
         totalAcres: totalAcres,
+        plantCount: plantCount,
         assignedExecutiveId: assignedExecutiveId,
         assignedExecutiveName: assignedExecutiveName,
         assignedExecutives: assignedExecutives,
@@ -411,10 +427,12 @@ class OnboardFarmRequest {
     required this.harvestDate,
     required this.harvestType,
     required this.totalAcres,
+    required this.plantCount,
     required this.farmerName,
     required this.farmerMobile,
     required this.farmerGender,
     required this.farmerAge,
+    required this.farmerAadhar,
     this.boundaryGeojson,
     this.photoPaths = const [],
   });
@@ -427,10 +445,12 @@ class OnboardFarmRequest {
   final DateTime harvestDate;
   final String harvestType;
   final double totalAcres;
+  final int plantCount;
   final String farmerName;
   final String farmerMobile;
   final Gender farmerGender;
   final int farmerAge;
+  final String farmerAadhar;
   final Map<String, dynamic>? boundaryGeojson;
   final List<String> photoPaths;
 
@@ -443,6 +463,7 @@ class OnboardFarmRequest {
         'harvest_date': harvestDate.toIso8601String().split('T').first,
         'harvest_type': harvestType,
         'total_acres': totalAcres,
+        'plant_count': plantCount,
         if (boundaryGeojson != null) 'boundary_geojson': boundaryGeojson,
         if (uploadedPhotos != null && uploadedPhotos.isNotEmpty)
           'photos': uploadedPhotos,
@@ -451,6 +472,7 @@ class OnboardFarmRequest {
           'mobile_number': farmerMobile,
           'gender': farmerGender.name,
           'age': farmerAge,
+          'aadhar_number': farmerAadhar,
         },
       };
 }

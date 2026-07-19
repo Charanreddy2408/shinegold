@@ -13,6 +13,7 @@ class AdminNetworkHero extends StatelessWidget {
     required this.totalFarms,
     required this.totalExecutives,
     required this.farmersOnboarded,
+    required this.totalAcres,
     required this.filter,
     required this.onFilterChanged,
   });
@@ -21,6 +22,7 @@ class AdminNetworkHero extends StatelessWidget {
   final int totalFarms;
   final int totalExecutives;
   final int farmersOnboarded;
+  final double totalAcres;
   final DashboardFilter filter;
   final ValueChanged<DashboardFilter> onFilterChanged;
 
@@ -109,6 +111,18 @@ class AdminNetworkHero extends StatelessWidget {
                 Icons.agriculture_rounded,
                 '$farmersOnboarded',
                 'Farmers',
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              _inlineStat(
+                Icons.square_foot_rounded,
+                totalAcres >= 100
+                    ? totalAcres.toStringAsFixed(0)
+                    : totalAcres.toStringAsFixed(1),
+                'Total acres',
               ),
             ],
           ),

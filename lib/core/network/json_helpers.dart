@@ -122,18 +122,23 @@ PaginatedResult<T> parsePaginated<T>(
   dynamic data,
   T Function(Map<String, dynamic> json) fromJson,
 ) {
-  if (data is Map<String, dynamic>) {
-    final items = data['items'] as List<dynamic>? ?? [];
+  if (data is Map) {
+    final map = Map<String, dynamic>.from(data);
+    final items = map['items'] as List<dynamic>? ?? [];
     return PaginatedResult(
-      items: items.map((e) => fromJson(e as Map<String, dynamic>)).toList(),
-      total: data['total'] as int? ?? items.length,
-      page: data['page'] as int? ?? 1,
-      pageSize: data['page_size'] as int? ?? items.length,
+      items: items
+          .map((e) => fromJson(Map<String, dynamic>.from(e as Map)))
+          .toList(),
+      total: map['total'] as int? ?? items.length,
+      page: map['page'] as int? ?? 1,
+      pageSize: map['page_size'] as int? ?? items.length,
     );
   }
   if (data is List) {
     return PaginatedResult(
-      items: data.map((e) => fromJson(e as Map<String, dynamic>)).toList(),
+      items: data
+          .map((e) => fromJson(Map<String, dynamic>.from(e as Map)))
+          .toList(),
       total: data.length,
       page: 1,
       pageSize: data.length,

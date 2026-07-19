@@ -31,7 +31,7 @@ class AdminDashboardScreen extends ConsumerStatefulWidget {
 
 class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   DashboardFilter _filter = DashboardFilter.all;
-  dynamic _stats;
+  DashboardStats? _stats;
   List<Executive> _executives = [];
   List<Farm> _farms = [];
   bool _loading = true;
@@ -59,7 +59,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       ]);
       if (mounted) {
         setState(() {
-          _stats = results[0];
+          _stats = results[0] as DashboardStats;
           _executives = results[1] as List<Executive>;
           _farms = results[2] as List<Farm>;
           _loading = false;
@@ -122,19 +122,17 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                 slivers: [
                   SliverToBoxAdapter(
                     child: AdminNetworkHero(
-                      totalVisits: _stats.totalVisits,
-                      totalFarms: _stats.totalFarms,
-                      totalExecutives: _stats.totalExecutives,
-                      farmersOnboarded: _stats.farmersOnboarded,
+                      totalVisits: _stats!.totalVisits,
+                      totalFarms: _stats!.totalFarms,
+                      totalExecutives: _stats!.totalExecutives,
+                      farmersOnboarded: _stats!.farmersOnboarded,
+                      totalAcres: _stats!.totalAcres,
                       filter: _filter,
                       onFilterChanged: (f) {
                         setState(() => _filter = f);
                         _load();
                       },
                     ),
-                  ),
-                  const SliverToBoxAdapter(
-                    child: AdminNearbyFarmsSection(),
                   ),
                   SliverToBoxAdapter(
                     child: AdminIndiaFarmMap(
@@ -144,6 +142,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                         AppRoutes.farmDetail.replaceFirst(':id', farm.id),
                       ),
                     ),
+                  ),
+                  const SliverToBoxAdapter(
+                    child: AdminNearbyFarmsSection(),
                   ),
                   SliverToBoxAdapter(
                     child: Padding(
@@ -174,35 +175,45 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                             AdminMetricRow(
                               icon: Icons.eco_outlined,
                               label: 'REGISTERED FARMS',
-                              value: '${_stats.totalFarms}',
+                              value: '${_stats!.totalFarms}',
                               subtitle: 'Active farms in the network',
                               color: AppColors.secondary,
-                              progress: _stats.totalFarms > 0 ? 0.72 : 0,
+                              progress: _stats!.totalFarms > 0 ? 0.72 : 0,
                             ),
                             AdminMetricRow(
                               icon: Icons.people_outline,
                               label: 'FIELD EXECUTIVES',
-                              value: '${_stats.totalExecutives}',
+                              value: '${_stats!.totalExecutives}',
                               subtitle: 'Team members on ground',
                               color: AppColors.primary,
-                              progress: _stats.totalExecutives > 0 ? 0.55 : 0,
+                              progress: _stats!.totalExecutives > 0 ? 0.55 : 0,
                             ),
                             AdminMetricRow(
                               icon: Icons.history_rounded,
                               label: 'VISITS LOGGED',
-                              value: '${_stats.totalVisits}',
+                              value: '${_stats!.totalVisits}',
                               subtitle: 'Completed & ongoing visits',
                               color: AppColors.info,
-                              progress: _stats.totalVisits > 0 ? 0.68 : 0,
+                              progress: _stats!.totalVisits > 0 ? 0.68 : 0,
+                            ),
+                            AdminMetricRow(
+                              icon: Icons.square_foot_rounded,
+                              label: 'TOTAL ACRES',
+                              value: _stats!.totalAcres >= 100
+                                  ? _stats!.totalAcres.toStringAsFixed(0)
+                                  : _stats!.totalAcres.toStringAsFixed(1),
+                              subtitle: 'Combined farm acreage',
+                              color: AppColors.primaryDark,
+                              progress: _stats!.totalAcres > 0 ? 0.6 : 0,
                             ),
                             AdminMetricRow(
                               icon: Icons.agriculture_rounded,
                               label: 'FARMERS ONBOARDED',
-                              value: '${_stats.farmersOnboarded}',
+                              value: '${_stats!.farmersOnboarded}',
                               subtitle: 'New farmers this season',
                               color: AppColors.secondarySoft,
                               progress:
-                                  _stats.farmersOnboarded > 0 ? 0.45 : 0,
+                                  _stats!.farmersOnboarded > 0 ? 0.45 : 0,
                               isLast: true,
                             ),
                           ],

@@ -18,6 +18,7 @@ class ApiDashboardDataSource implements DashboardDataSource {
       totalExecutives: data['total_executives'] as int? ?? 0,
       totalVisits: data['total_visits'] as int? ?? 0,
       farmersOnboarded: data['farmers_onboarded'] as int? ?? 0,
+      totalAcres: (data['total_acres'] as num?)?.toDouble() ?? 0,
     );
   }
 

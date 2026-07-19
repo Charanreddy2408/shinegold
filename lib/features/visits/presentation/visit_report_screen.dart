@@ -14,6 +14,7 @@ import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/status_chip.dart';
 import '../../../shared/widgets/ux_components.dart';
 import '../../../shared/utils/media_url.dart';
+import '../../../shared/utils/visit_report_pdf.dart';
 
 class VisitReportScreen extends ConsumerStatefulWidget {
   const VisitReportScreen({super.key, required this.visitId});
@@ -28,6 +29,7 @@ class _VisitReportScreenState extends ConsumerState<VisitReportScreen> {
   Visit? _visit;
   VisitFormTemplate? _template;
   bool _loading = true;
+  bool _downloading = false;
   String? _error;
 
   @override
@@ -99,6 +101,31 @@ class _VisitReportScreenState extends ConsumerState<VisitReportScreen> {
     return visit.hasVoiceNote || _voiceNoteUrl != null;
   }
 
+  Future<void> _downloadPdf() async {
+    final visit = _visit;
+    if (visit == null || _downloading) return;
+    setState(() => _downloading = true);
+    try {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Preparing PDF…')),
+        );
+      }
+      await VisitReportPdf.download(visit: visit, template: _template);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Report PDF ready to share/save')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(formatApiError(e))),
+      );
+    } finally {
+      if (mounted) setState(() => _downloading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final dateTimeFormat = DateFormat('dd MMM yyyy · hh:mm a');
@@ -117,7 +144,40 @@ class _VisitReportScreenState extends ConsumerState<VisitReportScreen> {
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
         elevation: 0,
+        actions: [
+          if (_visit != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: TextButton.icon(
+                onPressed: _downloading ? null : _downloadPdf,
+                icon: _downloading
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Icon(Icons.picture_as_pdf_rounded, size: 20),
+                label: Text(
+                  _downloading ? 'Saving…' : 'PDF',
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
+                style: TextButton.styleFrom(foregroundColor: Colors.white),
+              ),
+            ),
+        ],
       ),
+      floatingActionButton: (_visit != null && !_loading && _error == null)
+          ? FloatingActionButton.extended(
+              onPressed: _downloading ? null : _downloadPdf,
+              backgroundColor: AppColors.primaryDark,
+              foregroundColor: Colors.white,
+              icon: const Icon(Icons.download_rounded),
+              label: const Text('Download PDF'),
+            )
+          : null,
       body: _loading
           ? const ListLoadingSkeleton(itemCount: 6, itemHeight: 72)
           : _error != null
@@ -132,12 +192,34 @@ class _VisitReportScreenState extends ConsumerState<VisitReportScreen> {
                   ? const SizedBox.shrink()
                   : AppBackground(
                       child: ListView(
-                        padding: const EdgeInsets.all(AppSpacing.lg),
+                        padding: const EdgeInsets.fromLTRB(
+                          AppSpacing.lg,
+                          AppSpacing.lg,
+                          AppSpacing.lg,
+                          96,
+                        ),
                         children: [
                           _SummaryCard(
                             visit: _visit!,
                             dateTimeFormat: dateTimeFormat,
                             durationLabel: formatDurationFromVisit(_visit!),
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                          FilledButton.icon(
+                            onPressed: _downloading ? null : _downloadPdf,
+                            icon: const Icon(Icons.download_rounded),
+                            label: Text(
+                              _downloading
+                                  ? 'Preparing PDF…'
+                                  : 'Download report PDF',
+                            ),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: AppColors.primaryDark,
+                              foregroundColor: Colors.white,
+                              minimumSize: const Size.fromHeight(48),
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 14),
+                            ),
                           ),
                           const SizedBox(height: AppSpacing.lg),
                           Text(
@@ -268,6 +350,17 @@ class _VisitReportScreenState extends ConsumerState<VisitReportScreen> {
                               },
                             ),
                           ],
+                          const SizedBox(height: AppSpacing.xl),
+                          FilledButton.icon(
+                            onPressed: _downloadPdf,
+                            icon: const Icon(Icons.download_rounded),
+                            label: const Text('Download report PDF'),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: AppColors.primaryDark,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                            ),
+                          ),
                           const SizedBox(height: 24),
                         ],
                       ),

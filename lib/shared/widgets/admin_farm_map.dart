@@ -30,13 +30,20 @@ class AdminIndiaFarmMap extends StatefulWidget {
 }
 
 class _AdminIndiaFarmMapState extends State<AdminIndiaFarmMap>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   List<IndiaStateShape> _rawStates = [];
   List<IndiaStateShape> _states = [];
   bool _loadingMap = true;
   Farm? _selectedFarm;
   String? _selectedState;
   late final AnimationController _pulseController;
+  late final AnimationController _zoomAnim;
+  final TransformationController _transform = TransformationController();
+  Size _viewportSize = Size.zero;
+  ScrollHoldController? _scrollHold;
+  double _scale = 1.0;
+  static const _minScale = 0.85;
+  static const _maxScale = 10.0;
 
   @override
   void initState() {
@@ -45,7 +52,18 @@ class _AdminIndiaFarmMapState extends State<AdminIndiaFarmMap>
       vsync: this,
       duration: const Duration(milliseconds: 2400),
     )..repeat(reverse: true);
+    _zoomAnim = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 220),
+    );
+    _transform.addListener(_onTransformChanged);
     _loadMap();
+  }
+
+  void _onTransformChanged() {
+    final next = _transform.value.getMaxScaleOnAxis();
+    if ((next - _scale).abs() < 0.02) return;
+    setState(() => _scale = next);
   }
 
   Future<void> _loadMap() async {
@@ -59,8 +77,74 @@ class _AdminIndiaFarmMapState extends State<AdminIndiaFarmMap>
 
   @override
   void dispose() {
+    _scrollHold?.cancel();
+    _transform.removeListener(_onTransformChanged);
     _pulseController.dispose();
+    _zoomAnim.dispose();
+    _transform.dispose();
     super.dispose();
+  }
+
+  void _holdParentScroll() {
+    _scrollHold?.cancel();
+    final position = Scrollable.maybeOf(context)?.position;
+    if (position == null || !position.hasPixels) return;
+    _scrollHold = position.hold(() {});
+  }
+
+  void _releaseParentScroll() {
+    _scrollHold?.cancel();
+    _scrollHold = null;
+  }
+
+  /// Smooth zoom centered on the middle of the visible map.
+  void _zoomBy(double factor) {
+    if (_viewportSize == Size.zero) return;
+    final begin = Matrix4.copy(_transform.value);
+    final currentScale = begin.getMaxScaleOnAxis();
+    final nextScale = (currentScale * factor).clamp(_minScale, _maxScale);
+    if ((nextScale - currentScale).abs() < 0.01) return;
+
+    final ratio = nextScale / currentScale;
+    final focal = _transform.toScene(
+      Offset(_viewportSize.width / 2, _viewportSize.height / 2),
+    );
+    final end = Matrix4.copy(begin)
+      ..translateByDouble(focal.dx, focal.dy, 0, 1)
+      ..scaleByDouble(ratio, ratio, ratio, 1)
+      ..translateByDouble(-focal.dx, -focal.dy, 0, 1);
+
+    _zoomAnim.stop();
+    final animation = Matrix4Tween(begin: begin, end: end).animate(
+      CurvedAnimation(parent: _zoomAnim, curve: Curves.easeOutCubic),
+    );
+    void tick() => _transform.value = animation.value;
+    animation.addListener(tick);
+    _zoomAnim.forward(from: 0).whenComplete(() {
+      animation.removeListener(tick);
+    });
+  }
+
+  void _resetZoom() {
+    _zoomAnim.stop();
+    _transform.value = Matrix4.identity();
+    setState(() {
+      _scale = 1.0;
+      _selectedState = null;
+      _selectedFarm = null;
+    });
+  }
+
+  void _openFullscreen() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        fullscreenDialog: true,
+        builder: (_) => IndiaFarmMapFullscreenPage(
+          farms: widget.farms,
+          onFarmTap: widget.onFarmTap,
+        ),
+      ),
+    );
   }
 
   Map<String, int> get _stateCounts {
@@ -73,11 +157,39 @@ class _AdminIndiaFarmMapState extends State<AdminIndiaFarmMap>
     return counts;
   }
 
-  List<Farm> get _plottedFarms => widget.farms
-      .where(
-        (f) => IndiaMapProjection.hasValidCoords(f.latitude, f.longitude),
-      )
-      .toList();
+  List<Farm> get _plottedFarms {
+    final withCoords = widget.farms
+        .where(
+          (f) => IndiaMapProjection.hasValidCoords(f.latitude, f.longitude),
+        )
+        .toList();
+    if (withCoords.isNotEmpty) return withCoords;
+    // Fallback: still show farms we can place via state centroid.
+    return widget.farms
+        .where((f) => FarmStateResolver.resolve(f) != 'Unknown')
+        .toList();
+  }
+
+  Offset? _pinOffset(Farm farm, Size size, int index) {
+    if (IndiaMapProjection.hasValidCoords(farm.latitude, farm.longitude)) {
+      return IndiaMapProjection.project(
+        LatLng(farm.latitude, farm.longitude),
+        size,
+      );
+    }
+    final stateName = FarmStateResolver.resolve(farm);
+    IndiaStateShape? shape;
+    for (final s in _states) {
+      if (s.name == stateName) {
+        shape = s;
+        break;
+      }
+    }
+    if (shape == null || shape.centroid == Offset.zero) return null;
+    // Slight jitter so stacked farms remain distinguishable.
+    final jitter = (index % 7) - 3;
+    return shape.centroid + Offset(jitter * 4.0, ((index ~/ 7) % 5 - 2) * 4.0);
+  }
 
   int _count(FarmVisitStatus status) =>
       widget.farms.where((f) => f.status == status).length;
@@ -100,7 +212,7 @@ class _AdminIndiaFarmMapState extends State<AdminIndiaFarmMap>
     final stateCounts = _stateCounts;
     final activeStates = stateCounts.keys.length;
     final screenH = MediaQuery.sizeOf(context).height;
-    final mapHeight = widget.height ?? (screenH * 0.46).clamp(400.0, 520.0);
+    final mapHeight = widget.height ?? (screenH * 0.58).clamp(460.0, 640.0);
 
     return Container(
       margin: const EdgeInsets.fromLTRB(12, 12, 12, 4),
@@ -152,7 +264,9 @@ class _AdminIndiaFarmMapState extends State<AdminIndiaFarmMap>
                                 ?.copyWith(fontWeight: FontWeight.w800),
                           ),
                           Text(
-                            'Bubbles show farm count by state',
+                            _plottedFarms.isEmpty
+                                ? 'Pinch to zoom · drag to pan · tap states'
+                                : 'Pinch to zoom in on farms · ${_plottedFarms.length} locations',
                             style:
                                 Theme.of(context).textTheme.bodySmall?.copyWith(
                                       color: AppColors.textMuted,
@@ -161,12 +275,20 @@ class _AdminIndiaFarmMapState extends State<AdminIndiaFarmMap>
                         ],
                       ),
                     ),
-                    if (_selectedState != null || _selectedFarm != null)
+                    IconButton(
+                      onPressed: _openFullscreen,
+                      icon: const Icon(Icons.fullscreen_rounded, size: 22),
+                      style: IconButton.styleFrom(
+                        backgroundColor: AppColors.primaryDark,
+                        foregroundColor: Colors.white,
+                      ),
+                      tooltip: 'Full screen map',
+                    ),
+                    if (_selectedState != null ||
+                        _selectedFarm != null ||
+                        _scale > 1.05)
                       IconButton(
-                        onPressed: () => setState(() {
-                          _selectedState = null;
-                          _selectedFarm = null;
-                        }),
+                        onPressed: _resetZoom,
                         icon: const Icon(Icons.restart_alt_rounded, size: 20),
                         style: IconButton.styleFrom(
                           backgroundColor: AppColors.canvasDeep,
@@ -175,7 +297,7 @@ class _AdminIndiaFarmMapState extends State<AdminIndiaFarmMap>
                       ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
                 Row(
                   children: [
                     _StatPill(
@@ -245,27 +367,116 @@ class _AdminIndiaFarmMapState extends State<AdminIndiaFarmMap>
                                   mapConstraints.maxWidth,
                                   mapConstraints.maxHeight,
                                 );
-                                _states =
-                                    IndiaStatesMapData.layout(_rawStates, paintSize);
+                                _viewportSize = paintSize;
+                                _states = IndiaStatesMapData.layout(
+                                  _rawStates,
+                                  paintSize,
+                                );
 
                                 return Stack(
-                                  clipBehavior: Clip.none,
+                                  clipBehavior: Clip.hardEdge,
                                   children: [
-                                    GestureDetector(
-                                      onTapDown: (d) => _onMapTap(
-                                        d.localPosition,
-                                        paintSize,
-                                      ),
-                                      child: CustomPaint(
-                                        size: paintSize,
-                                        painter: IndiaChoroplethMapPainter(
-                                          states: _states,
-                                          countsByState: stateCounts,
-                                          selectedState: _selectedState,
+                                    Listener(
+                                      behavior: HitTestBehavior.opaque,
+                                      onPointerDown: (_) => _holdParentScroll(),
+                                      onPointerUp: (_) =>
+                                          _releaseParentScroll(),
+                                      onPointerCancel: (_) =>
+                                          _releaseParentScroll(),
+                                      child: InteractiveViewer(
+                                        transformationController: _transform,
+                                        minScale: _minScale,
+                                        maxScale: _maxScale,
+                                        constrained: false,
+                                        clipBehavior: Clip.hardEdge,
+                                        panEnabled: true,
+                                        scaleEnabled: true,
+                                        trackpadScrollCausesScale: true,
+                                        boundaryMargin:
+                                            const EdgeInsets.all(280),
+                                        onInteractionStart: (_) =>
+                                            _holdParentScroll(),
+                                        onInteractionEnd: (_) =>
+                                            _releaseParentScroll(),
+                                        child: SizedBox(
+                                          width: paintSize.width,
+                                          height: paintSize.height,
+                                          child: Stack(
+                                            clipBehavior: Clip.none,
+                                            children: [
+                                              GestureDetector(
+                                                behavior:
+                                                    HitTestBehavior.opaque,
+                                                onTapDown: (d) => _onMapTap(
+                                                  d.localPosition,
+                                                  paintSize,
+                                                ),
+                                                child: CustomPaint(
+                                                  size: paintSize,
+                                                  painter:
+                                                      IndiaChoroplethMapPainter(
+                                                    states: _states,
+                                                    countsByState: stateCounts,
+                                                    selectedState:
+                                                        _selectedState,
+                                                  ),
+                                                ),
+                                              ),
+                                              ..._buildFarmMarkers(paintSize),
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     ),
-                                    ..._buildFarmMarkers(paintSize),
+                                    Positioned(
+                                      right: 10,
+                                      top: 10,
+                                      child: Column(
+                                        children: [
+                                          _ZoomButton(
+                                            icon: Icons.add_rounded,
+                                            onTap: () => _zoomBy(1.35),
+                                          ),
+                                          const SizedBox(height: 6),
+                                          _ZoomButton(
+                                            icon: Icons.remove_rounded,
+                                            onTap: () => _zoomBy(1 / 1.35),
+                                          ),
+                                          const SizedBox(height: 6),
+                                          _ZoomButton(
+                                            icon: Icons.fullscreen_rounded,
+                                            onTap: _openFullscreen,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Positioned(
+                                      left: 10,
+                                      top: 10,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                          vertical: 6,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white.withValues(
+                                            alpha: 0.92,
+                                          ),
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                          border: Border.all(
+                                            color: AppColors.borderSubtle,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          '${_scale.toStringAsFixed(1)}×',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w800,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
                                     if (_selectedFarm != null)
                                       Positioned(
                                         left: 8,
@@ -323,85 +534,80 @@ class _AdminIndiaFarmMapState extends State<AdminIndiaFarmMap>
         .fadeIn(duration: 400.ms);
   }
 
-  /// Overview: one clear count bubble per state (avoids overlapping pins).
-  /// State selected: individual farm pins at coordinates.
+  /// Farm pins always visible; state filter narrows pins when selected.
   List<Widget> _buildFarmMarkers(Size size) {
-    if (_selectedState == null) {
-      return _buildStateClusterMarkers(size);
-    }
     return _buildIndividualFarmPins(size);
   }
 
-  List<Widget> _buildStateClusterMarkers(Size size) {
-    final byState = <String, List<Farm>>{};
-    for (final farm in _plottedFarms) {
-      final state = FarmStateResolver.resolve(farm);
-      if (state == 'Unknown') continue;
-      byState.putIfAbsent(state, () => []).add(farm);
-    }
-
-    final markers = <Widget>[];
-    for (final entry in byState.entries) {
-      final farms = entry.value;
-      final centroid = _stateShapeCentroid(entry.key) ??
-          _averageProjected(farms, size);
-      if (centroid == null) continue;
-
-      final pending = farms
-          .where((f) => f.status == FarmVisitStatus.pending)
-          .length;
-      final accent = pending > 0 ? AppColors.error : AppColors.secondary;
-      const bubble = 36.0;
-
-      markers.add(
-        Positioned(
-          left: centroid.dx - bubble / 2,
-          top: centroid.dy - bubble / 2,
-          child: GestureDetector(
-            onTap: () => setState(() {
-              _selectedState = entry.key;
-              _selectedFarm = null;
-            }),
-            child: AnimatedBuilder(
-              animation: _pulseController,
-              builder: (_, __) => _StateClusterBadge(
-                count: farms.length,
-                accent: accent,
-                pulse: pending > 0,
-                pulseValue: _pulseController.value,
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-    return markers;
-  }
-
   List<Widget> _buildIndividualFarmPins(Size size) {
-    final markers = <Widget>[];
-    for (final farm in _plottedFarms) {
-      final state = FarmStateResolver.resolve(farm);
-      if (state != _selectedState) continue;
+    // Cluster less as the user zooms in so individual farms appear smoothly.
+    final cell = _scale >= 3.2
+        ? 4.0
+        : _scale >= 2.0
+            ? 8.0
+            : _scale >= 1.35
+                ? 12.0
+                : 18.0;
 
-      final offset = IndiaMapProjection.project(
-        LatLng(farm.latitude, farm.longitude),
-        size,
-      );
+    final clusters = <String, List<({Farm farm, Offset offset})>>{};
+    var index = 0;
+    for (final farm in _plottedFarms) {
+      if (_selectedState != null) {
+        final state = FarmStateResolver.resolve(farm);
+        if (state != _selectedState) continue;
+      }
+      final offset = _pinOffset(farm, size, index);
+      index++;
+      if (offset == null) continue;
+      final key =
+          '${(offset.dx / cell).round()}_${(offset.dy / cell).round()}';
+      clusters.putIfAbsent(key, () => []).add((farm: farm, offset: offset));
+    }
+
+    final markers = <Widget>[];
+    for (final group in clusters.values) {
+      final lead = group.first;
+      final farm = lead.farm;
+      // Spread stacked farms slightly when zoomed in.
+      Offset offset = lead.offset;
+      if (group.length > 1 && _scale >= 2.0) {
+        var sx = 0.0;
+        var sy = 0.0;
+        for (final g in group) {
+          sx += g.offset.dx;
+          sy += g.offset.dy;
+        }
+        offset = Offset(sx / group.length, sy / group.length);
+      }
       final color = _pinColor(farm.status);
-      final isSelected = _selectedFarm?.id == farm.id;
-      final pulse = farm.status == FarmVisitStatus.pending && !isSelected;
-      const pinSize = 28.0;
+      final isSelected = group.any((g) => g.farm.id == _selectedFarm?.id);
+      final pulse =
+          farm.status == FarmVisitStatus.pending && !isSelected;
+      final pinSize = _scale >= 2.5 ? 30.0 : 36.0;
+      final state = FarmStateResolver.resolve(farm);
+      final count = group.length;
 
       markers.add(
         Positioned(
           left: offset.dx - pinSize / 2,
-          top: offset.dy - pinSize / 2,
+          top: offset.dy - pinSize,
           child: GestureDetector(
-            onTap: () => setState(() {
-              _selectedFarm = farm;
-              _selectedState = state;
-            }),
+            behavior: HitTestBehavior.opaque,
+            onTap: () {
+              if (count > 1 && _scale < 2.2) {
+                // Zoom into the cluster so farms separate.
+                _zoomBy(1.8);
+                setState(() {
+                  _selectedFarm = null;
+                  _selectedState = state == 'Unknown' ? null : state;
+                });
+                return;
+              }
+              setState(() {
+                _selectedFarm = farm;
+                _selectedState = state == 'Unknown' ? null : state;
+              });
+            },
             child: pulse
                 ? AnimatedBuilder(
                     animation: _pulseController,
@@ -410,7 +616,9 @@ class _AdminIndiaFarmMapState extends State<AdminIndiaFarmMap>
                       isSelected: isSelected,
                       pulse: true,
                       pulseValue: _pulseController.value,
-                      label: farm.name.isNotEmpty ? farm.name[0] : 'F',
+                      label: count > 1
+                          ? '$count'
+                          : (farm.name.isNotEmpty ? farm.name[0] : 'F'),
                     ),
                   )
                 : _FarmPin(
@@ -418,35 +626,15 @@ class _AdminIndiaFarmMapState extends State<AdminIndiaFarmMap>
                     isSelected: isSelected,
                     pulse: false,
                     pulseValue: 0,
-                    label: farm.name.isNotEmpty ? farm.name[0] : 'F',
+                    label: count > 1
+                        ? '$count'
+                        : (farm.name.isNotEmpty ? farm.name[0] : 'F'),
                   ),
           ),
         ),
       );
     }
     return markers;
-  }
-
-  Offset? _stateShapeCentroid(String stateName) {
-    for (final shape in _states) {
-      if (shape.name == stateName) return shape.centroid;
-    }
-    return null;
-  }
-
-  Offset? _averageProjected(List<Farm> farms, Size size) {
-    if (farms.isEmpty) return null;
-    var x = 0.0;
-    var y = 0.0;
-    for (final farm in farms) {
-      final p = IndiaMapProjection.project(
-        LatLng(farm.latitude, farm.longitude),
-        size,
-      );
-      x += p.dx;
-      y += p.dy;
-    }
-    return Offset(x / farms.length, y / farms.length);
   }
 
   Color _pinColor(FarmVisitStatus status) {
@@ -527,7 +715,7 @@ class _MapLegendBar extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Tap a bubble to open farms in that state',
+            'Pinch to zoom · drag to pan · tap a pin for farm details',
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
                   fontWeight: FontWeight.w700,
                   color: AppColors.textMuted,
@@ -684,51 +872,66 @@ class _FarmPin extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final size = isSelected ? 30.0 : 26.0;
+    final size = isSelected ? 36.0 : 32.0;
 
-    return Stack(
-      alignment: Alignment.center,
-      clipBehavior: Clip.none,
-      children: [
-        if (pulse)
-          Container(
-            width: size + pulseValue * 8,
-            height: size + pulseValue * 8,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: color.withValues(alpha: 0.16 * (1 - pulseValue)),
+    return SizedBox(
+      width: size,
+      height: size + 6,
+      child: Stack(
+        alignment: Alignment.topCenter,
+        clipBehavior: Clip.none,
+        children: [
+          if (pulse)
+            Positioned(
+              top: 0,
+              child: Container(
+                width: size + pulseValue * 10,
+                height: size + pulseValue * 10,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: color.withValues(alpha: 0.22 * (1 - pulseValue)),
+                ),
+              ),
             ),
-          ),
-        Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
+          Icon(
+            Icons.location_on_rounded,
+            size: size,
             color: color,
-            border: Border.all(
-              color: Colors.white,
-              width: isSelected ? 3 : 2.4,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.28),
-                blurRadius: isSelected ? 8 : 5,
-                offset: const Offset(0, 2),
+            shadows: [
+              Shadow(
+                color: Colors.black.withValues(alpha: 0.35),
+                blurRadius: 4,
+                offset: const Offset(0, 1),
               ),
             ],
           ),
-          alignment: Alignment.center,
-          child: Text(
-            label.toUpperCase(),
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: isSelected ? 12 : 11,
-              fontWeight: FontWeight.w900,
-              height: 1,
+          Positioned(
+            top: size * 0.22,
+            child: Container(
+              width: size * 0.42,
+              height: size * 0.42,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white,
+                border: Border.all(
+                  color: color,
+                  width: isSelected ? 2 : 1.5,
+                ),
+              ),
+              child: Text(
+                label.toUpperCase(),
+                style: TextStyle(
+                  color: color,
+                  fontSize: isSelected ? 10 : 9,
+                  fontWeight: FontWeight.w900,
+                  height: 1,
+                ),
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -956,6 +1159,350 @@ class _FarmInfoPanel extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _ZoomButton extends StatelessWidget {
+  const _ZoomButton({required this.icon, required this.onTap});
+
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white,
+      elevation: 2,
+      shadowColor: AppColors.shadowLight,
+      borderRadius: BorderRadius.circular(10),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: SizedBox(
+          width: 42,
+          height: 42,
+          child: Icon(icon, size: 22, color: AppColors.primaryDark),
+        ),
+      ),
+    );
+  }
+}
+
+/// Full-screen India map — pinch/pan works reliably outside the dashboard scroll.
+class IndiaFarmMapFullscreenPage extends StatefulWidget {
+  const IndiaFarmMapFullscreenPage({
+    super.key,
+    required this.farms,
+    this.onFarmTap,
+  });
+
+  final List<Farm> farms;
+  final void Function(Farm farm)? onFarmTap;
+
+  @override
+  State<IndiaFarmMapFullscreenPage> createState() =>
+      _IndiaFarmMapFullscreenPageState();
+}
+
+class _IndiaFarmMapFullscreenPageState extends State<IndiaFarmMapFullscreenPage>
+    with TickerProviderStateMixin {
+  List<IndiaStateShape> _rawStates = [];
+  List<IndiaStateShape> _states = [];
+  bool _loading = true;
+  Farm? _selectedFarm;
+  final TransformationController _transform = TransformationController();
+  late final AnimationController _pulse;
+  late final AnimationController _zoomAnim;
+  Size _viewportSize = Size.zero;
+  double _scale = 1.0;
+  static const _minScale = 0.85;
+  static const _maxScale = 12.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulse = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2400),
+    )..repeat(reverse: true);
+    _zoomAnim = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 220),
+    );
+    _transform.addListener(() {
+      final next = _transform.value.getMaxScaleOnAxis();
+      if ((next - _scale).abs() < 0.02) return;
+      setState(() => _scale = next);
+    });
+    _load();
+  }
+
+  Future<void> _load() async {
+    final raw = await IndiaStatesMapData.loadRaw();
+    if (!mounted) return;
+    setState(() {
+      _rawStates = raw;
+      _loading = false;
+    });
+  }
+
+  @override
+  void dispose() {
+    _pulse.dispose();
+    _zoomAnim.dispose();
+    _transform.dispose();
+    super.dispose();
+  }
+
+  void _zoomBy(double factor) {
+    if (_viewportSize == Size.zero) return;
+    final begin = Matrix4.copy(_transform.value);
+    final currentScale = begin.getMaxScaleOnAxis();
+    final nextScale = (currentScale * factor).clamp(_minScale, _maxScale);
+    if ((nextScale - currentScale).abs() < 0.01) return;
+    final ratio = nextScale / currentScale;
+    final focal = _transform.toScene(
+      Offset(_viewportSize.width / 2, _viewportSize.height / 2),
+    );
+    final end = Matrix4.copy(begin)
+      ..translateByDouble(focal.dx, focal.dy, 0, 1)
+      ..scaleByDouble(ratio, ratio, ratio, 1)
+      ..translateByDouble(-focal.dx, -focal.dy, 0, 1);
+    _zoomAnim.stop();
+    final animation = Matrix4Tween(begin: begin, end: end).animate(
+      CurvedAnimation(parent: _zoomAnim, curve: Curves.easeOutCubic),
+    );
+    void tick() => _transform.value = animation.value;
+    animation.addListener(tick);
+    _zoomAnim.forward(from: 0).whenComplete(() {
+      animation.removeListener(tick);
+    });
+  }
+
+  List<Farm> get _plotted {
+    final withCoords = widget.farms
+        .where(
+          (f) => IndiaMapProjection.hasValidCoords(f.latitude, f.longitude),
+        )
+        .toList();
+    if (withCoords.isNotEmpty) return withCoords;
+    return widget.farms
+        .where((f) => FarmStateResolver.resolve(f) != 'Unknown')
+        .toList();
+  }
+
+  Color _pinColor(FarmVisitStatus status) {
+    switch (status) {
+      case FarmVisitStatus.pending:
+        return AppColors.error;
+      case FarmVisitStatus.ongoing:
+        return AppColors.info;
+      case FarmVisitStatus.visited:
+        return AppColors.success;
+      case FarmVisitStatus.harvested:
+        return AppColors.secondary;
+      case FarmVisitStatus.blocked:
+        return AppColors.textMuted;
+    }
+  }
+
+  Widget _fullscreenPin({required Farm farm, required Offset offset}) {
+    final selected = _selectedFarm?.id == farm.id;
+    return Positioned(
+      left: offset.dx - 16,
+      top: offset.dy - 32,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => setState(() => _selectedFarm = farm),
+        child: AnimatedBuilder(
+          animation: _pulse,
+          builder: (_, __) => _FarmPin(
+            color: _pinColor(farm.status),
+            isSelected: selected,
+            pulse: farm.status == FarmVisitStatus.pending && !selected,
+            pulseValue: _pulse.value,
+            label: farm.name.isNotEmpty ? farm.name[0] : 'F',
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final counts = <String, int>{};
+    for (final farm in widget.farms) {
+      final state = FarmStateResolver.resolve(farm);
+      if (state == 'Unknown') continue;
+      counts[state] = (counts[state] ?? 0) + 1;
+    }
+
+    return Scaffold(
+      backgroundColor: AppColors.canvasDeep,
+      appBar: AppBar(
+        title: const Text('India farm map'),
+        backgroundColor: AppColors.primaryDark,
+        foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            tooltip: 'Zoom out',
+            onPressed: () => _zoomBy(0.8),
+            icon: const Icon(Icons.remove_circle_outline),
+          ),
+          IconButton(
+            tooltip: 'Zoom in',
+            onPressed: () => _zoomBy(1.25),
+            icon: const Icon(Icons.add_circle_outline),
+          ),
+          IconButton(
+            tooltip: 'Reset',
+            onPressed: () {
+              _transform.value = Matrix4.identity();
+              setState(() => _selectedFarm = null);
+            },
+            icon: const Icon(Icons.restart_alt_rounded),
+          ),
+        ],
+      ),
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => _zoomBy(0.8),
+                          icon: const Icon(Icons.remove_rounded),
+                          label: const Text('Zoom out'),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => _zoomBy(1.25),
+                          icon: const Icon(Icons.add_rounded),
+                          label: const Text('Zoom in'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Text(
+                  'Pinch with two fingers · drag to pan · ${_plotted.length} farms · ${_scale.toStringAsFixed(1)}×',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppColors.textMuted,
+                      ),
+                ),
+                const SizedBox(height: 8),
+                Expanded(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final size = Size(
+                        constraints.maxWidth,
+                        constraints.maxHeight,
+                      );
+                      _viewportSize = size;
+                      _states = IndiaStatesMapData.layout(_rawStates, size);
+                      return Stack(
+                        children: [
+                          InteractiveViewer(
+                            transformationController: _transform,
+                            minScale: _minScale,
+                            maxScale: _maxScale,
+                            constrained: false,
+                            panEnabled: true,
+                            scaleEnabled: true,
+                            trackpadScrollCausesScale: true,
+                            boundaryMargin: const EdgeInsets.all(320),
+                            child: SizedBox(
+                              width: size.width,
+                              height: size.height,
+                              child: Stack(
+                                clipBehavior: Clip.none,
+                                children: [
+                                  CustomPaint(
+                                    size: size,
+                                    painter: IndiaChoroplethMapPainter(
+                                      states: _states,
+                                      countsByState: counts,
+                                      selectedState: null,
+                                    ),
+                                  ),
+                                  ..._plotted.asMap().entries.map((entry) {
+                                    final farm = entry.value;
+                                    final offset =
+                                        IndiaMapProjection.hasValidCoords(
+                                      farm.latitude,
+                                      farm.longitude,
+                                    )
+                                            ? IndiaMapProjection.project(
+                                                LatLng(
+                                                  farm.latitude,
+                                                  farm.longitude,
+                                                ),
+                                                size,
+                                              )
+                                            : null;
+                                    if (offset == null) {
+                                      final stateName =
+                                          FarmStateResolver.resolve(farm);
+                                      IndiaStateShape? shape;
+                                      for (final s in _states) {
+                                        if (s.name == stateName) {
+                                          shape = s;
+                                          break;
+                                        }
+                                      }
+                                      if (shape == null) {
+                                        return const SizedBox.shrink();
+                                      }
+                                      final jitter = (entry.key % 7) - 3;
+                                      final o = shape.centroid +
+                                          Offset(
+                                            jitter * 5.0,
+                                            ((entry.key ~/ 7) % 5 - 2) * 5.0,
+                                          );
+                                      return _fullscreenPin(
+                                        farm: farm,
+                                        offset: o,
+                                      );
+                                    }
+                                    return _fullscreenPin(
+                                      farm: farm,
+                                      offset: offset,
+                                    );
+                                  }),
+                                ],
+                              ),
+                            ),
+                          ),
+                          if (_selectedFarm != null)
+                            Positioned(
+                              left: 12,
+                              right: 12,
+                              bottom: 16,
+                              child: _FarmInfoPanel(
+                                farm: _selectedFarm!,
+                                onView: () {
+                                  final farm = _selectedFarm!;
+                                  Navigator.of(context).pop();
+                                  widget.onFarmTap?.call(farm);
+                                },
+                                onClose: () =>
+                                    setState(() => _selectedFarm = null),
+                              ),
+                            ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
     );
   }
 }

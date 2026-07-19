@@ -67,9 +67,8 @@ class NotificationService {
         granted = (await Permission.notification.request()).isGranted;
         await androidPlugin?.requestNotificationsPermission();
       }
-      // Always attempt exact alarms — timing depends on this, even when
-      // notification permission was already granted.
-      await androidPlugin?.requestExactAlarmsPermission();
+      // Do not open the system "Alarms & reminders" settings on every launch —
+      // that hijacks the UI. Exact alarms are requested only when scheduling.
       return granted;
     }
 

@@ -146,6 +146,7 @@ class MockFarmDataSource implements FarmDataSource {
       harvestDate: request.harvestDate,
       harvestType: request.harvestType,
       totalAcres: request.totalAcres,
+      plantCount: request.plantCount,
       assignedExecutiveId: executiveId,
       assignedExecutiveName: executiveName,
       farmer: Farmer(
@@ -154,6 +155,7 @@ class MockFarmDataSource implements FarmDataSource {
         mobile: request.farmerMobile,
         gender: request.farmerGender,
         age: request.farmerAge,
+        aadharNumber: request.farmerAadhar,
       ),
       status: FarmVisitStatus.pending,
       harvestStatus: HarvestStatus.upcoming,
