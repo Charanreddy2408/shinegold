@@ -397,10 +397,10 @@ class _ProfileHeader extends StatelessWidget {
                           ),
                     ),
                     const SizedBox(height: 6),
+                    StatusChip(status: executive.status),
+                    const SizedBox(height: 6),
                     Row(
                       children: [
-                        StatusChip(status: executive.status),
-                        const SizedBox(width: 8),
                         const Icon(
                           Icons.phone_rounded,
                           size: 14,
@@ -423,16 +423,45 @@ class _ProfileHeader extends StatelessWidget {
           ),
           if (executive.mobile.trim().isNotEmpty) ...[
             const SizedBox(height: 14),
-            OutlinedButton.icon(
-              onPressed: () =>
-                  ContactLauncher.callOrSnack(context, executive.mobile),
-              icon: const Icon(Icons.call_rounded, size: 20),
-              label: const Text('Call executive'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFF1B7A4E),
-                side: const BorderSide(color: Color(0xFF1B7A4E), width: 1.4),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => ContactLauncher.callOrSnack(
+                      context,
+                      executive.mobile,
+                    ),
+                    icon: const Icon(Icons.call_rounded, size: 20),
+                    label: const Text('Call'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF1B7A4E),
+                      side: const BorderSide(
+                        color: Color(0xFF1B7A4E),
+                        width: 1.4,
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: () => ContactLauncher.whatsappOrSnack(
+                      context,
+                      executive.mobile,
+                      message:
+                          'Hello ${executive.name.split(' ').first}, this is Shine Gold.',
+                    ),
+                    icon: const Icon(Icons.chat_rounded, size: 20),
+                    label: const Text('WhatsApp'),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFF25D366),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
           const SizedBox(height: 8),

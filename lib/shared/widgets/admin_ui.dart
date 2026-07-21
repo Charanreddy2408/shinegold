@@ -514,7 +514,7 @@ class _AdminTeamTileState extends State<AdminTeamTile> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Container(
                     decoration: BoxDecoration(
@@ -534,22 +534,14 @@ class _AdminTeamTileState extends State<AdminTeamTile> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                widget.name,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleSmall
-                                    ?.copyWith(fontWeight: FontWeight.w800),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            _StatusDot(status: widget.status),
-                          ],
+                        Text(
+                          widget.name,
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleSmall
+                              ?.copyWith(fontWeight: FontWeight.w800),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 2),
                         Text(
@@ -561,6 +553,8 @@ class _AdminTeamTileState extends State<AdminTeamTile> {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
+                        const SizedBox(height: 6),
+                        _StatusDot(status: widget.status),
                       ],
                     ),
                   ),
@@ -571,8 +565,8 @@ class _AdminTeamTileState extends State<AdminTeamTile> {
                       visualDensity: VisualDensity.compact,
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(
-                        minWidth: 36,
-                        minHeight: 36,
+                        minWidth: 40,
+                        minHeight: 40,
                       ),
                       onPressed: () => ContactLauncher.callOrSnack(
                         context,
@@ -584,10 +578,13 @@ class _AdminTeamTileState extends State<AdminTeamTile> {
                         size: 22,
                       ),
                     ),
-                  const Icon(
-                    Icons.chevron_right_rounded,
-                    size: 20,
-                    color: AppColors.textMuted,
+                  const Padding(
+                    padding: EdgeInsets.only(left: 2),
+                    child: Icon(
+                      Icons.chevron_right_rounded,
+                      size: 20,
+                      color: AppColors.textMuted,
+                    ),
                   ),
                 ],
               ),
@@ -653,14 +650,16 @@ class _TeamMetricChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Icon(icon, size: 13, color: color.withValues(alpha: 0.85)),
-        const SizedBox(width: 4),
+        Icon(icon, size: 14, color: color.withValues(alpha: 0.85)),
+        const SizedBox(width: 5),
         Text(
           label,
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
                 color: color,
                 fontWeight: FontWeight.w600,
+                height: 1.2,
               ),
         ),
       ],
