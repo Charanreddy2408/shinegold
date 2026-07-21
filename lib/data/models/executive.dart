@@ -163,6 +163,7 @@ class ExecutiveDashboard {
     required this.pendingCount,
     required this.harvestSoonCount,
     this.onboardedFarmsCount = 0,
+    this.onboardedAcresTotal = 0,
     this.onboardedFarms = const [],
     this.priorityFarms = const [],
   });
@@ -174,6 +175,7 @@ class ExecutiveDashboard {
   final int pendingCount;
   final int harvestSoonCount;
   final int onboardedFarmsCount;
+  final double onboardedAcresTotal;
   final List<OnboardedFarmSummary> onboardedFarms;
   final List<Farm> priorityFarms;
 
@@ -225,6 +227,14 @@ class ExecutiveDashboard {
         ? onboardedCountRaw.toInt()
         : onboardedFarms.length;
 
+    final onboardedAcresRaw = json['onboarded_acres_total'];
+    final onboardedAcres = onboardedAcresRaw is num
+        ? onboardedAcresRaw.toDouble()
+        : onboardedFarms.fold<double>(
+            0,
+            (sum, farm) => sum + farm.totalAcres,
+          );
+
     return ExecutiveDashboard(
       greetingName: json['greeting_name'] as String? ?? '',
       dashboardDate: dashboardDate,
@@ -235,6 +245,7 @@ class ExecutiveDashboard {
       pendingCount: pending,
       harvestSoonCount: json['harvest_soon_count'] as int? ?? harvestSoon,
       onboardedFarmsCount: onboardedCount,
+      onboardedAcresTotal: onboardedAcres,
       onboardedFarms: onboardedFarms,
       priorityFarms: priorityFarms,
     );

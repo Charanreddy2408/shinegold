@@ -7,26 +7,31 @@ import '../../core/theme/app_typography.dart';
 class DashboardOverviewCard extends StatelessWidget {
   const DashboardOverviewCard({
     super.key,
-    required this.totalFarms,
-    required this.completed,
-    required this.pending,
+    required this.onboardedCount,
+    required this.onboardedAcres,
+    required this.pendingVisits,
+    required this.completedVisits,
     required this.harvestSoon,
-    this.onboardedCount = 0,
+    this.assignedFarms = 0,
   });
 
-  final int totalFarms;
-  final int completed;
-  final int pending;
-  final int harvestSoon;
   final int onboardedCount;
+  final double onboardedAcres;
+  final int pendingVisits;
+  final int completedVisits;
+  final int harvestSoon;
+  final int assignedFarms;
 
-  double get _progress =>
-      totalFarms == 0 ? 0 : (completed / totalFarms).clamp(0.0, 1.0);
+  String _formatAcres(double acres) {
+    if (acres <= 0) return '0';
+    if (acres == acres.roundToDouble()) {
+      return acres.toInt().toString();
+    }
+    return acres.toStringAsFixed(1);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final pct = (_progress * 100).round();
-
     return Container(
       margin: const EdgeInsets.fromLTRB(
         AppSpacing.lg,
@@ -39,11 +44,61 @@ class DashboardOverviewCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _OverviewHero(
-            totalFarms: totalFarms,
-            completed: completed,
-            progress: _progress,
-            pct: pct,
+          Container(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.xl,
+              AppSpacing.xl,
+              AppSpacing.xl,
+              AppSpacing.lg,
+            ),
+            decoration: const BoxDecoration(gradient: AppColors.gradientHeader),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'YOUR COVERAGE',
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: Colors.white.withValues(alpha: 0.85),
+                        letterSpacing: 1.2,
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      _formatAcres(onboardedAcres),
+                      style: AppTypography.statNumber.copyWith(
+                        color: Colors.white,
+                        fontSize: 40,
+                        height: 1,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 6),
+                      child: Text(
+                        'acres',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              color: Colors.white.withValues(alpha: 0.9),
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  onboardedCount == 1
+                      ? 'Across 1 farm you onboarded'
+                      : 'Across $onboardedCount farms you onboarded',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.white.withValues(alpha: 0.88),
+                      ),
+                ),
+              ],
+            ),
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(
@@ -55,233 +110,67 @@ class DashboardOverviewCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text(
+                  'Field activity',
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textMuted,
+                        letterSpacing: 0.4,
+                      ),
+                ),
+                const SizedBox(height: AppSpacing.sm),
                 Row(
                   children: [
                     _MetricTile(
-                      icon: Icons.pending_actions_rounded,
-                      value: '$pending',
+                      icon: Icons.add_business_outlined,
+                      value: '$onboardedCount',
+                      label: 'Onboarded',
+                      color: AppColors.secondary,
+                      background: AppColors.secondaryMuted,
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    _MetricTile(
+                      icon: Icons.pending_actions_outlined,
+                      value: '$pendingVisits',
                       label: 'Pending',
                       color: AppColors.primaryDark,
                       background: AppColors.primarySoft,
                     ),
                     const SizedBox(width: AppSpacing.sm),
                     _MetricTile(
-                      icon: Icons.check_circle_rounded,
-                      value: '$completed',
-                      label: 'Visited',
-                      color: AppColors.secondary,
-                      background: AppColors.secondaryMuted,
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                    _MetricTile(
-                      icon: Icons.calendar_month_rounded,
-                      value: '$harvestSoon',
-                      label: 'Harvest',
+                      icon: Icons.check_circle_outline_rounded,
+                      value: '$completedVisits',
+                      label: 'Visits',
                       color: AppColors.info,
                       background: const Color(0xFFE3F2FD),
                     ),
                   ],
                 ),
-                const SizedBox(height: AppSpacing.sm),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.secondaryMuted,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
+                if (assignedFarms > 0 || harvestSoon > 0) ...[
+                  const SizedBox(height: AppSpacing.sm),
+                  Row(
                     children: [
-                      const Icon(
-                        Icons.add_business_rounded,
-                        color: AppColors.secondary,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          'Farms you onboarded',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyMedium
-                              ?.copyWith(fontWeight: FontWeight.w600),
+                      if (assignedFarms > 0)
+                        Expanded(
+                          child: _InlineStat(
+                            icon: Icons.map_outlined,
+                            label: 'Assigned farms',
+                            value: '$assignedFarms',
+                          ),
                         ),
-                      ),
-                      Text(
-                        '$onboardedCount',
-                        style: AppTypography.statNumber.copyWith(
-                          fontSize: 20,
-                          color: AppColors.secondary,
+                      if (assignedFarms > 0 && harvestSoon > 0)
+                        const SizedBox(width: AppSpacing.sm),
+                      if (harvestSoon > 0)
+                        Expanded(
+                          child: _InlineStat(
+                            icon: Icons.calendar_month_outlined,
+                            label: 'Harvest soon',
+                            value: '$harvestSoon',
+                          ),
                         ),
-                      ),
                     ],
                   ),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                Row(
-                  children: [
-                    Text(
-                      'Field progress',
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      '$completed of $totalFarms complete',
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: AppColors.primaryDark,
-                            fontWeight: FontWeight.w700,
-                          ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-                  child: LinearProgressIndicator(
-                    value: _progress,
-                    minHeight: 8,
-                    backgroundColor: AppColors.primarySoft,
-                    color: AppColors.secondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _OverviewHero extends StatelessWidget {
-  const _OverviewHero({
-    required this.totalFarms,
-    required this.completed,
-    required this.progress,
-    required this.pct,
-  });
-
-  final int totalFarms;
-  final int completed;
-  final double progress;
-  final int pct;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.xl,
-        AppSpacing.xl,
-        AppSpacing.xl,
-        AppSpacing.xl,
-      ),
-      decoration: const BoxDecoration(gradient: AppColors.gradientHeader),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.sm,
-                    vertical: AppSpacing.xs,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.16),
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
-                  ),
-                  child: Text(
-                    "TODAY'S OVERVIEW",
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          color: Colors.white,
-                          fontSize: 10,
-                          letterSpacing: 1,
-                        ),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                Text(
-                  '$totalFarms',
-                  style: AppTypography.statNumber.copyWith(
-                    color: Colors.white,
-                    fontSize: 36,
-                  ),
-                ),
-                Text(
-                  'farms assigned to you',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        fontSize: 14,
-                      ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.eco_rounded,
-                      size: 15,
-                      color: Colors.white.withValues(alpha: 0.9),
-                    ),
-                    const SizedBox(width: AppSpacing.xs),
-                    Text(
-                      '$completed visits completed',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.92),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          SizedBox(
-            width: 72,
-            height: 72,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                SizedBox(
-                  width: 72,
-                  height: 72,
-                  child: CircularProgressIndicator(
-                    value: progress,
-                    strokeWidth: 6,
-                    backgroundColor: Colors.white.withValues(alpha: 0.2),
-                    color: Colors.white,
-                    strokeCap: StrokeCap.round,
-                  ),
-                ),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      '$pct%',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 17,
-                        height: 1,
-                      ),
-                    ),
-                    Text(
-                      'done',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.85),
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
+                ],
               ],
             ),
           ),
@@ -341,6 +230,174 @@ class _MetricTile extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _InlineStat extends StatelessWidget {
+  const _InlineStat({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceElevated,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.borderSubtle),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 16, color: AppColors.textMuted),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              label,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+          ),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Compact table header for onboarded-farm lists on the dashboard.
+class OnboardedFarmsTableHeader extends StatelessWidget {
+  const OnboardedFarmsTableHeader({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final style = Theme.of(context).textTheme.labelSmall?.copyWith(
+          color: AppColors.textMuted,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.3,
+        );
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        0,
+        AppSpacing.lg,
+        AppSpacing.xs,
+      ),
+      child: Row(
+        children: [
+          Expanded(flex: 3, child: Text('Farm', style: style)),
+          Expanded(child: Text('Acres', style: style, textAlign: TextAlign.end)),
+          Expanded(flex: 2, child: Text('Crop', style: style)),
+        ],
+      ),
+    );
+  }
+}
+
+/// Row for an onboarded farm on the executive dashboard.
+class OnboardedFarmTableRow extends StatelessWidget {
+  const OnboardedFarmTableRow({
+    super.key,
+    required this.farmName,
+    required this.acres,
+    required this.crop,
+    this.onTap,
+  });
+
+  final String farmName;
+  final double acres;
+  final String crop;
+  final VoidCallback? onTap;
+
+  String _formatAcres(double value) {
+    if (value == value.roundToDouble()) return value.toInt().toString();
+    return value.toStringAsFixed(1);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        0,
+        AppSpacing.lg,
+        AppSpacing.xs,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Ink(
+            decoration: BoxDecoration(
+              color: AppColors.surfaceCard,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.borderSubtle),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: Text(
+                      farmName,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      _formatAcres(acres),
+                      textAlign: TextAlign.end,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.secondary,
+                          ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      crop.isEmpty ? '—' : crop,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                    ),
+                  ),
+                  if (onTap != null) ...[
+                    const SizedBox(width: 4),
+                    const Icon(
+                      Icons.chevron_right_rounded,
+                      size: 18,
+                      color: AppColors.textMuted,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );

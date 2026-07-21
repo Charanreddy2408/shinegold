@@ -107,15 +107,36 @@ class FarmCard extends StatelessWidget {
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
+                                  if (farm.totalAcres > 0 ||
+                                      (farm.onboardedByName != null &&
+                                          farm.onboardedByName!.isNotEmpty)) ...[
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      [
+                                        if (farm.totalAcres > 0)
+                                          '${farm.totalAcres == farm.totalAcres.roundToDouble() ? farm.totalAcres.toInt() : farm.totalAcres.toStringAsFixed(1)} ac',
+                                        if (farm.onboardedByName != null &&
+                                            farm.onboardedByName!.isNotEmpty)
+                                          'Onboarded by ${farm.onboardedByName}',
+                                      ].join(' · '),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall
+                                          ?.copyWith(
+                                            color: AppColors.textMuted,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
                                   if (farm.assignedExecutives.isNotEmpty ||
                                       farm.assignedExecutiveName.isNotEmpty) ...[
                                     const SizedBox(height: 4),
                                     Text(
                                       farm.assignedExecutives.length > 1
-                                          ? farm.assignedExecutives
-                                              .map((e) => e.name)
-                                              .join(', ')
-                                          : farm.assignedExecutiveName,
+                                          ? 'Assigned: ${farm.assignedExecutives.map((e) => e.name).join(', ')}'
+                                          : 'Assigned: ${farm.assignedExecutiveName}',
                                       style: Theme.of(context)
                                           .textTheme
                                           .labelSmall

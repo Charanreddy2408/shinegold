@@ -138,6 +138,8 @@ class Farm {
     required this.assignedExecutiveName,
     required this.farmer,
     required this.status,
+    this.onboardedById,
+    this.onboardedByName,
     this.plantCount,
     this.assignedExecutives = const [],
     this.healthStatus = FarmHealthStatus.healthy,
@@ -161,6 +163,8 @@ class Farm {
   final String assignedExecutiveId;
   final String assignedExecutiveName;
   final List<AssignedExecutive> assignedExecutives;
+  final String? onboardedById;
+  final String? onboardedByName;
   final Farmer farmer;
   final FarmVisitStatus status;
   final FarmHealthStatus healthStatus;
@@ -271,6 +275,14 @@ class Farm {
             : null) ??
         '';
 
+    final onboardedBy = json['onboarded_by'];
+    final onboardedById = onboardedBy is Map
+        ? onboardedBy['id']?.toString()
+        : json['onboarded_by_id']?.toString();
+    final onboardedByName = onboardedBy is Map
+        ? onboardedBy['name'] as String?
+        : json['onboarded_by_name'] as String?;
+
     final farmerJson = json['farmer'];
     final farmer = farmerJson is Map<String, dynamic>
         ? Farmer.fromJson(farmerJson)
@@ -290,6 +302,8 @@ class Farm {
       assignedExecutiveId: assignedExecutiveId,
       assignedExecutiveName: assignedExecutiveName,
       assignedExecutives: assignedExecutives,
+      onboardedById: onboardedById,
+      onboardedByName: onboardedByName,
       farmer: farmer,
       status: json['status'] is String
           ? _parseFarmVisitStatus(json['status'] as String)
@@ -373,6 +387,8 @@ class Farm {
         assignedExecutiveId: assignedExecutiveId,
         assignedExecutiveName: assignedExecutiveName,
         assignedExecutives: assignedExecutives,
+        onboardedById: onboardedById,
+        onboardedByName: onboardedByName,
         farmer: farmer,
         status: status ?? this.status,
         healthStatus: healthStatus ?? this.healthStatus,
