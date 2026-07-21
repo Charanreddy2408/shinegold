@@ -62,6 +62,7 @@ class MockVisitDataSource implements VisitDataSource {
     List<FormAnswerEntry>? formAnswers,
     List<String>? photoPaths,
     String? voiceNotePath,
+    int? voiceNoteDurationSeconds,
     double? capturedLat,
     double? capturedLng,
   }) async {

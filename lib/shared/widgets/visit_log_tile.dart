@@ -1,9 +1,14 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../data/models/farm.dart';
+import '../providers/repository_providers.dart';
+import '../utils/media_url.dart';
 import 'shine_buttons.dart';
+import 'ux_components.dart';
 
 class VisitLogTile extends StatelessWidget {
   const VisitLogTile({
@@ -30,12 +35,19 @@ class VisitLogTile extends StatelessWidget {
     final dateLabel = dateOnlyFormat.format(log.date);
     final durationLabel = formatDuration(log.durationMinutes);
     final canViewReport = onViewReport != null && log.id.isNotEmpty;
+    final photoUrls = log.photoUrls
+        .map(resolveMediaUrl)
+        .where((u) => u.isNotEmpty)
+        .toList();
+    final voiceUrl = log.voiceNoteUrl != null && log.voiceNoteUrl!.trim().isNotEmpty
+        ? resolveMediaUrl(log.voiceNoteUrl!)
+        : null;
 
     final events = <_TimelineEvent>[
       _TimelineEvent('Visit completed', dateLabel),
-      if (log.photoUrls.isNotEmpty)
-        _TimelineEvent('${log.photoUrls.length} photo(s) added', null),
-      if (log.voiceNoteUrl != null) _TimelineEvent('Voice note added', null),
+      if (photoUrls.isNotEmpty)
+        _TimelineEvent('${photoUrls.length} photo(s) added', null),
+      if (voiceUrl != null) _TimelineEvent('Voice note added', null),
       if (log.report != null && log.report!.isNotEmpty)
         _TimelineEvent('Notes', log.report),
       _TimelineEvent('Duration', durationLabel),
@@ -68,6 +80,47 @@ class VisitLogTile extends StatelessWidget {
                 isLast: isLast,
               );
             }),
+            if (voiceUrl != null) ...[
+              const SizedBox(height: 12),
+              _RecoverableVoiceNote(url: voiceUrl),
+            ],
+            if (photoUrls.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              SizedBox(
+                height: 72,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: photoUrls.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                  itemBuilder: (context, i) {
+                    final url = photoUrls[i];
+                    return GestureDetector(
+                      onTap: () => showPhotoGallery(
+                        context,
+                        urls: photoUrls,
+                        initialIndex: i,
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: CachedNetworkImage(
+                          imageUrl: url,
+                          width: 72,
+                          height: 72,
+                          fit: BoxFit.cover,
+                          placeholder: (_, __) => Container(
+                            color: AppColors.surfaceElevated,
+                          ),
+                          errorWidget: (_, __, ___) => Container(
+                            color: AppColors.surfaceElevated,
+                            child: const Icon(Icons.broken_image_outlined),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
             if (canViewReport) ...[
               const SizedBox(height: 16),
               ShineSecondaryButton(
@@ -78,6 +131,21 @@ class VisitLogTile extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _RecoverableVoiceNote extends ConsumerWidget {
+  const _RecoverableVoiceNote({required this.url});
+
+  final String url;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return VoiceNotePlayer(
+      url: url,
+      resolveUrl: (u) =>
+          ref.read(uploadServiceProvider).resolvePlayableUrl(u),
     );
   }
 }

@@ -102,7 +102,16 @@ class VisitLog {
       visitedBy: visitedBy,
       report: json['report'] as String?,
       photoUrls: (json['photos'] as List<dynamic>?)
-              ?.map((e) => e is String ? e : e.toString())
+              ?.map((e) {
+                if (e is String) return e;
+                if (e is Map) {
+                  return e['photo_url']?.toString() ??
+                      e['url']?.toString() ??
+                      '';
+                }
+                return '';
+              })
+              .where((e) => e.isNotEmpty)
               .toList() ??
           (json['photo_urls'] as List<dynamic>?)
               ?.map((e) => e as String)

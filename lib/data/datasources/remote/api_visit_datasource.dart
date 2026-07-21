@@ -64,6 +64,7 @@ class ApiVisitDataSource implements VisitDataSource {
     List<FormAnswerEntry>? formAnswers,
     List<String>? photoPaths,
     String? voiceNotePath,
+    int? voiceNoteDurationSeconds,
     double? capturedLat,
     double? capturedLng,
   }) async {
@@ -106,6 +107,9 @@ class ApiVisitDataSource implements VisitDataSource {
       } else {
         final url = await _uploadLocalMedia(voiceNotePath, 'visit_voice');
         if (url != null) payload['voice_note_url'] = url;
+      }
+      if (voiceNoteDurationSeconds != null) {
+        payload['voice_note_duration_seconds'] = voiceNoteDurationSeconds;
       }
     }
 

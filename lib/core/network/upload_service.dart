@@ -117,6 +117,24 @@ class UploadService {
     return publicUrl;
   }
 
+  /// Ask the API for a fresh playable URL (signed) when public playback fails.
+  Future<String> resolvePlayableUrl(String url) async {
+    final trimmed = url.trim();
+    if (trimmed.isEmpty) return trimmed;
+    try {
+      final response = await _client.dio.post(
+        ApiEndpoints.uploadResolve,
+        data: {'url': trimmed},
+      );
+      final data = response.data as Map<String, dynamic>;
+      final resolved = data['url'] as String?;
+      if (resolved != null && resolved.isNotEmpty) return resolved;
+    } catch (_) {
+      // Fall through to the original URL.
+    }
+    return trimmed;
+  }
+
   String _resolveContentType({
     required String path,
     String? name,

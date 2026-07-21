@@ -20,6 +20,7 @@ class ApiEndpoints {
 
   // Uploads
   static const uploadPresign = '$_v1/uploads/presign';
+  static const uploadResolve = '$_v1/uploads/resolve';
 
   // Dashboard
   static const dashboardExecutive = '$_v1/dashboard/executive';
@@ -61,6 +62,11 @@ class ApiEndpoints {
   // Farmers
   static const farmers = '$_v1/farmers';
   static String farmerById(String id) => '$_v1/farmers/$id';
+
+  // Interactions (prospect / acquisition logs)
+  static const interactions = '$_v1/interactions';
+  static const myInteractions = '$_v1/interactions/mine';
+  static String interactionById(String id) => '$_v1/interactions/$id';
 
   // Harvests
   static const harvestsCalendar = '$_v1/harvests/calendar';

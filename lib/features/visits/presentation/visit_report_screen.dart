@@ -274,7 +274,12 @@ class _VisitReportScreenState extends ConsumerState<VisitReportScreen> {
                             ),
                             const SizedBox(height: AppSpacing.sm),
                             if (voiceUrl != null)
-                              VoiceNotePlayer(url: voiceUrl)
+                              VoiceNotePlayer(
+                                url: voiceUrl,
+                                resolveUrl: (u) => ref
+                                    .read(uploadServiceProvider)
+                                    .resolvePlayableUrl(u),
+                              )
                             else
                               Container(
                                 padding: const EdgeInsets.all(AppSpacing.lg),

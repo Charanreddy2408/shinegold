@@ -3,6 +3,7 @@ import '../models/enums.dart';
 import '../models/executive.dart';
 import '../models/farm.dart';
 import '../models/harvest_date_change.dart';
+import '../models/interaction.dart';
 import '../models/password_reset_request.dart';
 import '../models/user.dart';
 import '../models/visit.dart';
@@ -125,6 +126,7 @@ abstract class VisitDataSource {
     List<FormAnswerEntry>? formAnswers,
     List<String>? photoPaths,
     String? voiceNotePath,
+    int? voiceNoteDurationSeconds,
     double? capturedLat,
     double? capturedLng,
   });
@@ -160,6 +162,22 @@ abstract class FarmerDataSource {
 abstract class HarvestDataSource {
   Future<List<Harvest>> getByMonth(DateTime month);
   Future<List<Harvest>> getAll();
+}
+
+abstract class InteractionDataSource {
+  Future<List<FarmerInteraction>> listMine({
+    String? search,
+    InteractionStatus? status,
+  });
+
+  Future<FarmerInteraction> create(CreateInteractionRequest request);
+
+  Future<FarmerInteraction> update(
+    String id,
+    UpdateInteractionRequest request,
+  );
+
+  Future<FarmerInteraction?> getById(String id);
 }
 
 abstract class DashboardDataSource {

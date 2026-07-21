@@ -33,6 +33,7 @@ class VisitRepository {
     List<FormAnswerEntry>? formAnswers,
     List<String>? photoPaths,
     String? voiceNotePath,
+    int? voiceNoteDurationSeconds,
     double? capturedLat,
     double? capturedLng,
   }) =>
@@ -41,6 +42,7 @@ class VisitRepository {
         formAnswers: formAnswers,
         photoPaths: photoPaths,
         voiceNotePath: voiceNotePath,
+        voiceNoteDurationSeconds: voiceNoteDurationSeconds,
         capturedLat: capturedLat,
         capturedLng: capturedLng,
       );

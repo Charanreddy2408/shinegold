@@ -62,6 +62,13 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
   double? _farmLat;
   double? _farmLng;
   Timer? _saveDebounce;
+  Timer? _voiceLimitTimer;
+  Timer? _voiceTickTimer;
+  Duration _voiceElapsed = Duration.zero;
+  bool _stoppingVoice = false;
+
+  /// Keep in sync with backend Settings.MAX_VOICE_NOTE_SECONDS.
+  static const maxVoiceNoteDuration = Duration(seconds: 150);
 
   static const _stepLabels = ['Start', 'Report', 'Media', 'Submit'];
 
@@ -121,8 +128,7 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
 
   Future<void> _handleExit() async {
     if (_recording) {
-      await _audioRecorder.stop();
-      if (mounted) setState(() => _recording = false);
+      await _stopVoiceRecording(upload: false);
     }
     await _cancelActiveVisit();
     if (mounted) context.pop();
@@ -131,9 +137,35 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
   @override
   void dispose() {
     _saveDebounce?.cancel();
+    _clearVoiceTimers();
     _pageController.dispose();
     unawaited(_audioRecorder.dispose());
     super.dispose();
+  }
+
+  void _clearVoiceTimers() {
+    _voiceLimitTimer?.cancel();
+    _voiceLimitTimer = null;
+    _voiceTickTimer?.cancel();
+    _voiceTickTimer = null;
+  }
+
+  void _startVoiceTimers() {
+    _clearVoiceTimers();
+    final startedAt = DateTime.now();
+    _voiceElapsed = Duration.zero;
+    _voiceTickTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted || !_recording) return;
+      final elapsed = DateTime.now().difference(startedAt);
+      setState(() => _voiceElapsed = elapsed);
+      if (elapsed >= maxVoiceNoteDuration) {
+        unawaited(_stopVoiceRecording(upload: true, autoStopped: true));
+      }
+    });
+    _voiceLimitTimer = Timer(maxVoiceNoteDuration, () {
+      if (!_recording) return;
+      unawaited(_stopVoiceRecording(upload: true, autoStopped: true));
+    });
   }
 
   void _clearApiError() {
@@ -367,27 +399,7 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
 
   Future<void> _toggleVoiceRecording() async {
     if (_recording) {
-      try {
-        final path = await _audioRecorder.stop();
-        if (!mounted) return;
-        setState(() {
-          _recording = false;
-          _voicePath = path;
-          _voiceMarked = path != null && path.isNotEmpty;
-        });
-        if (path != null && path.isNotEmpty && _visit != null) {
-          await _uploadVoiceNote(path);
-        }
-      } catch (e) {
-        if (!mounted) return;
-        setState(() => _recording = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Could not stop recording: ${formatApiError(e)}'),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
+      await _stopVoiceRecording(upload: true);
       return;
     }
 
@@ -420,7 +432,9 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
         _recording = true;
         _voicePath = path;
         _voiceMarked = false;
+        _voiceElapsed = Duration.zero;
       });
+      _startVoiceTimers();
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -432,7 +446,59 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
     }
   }
 
-  Future<void> _uploadVoiceNote(String path) async {
+  Future<void> _stopVoiceRecording({
+    required bool upload,
+    bool autoStopped = false,
+  }) async {
+    if (!_recording || _stoppingVoice) return;
+    _stoppingVoice = true;
+    final recordedFor = _voiceElapsed;
+    _clearVoiceTimers();
+    try {
+      final path = await _audioRecorder.stop();
+      if (!mounted) return;
+      setState(() {
+        _recording = false;
+        _voicePath = path;
+        _voiceMarked = path != null && path.isNotEmpty;
+        _voiceElapsed = Duration.zero;
+      });
+      if (autoStopped && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Voice note auto-saved at the 2:30 limit'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      if (upload && path != null && path.isNotEmpty && _visit != null) {
+        await _uploadVoiceNote(
+          path,
+          durationSeconds: recordedFor.inSeconds
+              .clamp(1, maxVoiceNoteDuration.inSeconds),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _recording = false;
+        _voiceElapsed = Duration.zero;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Could not stop recording: ${formatApiError(e)}'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      _stoppingVoice = false;
+    }
+  }
+
+  Future<void> _uploadVoiceNote(
+    String path, {
+    int? durationSeconds,
+  }) async {
     if (_visit == null) return;
     if (_offlineMode) {
       // Keep the local path; sync will upload after connectivity returns.
@@ -457,6 +523,7 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
       await ref.read(visitRepositoryProvider).saveVisitForm(
             visitId: _visit!.id,
             voiceNotePath: url,
+            voiceNoteDurationSeconds: durationSeconds,
           );
       if (mounted) setState(() => _uploadedVoiceUrl = url);
     } catch (e) {
@@ -803,6 +870,7 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
                   photos: _photos,
                   isRecording: _recording,
                   hasVoice: _voiceMarked,
+                  voiceElapsed: _voiceElapsed,
                   onAddPhoto: _pickPhoto,
                   onRemovePhoto: _removePhoto,
                   onToggleVoice: _toggleVoiceRecording,
@@ -1011,6 +1079,7 @@ class _MediaStep extends StatelessWidget {
     required this.photos,
     required this.isRecording,
     required this.hasVoice,
+    required this.voiceElapsed,
     required this.onAddPhoto,
     required this.onRemovePhoto,
     required this.onToggleVoice,
@@ -1020,6 +1089,7 @@ class _MediaStep extends StatelessWidget {
   final List<XFile> photos;
   final bool isRecording;
   final bool hasVoice;
+  final Duration voiceElapsed;
   final VoidCallback onAddPhoto;
   final ValueChanged<int> onRemovePhoto;
   final VoidCallback onToggleVoice;
@@ -1040,7 +1110,7 @@ class _MediaStep extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(
-            'Optional — up to 5 geotagged photos and a voice note',
+            'Optional — up to 5 geotagged photos and a voice note (max 2:30)',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.textSecondary,
                 ),
@@ -1080,6 +1150,8 @@ class _MediaStep extends StatelessWidget {
           Center(
             child: VoiceRecorderButton(
               isRecording: isRecording,
+              elapsed: voiceElapsed,
+              maxDuration: _CheckinScreenState.maxVoiceNoteDuration,
               onToggle: onToggleVoice,
             ),
           ),

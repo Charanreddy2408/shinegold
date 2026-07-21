@@ -289,10 +289,14 @@ class VoiceRecorderButton extends StatefulWidget {
     super.key,
     required this.isRecording,
     required this.onToggle,
+    this.elapsed = Duration.zero,
+    this.maxDuration = const Duration(seconds: 150),
   });
 
   final bool isRecording;
   final VoidCallback onToggle;
+  final Duration elapsed;
+  final Duration maxDuration;
 
   @override
   State<VoiceRecorderButton> createState() => _VoiceRecorderButtonState();
@@ -328,8 +332,21 @@ class _VoiceRecorderButtonState extends State<VoiceRecorderButton>
     super.dispose();
   }
 
+  String _formatClock(Duration d) {
+    final mins = d.inMinutes.clamp(0, 99);
+    final secs = d.inSeconds.remainder(60);
+    return '${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
+  }
+
   @override
   Widget build(BuildContext context) {
+    final maxSecs = widget.maxDuration.inSeconds <= 0
+        ? 150
+        : widget.maxDuration.inSeconds;
+    final elapsedSecs = widget.elapsed.inSeconds.clamp(0, maxSecs);
+    final remaining = Duration(seconds: (maxSecs - elapsedSecs).clamp(0, maxSecs));
+    final progress = maxSecs == 0 ? 0.0 : elapsedSecs / maxSecs;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
@@ -394,17 +411,51 @@ class _VoiceRecorderButtonState extends State<VoiceRecorderButton>
             height: 28,
             child: _Waveform(isActive: widget.isRecording),
           ),
-          const SizedBox(height: 10),
-          Text(
-            widget.isRecording
-                ? 'Tap to stop recording'
-                : 'Tap to record a voice note',
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.textSecondary,
-                  fontWeight: FontWeight.w600,
-                ),
-          ),
+          if (widget.isRecording) ...[
+            const SizedBox(height: 12),
+            Text(
+              '${_formatClock(widget.elapsed)} / ${_formatClock(widget.maxDuration)}',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: remaining.inSeconds <= 15
+                        ? AppColors.error
+                        : AppColors.textPrimary,
+                  ),
+            ),
+            const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: progress.clamp(0.0, 1.0),
+                minHeight: 6,
+                backgroundColor: AppColors.surfaceElevated,
+                color: remaining.inSeconds <= 15
+                    ? AppColors.error
+                    : AppColors.secondary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              remaining.inSeconds <= 0
+                  ? 'Limit reached — saving…'
+                  : 'Auto-saves at ${_formatClock(widget.maxDuration)} · ${remaining.inSeconds}s left',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+          ] else ...[
+            const SizedBox(height: 10),
+            Text(
+              'Tap to record (max ${_formatClock(widget.maxDuration)})',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+          ],
         ],
       ),
     );
@@ -441,9 +492,15 @@ class _Waveform extends StatelessWidget {
 }
 
 class VoiceNotePlayer extends StatefulWidget {
-  const VoiceNotePlayer({super.key, required this.url});
+  const VoiceNotePlayer({
+    super.key,
+    required this.url,
+    this.resolveUrl,
+  });
 
   final String url;
+  /// Optional recovery hook (e.g. mint a fresh signed Supabase URL).
+  final Future<String> Function(String url)? resolveUrl;
 
   @override
   State<VoiceNotePlayer> createState() => _VoiceNotePlayerState();
@@ -532,52 +589,74 @@ class _VoiceNotePlayerState extends State<VoiceNotePlayer> {
     try {
       await ensureVoiceAudioContext();
       final remote = resolveMediaUrl(widget.url);
+      final mimeType = mediaMimeTypeFromUrl(remote);
       await _player.stop();
       await _player.setVolume(1.0);
 
-      if (kIsWeb) {
-        try {
-          final bytes = await VoiceAudioCache.loadBytes(widget.url);
-          await _player.play(BytesSource(bytes));
-        } catch (_) {
-          await _player.play(UrlSource(remote));
+      Future<void> playRemote(String url) async {
+        await _player.play(
+          UrlSource(url, mimeType: mimeType),
+          volume: 1.0,
+          mode: PlayerMode.mediaPlayer,
+        );
+      }
+
+      Future<void> playBytes(Uint8List bytes) async {
+        if (kIsWeb) {
+          // Web needs an explicit MIME type; data: URLs beat raw BytesSource.
+          final dataUrl =
+              Uri.dataFromBytes(bytes, mimeType: mimeType).toString();
+          await playRemote(dataUrl);
+        } else {
+          await _player.play(
+            BytesSource(bytes, mimeType: mimeType),
+            volume: 1.0,
+            mode: PlayerMode.mediaPlayer,
+          );
         }
-      } else {
-        // Prefer local file; fall back to stream / bytes if needed.
-        var played = false;
+      }
+
+      var played = false;
+
+      if (!kIsWeb) {
         try {
           final localPath = await VoiceAudioCache.ensureLocal(widget.url);
           await _player.play(
-            DeviceFileSource(localPath),
+            DeviceFileSource(localPath, mimeType: mimeType),
             volume: 1.0,
             mode: PlayerMode.mediaPlayer,
           );
           played = true;
         } catch (_) {}
-
-        if (!played) {
-          try {
-            await _player.play(
-              UrlSource(remote),
-              volume: 1.0,
-              mode: PlayerMode.mediaPlayer,
-            );
-            played = true;
-          } catch (_) {}
-        }
-
-        if (!played) {
-          final bytes = await VoiceAudioCache.loadBytes(widget.url);
-          await _player.play(
-            BytesSource(bytes),
-            volume: 1.0,
-            mode: PlayerMode.mediaPlayer,
-          );
-        }
-
-        final duration = await _player.getDuration();
-        if (mounted && duration != null) _duration = duration;
       }
+
+      if (!played) {
+        try {
+          await playRemote(remote);
+          played = true;
+        } catch (_) {}
+      }
+
+      if (!played) {
+        try {
+          final bytes = await VoiceAudioCache.loadBytes(widget.url);
+          await playBytes(bytes);
+          played = true;
+        } catch (_) {}
+      }
+
+      if (!played && widget.resolveUrl != null) {
+        final resolved = await widget.resolveUrl!(remote);
+        await playRemote(resolveMediaUrl(resolved));
+        played = true;
+      }
+
+      if (!played) {
+        throw Exception('Unable to play voice note');
+      }
+
+      final duration = await _player.getDuration();
+      if (mounted && duration != null) _duration = duration;
 
       if (!mounted) return;
       setState(() {
