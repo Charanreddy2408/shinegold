@@ -19,6 +19,7 @@ class ApiFarmDataSource implements FarmDataSource {
     FarmFilter filter, {
     double? userLat,
     double? userLng,
+    int? recentVisitWindowDays,
   }) async {
     final hasLocation = userLat != null && userLng != null;
     final sort = hasLocation ? sortOrderToApi(filter.sortOrder) : null;
@@ -59,7 +60,10 @@ class ApiFarmDataSource implements FarmDataSource {
           )
           .toList();
     } else if (filter.quickFilter == QuickFarmFilter.recentlyVisited) {
-      final cutoff = DateTime.now().subtract(const Duration(days: 14));
+      final windowDays = recentVisitWindowDays ??
+          farms.firstOrNull?.visitCooldownDays ??
+          30;
+      final cutoff = DateTime.now().subtract(Duration(days: windowDays));
       farms = farms
           .where(
             (f) =>

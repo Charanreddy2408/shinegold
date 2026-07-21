@@ -13,8 +13,14 @@ class FarmRepository {
     FarmFilter filter, {
     double? userLat,
     double? userLng,
+    int? recentVisitWindowDays,
   }) =>
-      _dataSource.getFarms(filter, userLat: userLat, userLng: userLng);
+      _dataSource.getFarms(
+        filter,
+        userLat: userLat,
+        userLng: userLng,
+        recentVisitWindowDays: recentVisitWindowDays,
+      );
 
   Future<List<Farm>> getNearbyFarms({
     required double lat,

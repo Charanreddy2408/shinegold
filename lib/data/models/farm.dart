@@ -144,6 +144,8 @@ class Farm {
     this.assignedExecutives = const [],
     this.healthStatus = FarmHealthStatus.healthy,
     this.lastVisited,
+    this.visitCooldownDays = 30,
+    this.nextVisitAvailableAt,
     this.harvestStatus = HarvestStatus.upcoming,
     this.visitLogs = const [],
     this.distanceKm,
@@ -169,6 +171,8 @@ class Farm {
   final FarmVisitStatus status;
   final FarmHealthStatus healthStatus;
   final DateTime? lastVisited;
+  final int visitCooldownDays;
+  final DateTime? nextVisitAvailableAt;
   final HarvestStatus harvestStatus;
   final List<VisitLog> visitLogs;
   final double? distanceKm;
@@ -180,6 +184,33 @@ class Farm {
   bool get hasHarvestDate =>
       harvestDate.toUtc().millisecondsSinceEpoch !=
       unsetHarvestDate.millisecondsSinceEpoch;
+
+  bool get isInVisitCooldown {
+    if (status != FarmVisitStatus.visited) return false;
+    final next = nextVisitAvailableAt;
+    if (next == null) return false;
+    return next.isAfter(DateTime.now());
+  }
+
+  int? get daysUntilNextVisit {
+    final next = nextVisitAvailableAt;
+    if (next == null) return null;
+    final remaining = next.difference(DateTime.now());
+    if (!remaining.isNegative && remaining.inDays == 0 && remaining.inHours > 0) {
+      return 1;
+    }
+    if (remaining.isNegative) return null;
+    return remaining.inDays;
+  }
+
+  String? get nextVisitAvailabilityLabel {
+    if (!isInVisitCooldown) return null;
+    final days = daysUntilNextVisit;
+    if (days == null) return null;
+    if (days <= 0) return 'Available for visit soon';
+    final unit = days == 1 ? 'day' : 'days';
+    return 'Available in $days $unit';
+  }
 
   factory Farm.fromUpcomingHarvest(Map<String, dynamic> json) {
     final harvestDate = _parseApiDate(json['harvest_date']);
@@ -219,6 +250,13 @@ class Farm {
         status: json['status'] is String
             ? _parseFarmVisitStatus(json['status'] as String)
             : FarmVisitStatus.pending,
+        lastVisited: json['last_visited'] != null
+            ? DateTime.parse(json['last_visited'] as String)
+            : null,
+        visitCooldownDays: json['visit_cooldown_days'] as int? ?? 30,
+        nextVisitAvailableAt: json['next_visit_available_at'] != null
+            ? DateTime.parse(json['next_visit_available_at'] as String)
+            : null,
       );
 
   factory Farm.fromJson(Map<String, dynamic> json) {
@@ -314,6 +352,10 @@ class Farm {
       lastVisited: json['last_visited'] != null
           ? DateTime.parse(json['last_visited'] as String)
           : null,
+      visitCooldownDays: json['visit_cooldown_days'] as int? ?? 30,
+      nextVisitAvailableAt: json['next_visit_available_at'] != null
+          ? DateTime.parse(json['next_visit_available_at'] as String)
+          : null,
       harvestStatus: HarvestStatus.upcoming,
       visitLogs: (json['visit_logs'] as List<dynamic>?)
               ?.map((e) => VisitLog.fromJson(e as Map<String, dynamic>))
@@ -367,6 +409,8 @@ class Farm {
   Farm copyWith({
     FarmVisitStatus? status,
     DateTime? lastVisited,
+    int? visitCooldownDays,
+    DateTime? nextVisitAvailableAt,
     DateTime? harvestDate,
     List<VisitLog>? visitLogs,
     double? distanceKm,
@@ -393,6 +437,8 @@ class Farm {
         status: status ?? this.status,
         healthStatus: healthStatus ?? this.healthStatus,
         lastVisited: lastVisited ?? this.lastVisited,
+        visitCooldownDays: visitCooldownDays ?? this.visitCooldownDays,
+        nextVisitAvailableAt: nextVisitAvailableAt ?? this.nextVisitAvailableAt,
         harvestStatus: harvestStatus ?? this.harvestStatus,
         visitLogs: visitLogs ?? this.visitLogs,
         distanceKm: distanceKm ?? this.distanceKm,

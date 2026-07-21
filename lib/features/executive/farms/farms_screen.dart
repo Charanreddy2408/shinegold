@@ -8,6 +8,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../data/models/enums.dart';
 import '../../../data/models/farm.dart';
+import '../../../shared/providers/app_remote_config_provider.dart';
 import '../../../shared/providers/app_refresh_provider.dart';
 import '../../../shared/providers/auth_provider.dart';
 import '../../../shared/providers/location_provider.dart';
@@ -84,6 +85,8 @@ class _FarmsScreenState extends ConsumerState<FarmsScreen> {
             filter,
             userLat: coords.latitude,
             userLng: coords.longitude,
+            recentVisitWindowDays:
+                ref.read(appRemoteConfigProvider).farmVisitCooldownDays,
           );
       if (!mounted || !_loadGen.isCurrent(gen)) return;
       setState(() {

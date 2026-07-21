@@ -11,6 +11,7 @@ import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../data/models/enums.dart';
 import '../../../data/models/executive.dart';
+import '../../../data/models/farm.dart';
 import '../../../data/models/visit.dart';
 import '../../../shared/providers/repository_providers.dart';
 import '../../../shared/widgets/animated_loading.dart';
@@ -39,6 +40,7 @@ class _AdminExecutiveProfileScreenState
   final _searchController = TextEditingController();
   VisitStatus? _visitFilter;
   List<Visit> _visits = [];
+  List<Farm> _assignedFarms = [];
   bool _loading = true;
   String? _error;
 
@@ -65,6 +67,9 @@ class _AdminExecutiveProfileScreenState
     try {
       final detail =
           await ref.read(executiveRepositoryProvider).getById(_executive.id);
+      final assignedFarms = await ref
+          .read(executiveRepositoryProvider)
+          .getVisitHistoryFarms(_executive.id);
       final visits = await ref.read(visitRepositoryProvider).getExecutiveVisits(
             _executive.id,
             VisitFilter(
@@ -75,6 +80,7 @@ class _AdminExecutiveProfileScreenState
       if (mounted) {
         setState(() {
           _executive = detail;
+          _assignedFarms = assignedFarms;
           _visits = visits;
           _loading = false;
         });
@@ -208,6 +214,61 @@ class _AdminExecutiveProfileScreenState
                         ),
                       ),
                     ),
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'Assigned Farms',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontWeight: FontWeight.w700),
+                              ),
+                            ),
+                            Text(
+                              '${_assignedFarms.length} farms',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(color: AppColors.textMuted),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    if (_assignedFarms.isEmpty)
+                      const SliverToBoxAdapter(
+                        child: Padding(
+                          padding: EdgeInsets.fromLTRB(16, 0, 16, 8),
+                          child: Text('No farms assigned yet'),
+                        ),
+                      )
+                    else
+                      SliverPadding(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                        sliver: SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                              final farm = _assignedFarms[index];
+                              return _AssignedFarmTile(
+                                farm: farm,
+                                onTap: farm.id.isEmpty
+                                    ? null
+                                    : () => context.push(
+                                          AppRoutes.farmDetail.replaceFirst(
+                                            ':id',
+                                            farm.id,
+                                          ),
+                                        ),
+                              );
+                            },
+                            childCount: _assignedFarms.length,
+                          ),
+                        ),
+                      ),
                     SliverToBoxAdapter(
                       child: Padding(
                         padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
@@ -730,6 +791,78 @@ class _OnboardingCoverageCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _AssignedFarmTile extends StatelessWidget {
+  const _AssignedFarmTile({
+    required this.farm,
+    this.onTap,
+  });
+
+  final Farm farm;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final dateFormat = DateFormat('dd MMM yyyy');
+    final subtitle = farm.nextVisitAvailabilityLabel ??
+        (farm.lastVisited != null
+            ? 'Last visit: ${dateFormat.format(farm.lastVisited!)}'
+            : 'Not visited yet');
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Material(
+        color: AppColors.surfaceCard,
+        borderRadius: BorderRadius.circular(14),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        farm.name,
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: farm.isInVisitCooldown
+                                  ? AppColors.warning
+                                  : AppColors.textMuted,
+                              fontWeight: farm.isInVisitCooldown
+                                  ? FontWeight.w600
+                                  : null,
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+                StatusChip(status: farm.status),
+                if (onTap != null) ...[
+                  const SizedBox(width: 8),
+                  const Icon(
+                    Icons.chevron_right_rounded,
+                    color: AppColors.textMuted,
+                    size: 20,
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

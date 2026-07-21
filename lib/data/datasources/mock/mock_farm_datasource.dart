@@ -19,6 +19,7 @@ class MockFarmDataSource implements FarmDataSource {
     FarmFilter filter, {
     double? userLat,
     double? userLng,
+    int? recentVisitWindowDays,
   }) async {
     await Future<void>.delayed(AppConfig.mockNetworkDelay);
 
@@ -58,12 +59,13 @@ class MockFarmDataSource implements FarmDataSource {
               )
               .toList();
         case QuickFarmFilter.recentlyVisited:
+          final windowDays = recentVisitWindowDays ?? 30;
           result = result
               .where(
                 (f) =>
                     f.lastVisited != null &&
                     f.lastVisited!.isAfter(
-                      DateTime.now().subtract(const Duration(days: 14)),
+                      DateTime.now().subtract(Duration(days: windowDays)),
                     ),
               )
               .toList();

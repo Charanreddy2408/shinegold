@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'shared/providers/app_remote_config_provider.dart';
 import 'shared/services/notification_service.dart';
 
 class ShineGoldApp extends ConsumerStatefulWidget {
@@ -21,6 +22,7 @@ class _ShineGoldAppState extends ConsumerState<ShineGoldApp> {
     // Request after first frame so the Activity is ready for the system dialog.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       unawaited(_requestNotifications());
+      unawaited(ref.read(appRemoteConfigProvider.notifier).load());
     });
   }
 

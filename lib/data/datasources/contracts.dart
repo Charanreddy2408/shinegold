@@ -58,6 +58,7 @@ abstract class FarmDataSource {
     FarmFilter filter, {
     double? userLat,
     double? userLng,
+    int? recentVisitWindowDays,
   });
 
   Future<Farm?> getFarmById(String id);

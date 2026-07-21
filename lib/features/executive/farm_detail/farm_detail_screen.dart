@@ -269,6 +269,7 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
         ref.watch(currentUserProvider)?.role == UserRole.executive;
     final isAdmin =
         ref.watch(currentUserProvider)?.role == UserRole.superAdmin;
+    final canStartVisit = (isExecutive || isAdmin) && !farm.isInVisitCooldown;
 
     return Scaffold(
       backgroundColor: AppColors.canvasDeep,
@@ -395,6 +396,46 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
                             ],
                             const SizedBox(height: 8),
                             StatusChip(status: farm.status),
+                            if (farm.isInVisitCooldown &&
+                                farm.nextVisitAvailabilityLabel != null) ...[
+                              const SizedBox(height: 8),
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 10,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.warning.withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: AppColors.warning.withValues(alpha: 0.35),
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.schedule_rounded,
+                                      size: 18,
+                                      color: AppColors.warning,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        farm.nextVisitAvailabilityLabel!,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall
+                                            ?.copyWith(
+                                              color: AppColors.warning,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                       ),
@@ -692,15 +733,11 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
                   ),
           ),
           SizedBox(
-            height: (isExecutive || isAdmin) &&
-                    farm.status != FarmVisitStatus.visited
-                ? 80
-                : 24,
+            height: canStartVisit ? 80 : 24,
           ),
         ],
       ),
-      bottomNavigationBar:
-          (isExecutive || isAdmin) && farm.status != FarmVisitStatus.visited
+      bottomNavigationBar: canStartVisit
               ? SafeArea(
                   child: Padding(
                     padding: const EdgeInsets.all(16),

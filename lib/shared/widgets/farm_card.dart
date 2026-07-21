@@ -218,12 +218,21 @@ class FarmCard extends StatelessWidget {
                                       ],
                                       Expanded(
                                         child: Text(
-                                          farm.lastVisited != null
-                                              ? 'Last visit: ${dateFormat.format(farm.lastVisited!)}'
-                                              : 'Not visited yet',
+                                          farm.nextVisitAvailabilityLabel ??
+                                              (farm.lastVisited != null
+                                                  ? 'Last visit: ${dateFormat.format(farm.lastVisited!)}'
+                                                  : 'Not visited yet'),
                                           style: Theme.of(context)
                                               .textTheme
-                                              .labelSmall,
+                                              .labelSmall
+                                              ?.copyWith(
+                                                color: farm.isInVisitCooldown
+                                                    ? AppColors.warning
+                                                    : null,
+                                                fontWeight: farm.isInVisitCooldown
+                                                    ? FontWeight.w600
+                                                    : null,
+                                              ),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                         ),

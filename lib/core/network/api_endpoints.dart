@@ -26,6 +26,9 @@ class ApiEndpoints {
   static const dashboardExecutive = '$_v1/dashboard/executive';
   static const dashboardAdmin = '$_v1/dashboard/admin';
 
+  // Config
+  static const appConfig = '$_v1/config';
+
   // Users
   static const users = '$_v1/users';
   static const usersMe = '$_v1/users/me';
