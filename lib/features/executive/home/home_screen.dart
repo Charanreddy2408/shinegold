@@ -157,6 +157,76 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         harvestSoon: _upcoming,
                         onboardedCount: _onboardedCount,
                       ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(
+                          AppSpacing.lg,
+                          AppSpacing.md,
+                          AppSpacing.lg,
+                          0,
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () =>
+                                context.push(AppRoutes.interactions),
+                            borderRadius:
+                                BorderRadius.circular(AppColors.cardRadius),
+                            child: Ink(
+                              decoration: AppColors.cardDecoration(),
+                              child: Padding(
+                                padding: const EdgeInsets.all(AppSpacing.lg),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 44,
+                                      height: 44,
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primarySoft,
+                                        borderRadius: BorderRadius.circular(
+                                          AppSpacing.radiusMd,
+                                        ),
+                                      ),
+                                      child: const Icon(
+                                        Icons.forum_rounded,
+                                        color: AppColors.primaryDark,
+                                      ),
+                                    ),
+                                    const SizedBox(width: AppSpacing.md),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Interactions',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .titleMedium,
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            'Record conversations with farmers you want to onboard',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall
+                                                ?.copyWith(
+                                                  color: AppColors.textMuted,
+                                                ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const Icon(
+                                      Icons.chevron_right_rounded,
+                                      color: AppColors.textMuted,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                       SectionHeader(
                         label: 'ONBOARDED',
                         title: 'Farms you onboarded',

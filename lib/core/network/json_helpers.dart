@@ -93,6 +93,30 @@ String visitStatusToApi(VisitStatus status) {
   }
 }
 
+InteractionStatus parseInteractionStatus(String value) {
+  switch (value) {
+    case 'ready_to_onboard':
+      return InteractionStatus.readyToOnboard;
+    case 'taking_time':
+      return InteractionStatus.takingTime;
+    case 'uncertain':
+      return InteractionStatus.uncertain;
+    default:
+      return InteractionStatus.uncertain;
+  }
+}
+
+String interactionStatusToApi(InteractionStatus status) {
+  switch (status) {
+    case InteractionStatus.readyToOnboard:
+      return 'ready_to_onboard';
+    case InteractionStatus.takingTime:
+      return 'taking_time';
+    case InteractionStatus.uncertain:
+      return 'uncertain';
+  }
+}
+
 String? sortOrderToApi(SortOrder order) {
   switch (order) {
     case SortOrder.nearbyToFarthest:

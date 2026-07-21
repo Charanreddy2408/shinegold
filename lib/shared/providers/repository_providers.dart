@@ -15,7 +15,9 @@ import '../../data/datasources/remote/api_executive_datasource.dart';
 import '../../data/datasources/remote/api_farm_datasource.dart';
 import '../../data/datasources/remote/api_farmer_datasource.dart';
 import '../../data/datasources/remote/api_harvest_datasource.dart';
+import '../../data/datasources/remote/api_interaction_datasource.dart';
 import '../../data/datasources/remote/api_visit_datasource.dart';
+import '../../data/datasources/mock/mock_interaction_datasource.dart';
 import '../../data/models/visit.dart';
 import '../../data/repositories/auth_repository.dart';
 import '../../data/repositories/dashboard_repository.dart';
@@ -23,6 +25,7 @@ import '../../data/repositories/executive_repository.dart';
 import '../../data/repositories/farm_repository.dart';
 import '../../data/repositories/farmer_repository.dart';
 import '../../data/repositories/harvest_repository.dart';
+import '../../data/repositories/interaction_repository.dart';
 import '../../data/repositories/visit_repository.dart';
 
 final uploadServiceProvider = Provider<UploadService>((ref) {
@@ -69,6 +72,11 @@ final harvestDataSourceProvider = Provider<HarvestDataSource>((ref) {
   return ApiHarvestDataSource(ref.watch(dioClientProvider));
 });
 
+final interactionDataSourceProvider = Provider<InteractionDataSource>((ref) {
+  if (AppConfig.useMockData) return MockInteractionDataSource();
+  return ApiInteractionDataSource(ref.watch(dioClientProvider));
+});
+
 final dashboardDataSourceProvider = Provider<DashboardDataSource>((ref) {
   if (AppConfig.useMockData) {
     final farmDs = ref.watch(farmDataSourceProvider) as MockFarmDataSource;
@@ -106,6 +114,10 @@ final farmerRepositoryProvider = Provider<FarmerRepository>((ref) {
 
 final harvestRepositoryProvider = Provider<HarvestRepository>((ref) {
   return HarvestRepository(ref.watch(harvestDataSourceProvider));
+});
+
+final interactionRepositoryProvider = Provider<InteractionRepository>((ref) {
+  return InteractionRepository(ref.watch(interactionDataSourceProvider));
 });
 
 final dashboardRepositoryProvider = Provider<DashboardRepository>((ref) {

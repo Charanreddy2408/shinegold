@@ -9,12 +9,15 @@ import '../../features/auth/login_screen.dart';
 import '../../features/executive/checkin/checkin_screen.dart';
 import '../../features/executive/farm_detail/farm_detail_screen.dart';
 import '../../features/executive/farms/farm_invitations_screen.dart';
+import '../../features/executive/interactions/interaction_form_screen.dart';
+import '../../features/executive/interactions/interactions_list_screen.dart';
 import '../../features/executive/onboard_farm/farm_boundary_picker_screen.dart';
 import '../../features/executive/onboard_farm/onboard_farm_screen.dart';
 import '../../features/executive/shell/executive_shell.dart';
 import '../../features/super_admin/shell/admin_shell.dart';
 import '../../features/visits/presentation/visit_report_screen.dart';
 import '../../features/welcome/welcome_screen.dart';
+import '../../data/models/interaction.dart';
 import '../../shared/models/farm_boundary.dart';
 import '../../shared/providers/auth_provider.dart';
 
@@ -33,6 +36,9 @@ class AppRoutes {
   static const checkin = '/checkin/:farmId';
   static const visitDetail = '/visit/:id';
   static const farmInvitations = '/executive/invitations';
+  static const interactions = '/executive/interactions';
+  static const interactionNew = '/executive/interactions/new';
+  static const interactionEdit = '/executive/interactions/:id';
   static const adminCreateFarm = '/admin/create-farm';
 }
 
@@ -148,6 +154,28 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: 'invitations',
             parentNavigatorKey: rootNavigatorKey,
             builder: (_, __) => const FarmInvitationsScreen(),
+          ),
+          GoRoute(
+            path: 'interactions',
+            parentNavigatorKey: rootNavigatorKey,
+            builder: (_, __) => const InteractionsListScreen(),
+            routes: [
+              GoRoute(
+                path: 'new',
+                parentNavigatorKey: rootNavigatorKey,
+                builder: (_, __) => const InteractionFormScreen(),
+              ),
+              GoRoute(
+                path: ':id',
+                parentNavigatorKey: rootNavigatorKey,
+                builder: (_, state) {
+                  final existing = state.extra;
+                  return InteractionFormScreen(
+                    existing: existing is FarmerInteraction ? existing : null,
+                  );
+                },
+              ),
+            ],
           ),
         ],
       ),

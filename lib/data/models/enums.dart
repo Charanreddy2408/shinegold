@@ -14,6 +14,8 @@ enum DashboardFilter { all, visits, onboarded }
 
 enum Gender { male, female, other }
 
+enum InteractionStatus { readyToOnboard, takingTime, uncertain }
+
 enum FarmHealthStatus { healthy, needsWater, needsAttention, critical, urgentVisit }
 
 enum SyncStatus { synced, pendingSync, syncFailed }
@@ -111,6 +113,19 @@ extension GenderLabel on Gender {
         return 'Female';
       case Gender.other:
         return 'Other';
+    }
+  }
+}
+
+extension InteractionStatusLabel on InteractionStatus {
+  String get label {
+    switch (this) {
+      case InteractionStatus.readyToOnboard:
+        return 'Ready to onboard';
+      case InteractionStatus.takingTime:
+        return 'Taking time';
+      case InteractionStatus.uncertain:
+        return 'Uncertain';
     }
   }
 }
