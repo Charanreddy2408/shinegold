@@ -8,13 +8,20 @@ class AppConfig {
   /// Set to false to use live API at [baseUrl].
   static const bool useMockData = false;
 
+  /// Production release builds must pass `--dart-define=PRODUCTION=true`
+  /// together with [API_BASE_URL].
+  static const bool isProduction = bool.fromEnvironment(
+    'PRODUCTION',
+    defaultValue: false,
+  );
+
   /// Override at build time:
-  /// `--dart-define=API_BASE_URL=http://192.168.1.10:8000`
+  /// `--dart-define=API_BASE_URL=https://your-api.onrender.com`
   ///
   /// Local dev port **8000** — matches `fastapi dev` / `fastapi run` default
   /// and backend `pyproject.toml` `[tool.fastapi].port`.
   ///
-  /// Defaults:
+  /// Defaults (non-production only):
   /// - Web / desktop / iOS simulator: `http://127.0.0.1:8000`
   /// - Android emulator: `http://10.0.2.2:8000` (host machine loopback)
   /// - Physical Android device: pass LAN IP via [API_BASE_URL]
@@ -28,9 +35,21 @@ class AppConfig {
   static const String _androidEmulatorHost = 'http://10.0.2.2:8000';
 
   static String get baseUrl {
-    if (_apiBaseUrlOverride.isNotEmpty) return _apiBaseUrlOverride;
+    if (_apiBaseUrlOverride.isNotEmpty) {
+      return _normalizeBaseUrl(_apiBaseUrlOverride);
+    }
+    if (isProduction) {
+      throw StateError(
+        'Production build requires API_BASE_URL. '
+        'See shinegold/dart_defines/production.json.example',
+      );
+    }
     if (!kIsWeb && Platform.isAndroid) return _androidEmulatorHost;
     return _defaultLocalHost;
+  }
+
+  static String _normalizeBaseUrl(String url) {
+    return url.endsWith('/') ? url.substring(0, url.length - 1) : url;
   }
 
   static const String logoAsset = 'assets/images/logo.png';

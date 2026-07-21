@@ -29,8 +29,8 @@ android {
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
+            // Debug signing is fine for sideloading to testers.
+            // For Play Store, add a release keystore — see Flutter docs.
             signingConfig = signingConfigs.getByName("debug")
         }
     }
