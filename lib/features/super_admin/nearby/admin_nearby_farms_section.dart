@@ -103,6 +103,7 @@ class AdminNearbyFarmsSection extends ConsumerWidget {
                 location: location,
                 lastRefresh: nearby.lastRefresh,
                 timeFormat: timeFormat,
+                usingHomeLocation: nearby.usingHomeLocation,
               ),
             ),
             const SizedBox(height: 12),
@@ -213,6 +214,7 @@ class AdminNearbyFarmsScreen extends ConsumerWidget {
                 lastRefresh: nearby.lastRefresh,
                 timeFormat: timeFormat,
                 expanded: true,
+                usingHomeLocation: nearby.usingHomeLocation,
               ),
             ),
             Expanded(
@@ -283,12 +285,14 @@ class _LocationStatusRow extends StatelessWidget {
     required this.lastRefresh,
     required this.timeFormat,
     this.expanded = false,
+    this.usingHomeLocation = false,
   });
 
   final LocationState location;
   final DateTime? lastRefresh;
   final DateFormat timeFormat;
   final bool expanded;
+  final bool usingHomeLocation;
 
   @override
   Widget build(BuildContext context) {
@@ -296,16 +300,20 @@ class _LocationStatusRow extends StatelessWidget {
     final waiting = location.loading && !hasFix;
     final statusColor = hasFix
         ? AppColors.success
-        : waiting
+        : usingHomeLocation
             ? AppColors.info
-            : AppColors.warning;
+            : waiting
+                ? AppColors.info
+                : AppColors.warning;
     final statusLabel = hasFix
         ? 'Location active'
-        : waiting
-            ? 'Getting location…'
-            : location.permissionGranted
-                ? 'Waiting for GPS fix'
-                : 'Location needed';
+        : usingHomeLocation
+            ? 'Using your home location'
+            : waiting
+                ? 'Getting location…'
+                : location.permissionGranted
+                    ? 'Waiting for GPS fix'
+                    : 'Location needed';
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -319,9 +327,11 @@ class _LocationStatusRow extends StatelessWidget {
           Icon(
             hasFix
                 ? Icons.gps_fixed_rounded
-                : waiting
-                    ? Icons.gps_not_fixed_rounded
-                    : Icons.gps_off_rounded,
+                : usingHomeLocation
+                    ? Icons.home_rounded
+                    : waiting
+                        ? Icons.gps_not_fixed_rounded
+                        : Icons.gps_off_rounded,
             size: 18,
             color: statusColor,
           ),

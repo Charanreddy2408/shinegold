@@ -134,6 +134,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       },
                     ),
                   ),
+                  const SliverToBoxAdapter(
+                    child: AdminNearbyFarmsSection(),
+                  ),
                   SliverToBoxAdapter(
                     child: AdminIndiaFarmMap(
                       key: ValueKey('admin-dashboard-india-map-${_farms.length}'),
@@ -142,9 +145,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                         AppRoutes.farmDetail.replaceFirst(':id', farm.id),
                       ),
                     ),
-                  ),
-                  const SliverToBoxAdapter(
-                    child: AdminNearbyFarmsSection(),
                   ),
                   SliverToBoxAdapter(
                     child: Padding(

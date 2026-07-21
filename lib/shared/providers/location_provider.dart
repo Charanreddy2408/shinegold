@@ -122,14 +122,26 @@ class LocationNotifier extends StateNotifier<LocationState> {
 
       Position? position;
       try {
+        // Web: the browser permission prompt eats into the time limit, so give
+        // it longer before falling back.
         position = await Geolocator.getCurrentPosition(
           locationSettings: const LocationSettings(
             accuracy: LocationAccuracy.medium,
-            timeLimit: Duration(seconds: 15),
+            timeLimit: Duration(seconds: kIsWeb ? 30 : 15),
           ),
         );
       } catch (_) {
-        position = lastKnown ?? await Geolocator.getLastKnownPosition();
+        // Low-accuracy retry rescues browsers/emulators that miss the first fix.
+        try {
+          position = await Geolocator.getCurrentPosition(
+            locationSettings: const LocationSettings(
+              accuracy: LocationAccuracy.lowest,
+              timeLimit: Duration(seconds: 10),
+            ),
+          );
+        } catch (_) {
+          position = lastKnown ?? await Geolocator.getLastKnownPosition();
+        }
       }
 
       if (position != null) {

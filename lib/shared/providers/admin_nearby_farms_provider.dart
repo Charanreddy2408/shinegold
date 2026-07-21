@@ -28,6 +28,7 @@ class AdminNearbyFarmsState {
     this.lastRefresh,
     this.tracking = false,
     this.closestOutsideKm,
+    this.usingHomeLocation = false,
   });
 
   final List<Farm> farms;
@@ -39,6 +40,9 @@ class AdminNearbyFarmsState {
   /// When the radius is empty, nearest farm distance outside the radius (if any).
   final double? closestOutsideKm;
 
+  /// True when GPS was unavailable and the admin's home pin was used instead.
+  final bool usingHomeLocation;
+
   AdminNearbyFarmsState copyWith({
     List<Farm>? farms,
     bool? loading,
@@ -46,6 +50,7 @@ class AdminNearbyFarmsState {
     DateTime? lastRefresh,
     bool? tracking,
     double? closestOutsideKm,
+    bool? usingHomeLocation,
     bool clearError = false,
     bool clearClosestOutside = false,
   }) =>
@@ -58,6 +63,7 @@ class AdminNearbyFarmsState {
         closestOutsideKm: clearClosestOutside
             ? null
             : (closestOutsideKm ?? this.closestOutsideKm),
+        usingHomeLocation: usingHomeLocation ?? this.usingHomeLocation,
       );
 }
 
@@ -136,18 +142,25 @@ class AdminNearbyFarmsNotifier extends StateNotifier<AdminNearbyFarmsState> {
       position = ref.read(locationProvider).position ?? position;
     }
 
-    final coords = _resolveCoords(ref.read(locationProvider));
+    final loc2 = ref.read(locationProvider);
+    final coords = _resolveCoords(loc2);
     if (coords == null) {
       state = state.copyWith(
         loading: false,
         clearClosestOutside: true,
-        error: ref.read(locationProvider).error ??
+        usingHomeLocation: false,
+        error: loc2.error ??
             'Turn on location to see farms near you while travelling.',
       );
       return;
     }
 
-    state = state.copyWith(loading: true, clearError: true);
+    final usingHome = loc2.position == null;
+    state = state.copyWith(
+      loading: true,
+      clearError: true,
+      usingHomeLocation: usingHome,
+    );
 
     try {
       final allSorted = await ref.read(farmRepositoryProvider).getFarms(
