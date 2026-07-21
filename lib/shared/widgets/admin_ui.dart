@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../core/network/api_exception.dart';
 import '../../core/theme/app_colors.dart';
+import '../utils/contact_launcher.dart';
 import 'shine_buttons.dart';
 
 /// Slide-up form sheet with gradient header — replaces plain AlertDialogs.
@@ -451,6 +452,10 @@ class AdminTeamTile extends StatefulWidget {
     required this.onTap,
     this.onLongPress,
     this.visitCount,
+    this.onboardedFarmsCount,
+    this.onboardedAcres,
+    this.mobile,
+    this.contactName,
   });
 
   final String name;
@@ -460,6 +465,10 @@ class AdminTeamTile extends StatefulWidget {
   final VoidCallback onTap;
   final VoidCallback? onLongPress;
   final int? visitCount;
+  final int? onboardedFarmsCount;
+  final double? onboardedAcres;
+  final String? mobile;
+  final String? contactName;
 
   @override
   State<AdminTeamTile> createState() => _AdminTeamTileState();
@@ -564,9 +573,43 @@ class _AdminTeamTileState extends State<AdminTeamTile> {
                         ],
                       ),
                     ],
+                    if (widget.onboardedFarmsCount != null) ...[
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.add_business_rounded,
+                            size: 13,
+                            color: AppColors.primaryDark.withValues(alpha: 0.85),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            _onboardedLabel(
+                              widget.onboardedFarmsCount!,
+                              widget.onboardedAcres ?? 0,
+                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelSmall
+                                ?.copyWith(
+                                  color: AppColors.primaryDark,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ],
                 ),
               ),
+              if (widget.mobile != null && widget.mobile!.trim().isNotEmpty) ...[
+                FarmerContactActions(
+                  mobile: widget.mobile!,
+                  farmerName: widget.contactName ?? widget.name,
+                  dense: true,
+                ),
+                const SizedBox(width: 2),
+              ],
               _StatusDot(status: widget.status),
               const SizedBox(width: 6),
               Container(
@@ -586,6 +629,20 @@ class _AdminTeamTileState extends State<AdminTeamTile> {
         ),
       ),
     );
+  }
+
+  String _onboardedLabel(int farms, double acres) {
+    final acresLabel = _formatAcres(acres);
+    if (farms == 1) {
+      return '1 farm onboarded · $acresLabel ac';
+    }
+    return '$farms farms onboarded · $acresLabel ac';
+  }
+
+  String _formatAcres(double acres) {
+    if (acres <= 0) return '0';
+    if (acres == acres.roundToDouble()) return acres.toInt().toString();
+    return acres.toStringAsFixed(1);
   }
 }
 

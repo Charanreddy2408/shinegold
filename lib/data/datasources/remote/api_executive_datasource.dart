@@ -21,6 +21,12 @@ class ApiExecutiveDataSource implements ExecutiveDataSource {
   }
 
   @override
+  Future<Executive> getById(String id) async {
+    final response = await _client.dio.get(ApiEndpoints.userById(id));
+    return Executive.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  @override
   Future<Executive> create(CreateExecutiveRequest request) async {
     final response = await _client.dio.post(
       ApiEndpoints.users,

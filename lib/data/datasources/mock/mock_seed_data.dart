@@ -41,6 +41,8 @@ class MockSeedData {
       profilePhotoUrl: 'https://i.pravatar.cc/150?u=rahul',
       farmsAssigned: 8,
       totalVisits: 24,
+      onboardedFarmsCount: 5,
+      onboardedAcresTotal: 42.5,
     ),
     const Executive(
       id: 'exec-2',
@@ -50,6 +52,8 @@ class MockSeedData {
       profilePhotoUrl: 'https://i.pravatar.cc/150?u=anita',
       farmsAssigned: 6,
       totalVisits: 18,
+      onboardedFarmsCount: 3,
+      onboardedAcresTotal: 18,
     ),
     const Executive(
       id: 'exec-3',
@@ -60,6 +64,8 @@ class MockSeedData {
       status: ExecutiveStatus.blocked,
       farmsAssigned: 4,
       totalVisits: 12,
+      onboardedFarmsCount: 1,
+      onboardedAcresTotal: 6.5,
     ),
   ];
 

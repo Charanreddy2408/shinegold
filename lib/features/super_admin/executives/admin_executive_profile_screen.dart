@@ -18,6 +18,7 @@ import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/shine_empty_state.dart';
 import '../../../shared/widgets/status_chip.dart';
 import '../../../shared/widgets/ux_components.dart';
+import '../../../shared/utils/contact_launcher.dart';
 
 class AdminExecutiveProfileScreen extends ConsumerStatefulWidget {
   const AdminExecutiveProfileScreen({
@@ -62,6 +63,8 @@ class _AdminExecutiveProfileScreenState
       _error = null;
     });
     try {
+      final detail =
+          await ref.read(executiveRepositoryProvider).getById(_executive.id);
       final visits = await ref.read(visitRepositoryProvider).getExecutiveVisits(
             _executive.id,
             VisitFilter(
@@ -71,6 +74,7 @@ class _AdminExecutiveProfileScreenState
           );
       if (mounted) {
         setState(() {
+          _executive = detail;
           _visits = visits;
           _loading = false;
         });
@@ -105,6 +109,12 @@ class _AdminExecutiveProfileScreenState
 
   int get _completedCount =>
       _visits.where((v) => v.status == VisitStatus.completed).length;
+
+  String _formatAcres(double acres) {
+    if (acres <= 0) return '0';
+    if (acres == acres.roundToDouble()) return acres.toInt().toString();
+    return acres.toStringAsFixed(1);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -151,6 +161,19 @@ class _AdminExecutiveProfileScreenState
                             .animate()
                             .fadeIn(duration: 400.ms)
                             .slideY(begin: 0.05, end: 0),
+                      ),
+                    ),
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                        child: _OnboardingCoverageCard(
+                          farmsCount: _executive.onboardedFarmsCount,
+                          acresTotal: _executive.onboardedAcresTotal,
+                          formatAcres: _formatAcres,
+                        )
+                            .animate()
+                            .fadeIn(delay: 80.ms, duration: 400.ms)
+                            .slideY(begin: 0.04, end: 0),
                       ),
                     ),
                     SliverToBoxAdapter(
@@ -388,6 +411,13 @@ class _ProfileHeader extends StatelessWidget {
                     ),
                   ],
                 ),
+                if (executive.mobile.trim().isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  FarmerContactActions(
+                    mobile: executive.mobile,
+                    farmerName: executive.name,
+                  ),
+                ],
               ],
             ),
           ),
@@ -580,6 +610,79 @@ class _VisitTimelineTile extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _OnboardingCoverageCard extends StatelessWidget {
+  const _OnboardingCoverageCard({
+    required this.farmsCount,
+    required this.acresTotal,
+    required this.formatAcres,
+  });
+
+  final int farmsCount;
+  final double acresTotal;
+  final String Function(double) formatAcres;
+
+  @override
+  Widget build(BuildContext context) {
+    final acresLabel = formatAcres(acresTotal);
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.secondaryMuted.withValues(alpha: 0.55),
+            AppColors.primarySoft.withValues(alpha: 0.35),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.secondary.withValues(alpha: 0.25)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.65),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.landscape_rounded,
+              color: AppColors.secondary,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Onboarding coverage',
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  farmsCount == 1
+                      ? '1 farm onboarded · $acresLabel acres'
+                      : '$farmsCount farms onboarded · $acresLabel acres',
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.primaryDark,
+                      ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

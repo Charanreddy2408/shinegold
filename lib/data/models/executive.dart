@@ -11,6 +11,8 @@ class Executive {
     this.status = ExecutiveStatus.active,
     this.farmsAssigned = 0,
     this.totalVisits = 0,
+    this.onboardedFarmsCount = 0,
+    this.onboardedAcresTotal = 0,
   });
 
   final String id;
@@ -21,6 +23,8 @@ class Executive {
   final ExecutiveStatus status;
   final int farmsAssigned;
   final int totalVisits;
+  final int onboardedFarmsCount;
+  final double onboardedAcresTotal;
 
   factory Executive.fromJson(Map<String, dynamic> json) => Executive(
         id: json['id']?.toString() ?? '',
@@ -41,17 +45,31 @@ class Executive {
             json['total_visits'] as int? ??
             json['visits_count'] as int? ??
             0,
+        onboardedFarmsCount: json['onboarded_farms_count'] as int? ??
+            json['onboarding_farms_count'] as int? ??
+            0,
+        onboardedAcresTotal:
+            (json['onboarded_acres_total'] as num?)?.toDouble() ?? 0,
       );
 
-  Executive copyWith({ExecutiveStatus? status}) => Executive(
+  Executive copyWith({
+    ExecutiveStatus? status,
+    int? farmsAssigned,
+    int? totalVisits,
+    int? onboardedFarmsCount,
+    double? onboardedAcresTotal,
+  }) =>
+      Executive(
         id: id,
         employeeId: employeeId,
         name: name,
         mobile: mobile,
         profilePhotoUrl: profilePhotoUrl,
         status: status ?? this.status,
-        farmsAssigned: farmsAssigned,
-        totalVisits: totalVisits,
+        farmsAssigned: farmsAssigned ?? this.farmsAssigned,
+        totalVisits: totalVisits ?? this.totalVisits,
+        onboardedFarmsCount: onboardedFarmsCount ?? this.onboardedFarmsCount,
+        onboardedAcresTotal: onboardedAcresTotal ?? this.onboardedAcresTotal,
       );
 }
 

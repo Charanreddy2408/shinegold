@@ -333,6 +333,10 @@ class _ExecutivesScreenState extends ConsumerState<ExecutivesScreen> {
                                   photoUrl: photo,
                                   status: exec.status,
                                   visitCount: exec.totalVisits,
+                                  onboardedFarmsCount: exec.onboardedFarmsCount,
+                                  onboardedAcres: exec.onboardedAcresTotal,
+                                  mobile: exec.mobile,
+                                  contactName: exec.name,
                                   onTap: () => _openProfile(exec),
                                   onLongPress: () async {
                                     await ref

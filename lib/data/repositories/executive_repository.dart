@@ -9,6 +9,8 @@ class ExecutiveRepository {
 
   Future<List<Executive>> list() => _dataSource.list();
 
+  Future<Executive> getById(String id) => _dataSource.getById(id);
+
   Future<Executive> create(CreateExecutiveRequest request) =>
       _dataSource.create(request);
 

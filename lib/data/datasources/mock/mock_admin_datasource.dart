@@ -17,6 +17,15 @@ class MockExecutiveDataSource implements ExecutiveDataSource {
   }
 
   @override
+  Future<Executive> getById(String id) async {
+    await Future<void>.delayed(AppConfig.mockNetworkDelay);
+    return _executives.firstWhere(
+      (e) => e.id == id,
+      orElse: () => throw Exception('Executive not found'),
+    );
+  }
+
+  @override
   Future<Executive> create(CreateExecutiveRequest request) async {
     await Future<void>.delayed(AppConfig.mockNetworkDelay);
     final nextNum = _executives

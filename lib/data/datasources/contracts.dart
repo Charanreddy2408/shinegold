@@ -149,6 +149,7 @@ abstract class VisitDataSource {
 
 abstract class ExecutiveDataSource {
   Future<List<Executive>> list();
+  Future<Executive> getById(String id);
   Future<Executive> create(CreateExecutiveRequest request);
   Future<Executive> toggleBlock(String id);
   Future<List<Farm>> getVisitHistoryFarms(String executiveId);
