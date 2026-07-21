@@ -320,8 +320,6 @@ class _ExecutivesScreenState extends ConsumerState<ExecutivesScreen> {
                           itemCount: filtered.length,
                           itemBuilder: (context, index) {
                             final exec = filtered[index];
-                            final photo = exec.profilePhotoUrl ??
-                                'https://i.pravatar.cc/150?u=${exec.employeeId}';
                             return StaggeredListItem(
                               key: ValueKey(exec.id),
                               index: index,
@@ -330,7 +328,7 @@ class _ExecutivesScreenState extends ConsumerState<ExecutivesScreen> {
                                 child: AdminTeamTile(
                                   name: exec.name,
                                   subtitle: exec.mobile,
-                                  photoUrl: photo,
+                                  photoUrl: exec.profilePhotoUrl ?? '',
                                   status: exec.status,
                                   visitCount: exec.totalVisits,
                                   onboardedFarmsCount: exec.onboardedFarmsCount,

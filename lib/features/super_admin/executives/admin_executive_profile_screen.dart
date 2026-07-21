@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,6 +17,7 @@ import '../../../shared/widgets/animated_loading.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/shine_empty_state.dart';
 import '../../../shared/widgets/status_chip.dart';
+import '../../../shared/widgets/user_avatar.dart';
 import '../../../shared/widgets/ux_components.dart';
 import '../../../shared/utils/contact_launcher.dart';
 
@@ -124,8 +124,6 @@ class _AdminExecutiveProfileScreenState
 
   @override
   Widget build(BuildContext context) {
-    final photo = _executive.profilePhotoUrl ??
-        'https://i.pravatar.cc/150?u=${_executive.employeeId}';
     final dateFormat = DateFormat('dd MMM yyyy · hh:mm a');
 
     return Scaffold(
@@ -139,10 +137,10 @@ class _AdminExecutiveProfileScreenState
             onPressed: () => Navigator.of(context).pop(),
             icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
           ),
-          trailing: CircleAvatar(
+          trailing: UserAvatar(
+            name: _executive.name,
+            photoUrl: _executive.profilePhotoUrl,
             radius: 20,
-            backgroundColor: Colors.white.withValues(alpha: 0.25),
-            backgroundImage: CachedNetworkImageProvider(photo),
           ),
         ),
         child: Column(
@@ -161,7 +159,6 @@ class _AdminExecutiveProfileScreenState
                         padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
                         child: _ProfileHeader(
                           executive: _executive,
-                          photo: photo,
                           onToggleBlock: _toggleBlock,
                         )
                             .animate()
@@ -411,12 +408,10 @@ class _AdminExecutiveProfileScreenState
 class _ProfileHeader extends StatelessWidget {
   const _ProfileHeader({
     required this.executive,
-    required this.photo,
     required this.onToggleBlock,
   });
 
   final Executive executive;
-  final String photo;
   final VoidCallback onToggleBlock;
 
   @override
@@ -435,9 +430,10 @@ class _ProfileHeader extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CircleAvatar(
+              UserAvatar(
+                name: executive.name,
+                photoUrl: executive.profilePhotoUrl,
                 radius: 32,
-                backgroundImage: CachedNetworkImageProvider(photo),
               ),
               const SizedBox(width: 14),
               Expanded(

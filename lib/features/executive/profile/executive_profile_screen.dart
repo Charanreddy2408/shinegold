@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,6 +21,7 @@ import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/animated_loading.dart';
 import '../../../shared/widgets/profile_photo_editor.dart';
 import '../../../shared/widgets/shine_buttons.dart';
+import '../../../shared/widgets/user_avatar.dart';
 
 class ExecutiveProfileScreen extends ConsumerStatefulWidget {
   const ExecutiveProfileScreen({super.key});
@@ -98,18 +98,17 @@ class _ExecutiveProfileScreenState extends ConsumerState<ExecutiveProfileScreen>
       );
     }
 
-    final photoUrl = user.profilePhotoUrl ??
-        'https://i.pravatar.cc/150?u=${user.employeeId}';
+    final photoUrl = user.profilePhotoUrl ?? '';
 
     return AppBackground(
       header: GradientHeader(
         title: user.name.split(' ').first,
         subtitle: 'Field Executive',
         compact: true,
-        trailing: CircleAvatar(
+        trailing: UserAvatar(
+          name: user.name,
+          photoUrl: photoUrl.isNotEmpty ? photoUrl : null,
           radius: 20,
-          backgroundColor: Colors.white.withValues(alpha: 0.25),
-          backgroundImage: CachedNetworkImageProvider(photoUrl),
         ),
       ),
       child: _refreshing
@@ -238,6 +237,7 @@ class _ProfileHero extends StatelessWidget {
           ProfilePhotoEditor(
             photoUrl: photoUrl,
             fallbackSeed: employeeId,
+            userName: name,
             radius: 32,
             showLabel: false,
           ),

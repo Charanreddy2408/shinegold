@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,6 +7,7 @@ import '../../../core/animations/fade_slide_in.dart';
 import '../../../core/animations/staggered_list.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/widgets/user_avatar.dart';
 import '../../../data/models/enums.dart';
 import '../../../data/models/executive.dart';
 import '../../../data/models/farm.dart';
@@ -285,9 +285,6 @@ class _TeamMemberChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final photo = executive.profilePhotoUrl ??
-        'https://i.pravatar.cc/150?u=${executive.employeeId}';
-
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
@@ -303,9 +300,10 @@ class _TeamMemberChip extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            CircleAvatar(
+            UserAvatar(
+              name: executive.name,
+              photoUrl: executive.profilePhotoUrl,
               radius: 22,
-              backgroundImage: CachedNetworkImageProvider(photo),
             ),
             const SizedBox(height: 5),
             Text(

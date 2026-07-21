@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../core/network/api_exception.dart';
 import '../../core/theme/app_colors.dart';
 import '../providers/auth_provider.dart';
+import 'user_avatar.dart';
 import '../providers/repository_providers.dart';
 
 /// Tappable avatar with camera overlay — uploads and saves profile photo.
@@ -17,12 +18,14 @@ class ProfilePhotoEditor extends ConsumerStatefulWidget {
     super.key,
     required this.photoUrl,
     required this.fallbackSeed,
+    required this.userName,
     this.radius = 32,
     this.showLabel = true,
   });
 
   final String photoUrl;
   final String fallbackSeed;
+  final String userName;
   final double radius;
   final bool showLabel;
 
@@ -134,24 +137,29 @@ class _ProfilePhotoEditorState extends ConsumerState<ProfilePhotoEditor> {
       );
     }
 
-    return CircleAvatar(
+    if (displayUrl.isNotEmpty) {
+      return CircleAvatar(
+        radius: widget.radius,
+        backgroundColor: AppColors.surfaceElevated,
+        backgroundImage: CachedNetworkImageProvider(displayUrl),
+        child: _uploading
+            ? const Padding(
+                padding: EdgeInsets.all(12),
+                child: CircularProgressIndicator(strokeWidth: 2.5),
+              )
+            : null,
+      );
+    }
+
+    return UserAvatar(
+      name: widget.userName,
       radius: widget.radius,
-      backgroundColor: AppColors.surfaceElevated,
-      backgroundImage: CachedNetworkImageProvider(displayUrl),
-      child: _uploading
-          ? const Padding(
-              padding: EdgeInsets.all(12),
-              child: CircularProgressIndicator(strokeWidth: 2.5),
-            )
-          : null,
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final displayUrl = widget.photoUrl.isNotEmpty
-        ? widget.photoUrl
-        : 'https://i.pravatar.cc/150?u=${widget.fallbackSeed}';
+    final displayUrl = widget.photoUrl;
 
     return Column(
       mainAxisSize: MainAxisSize.min,

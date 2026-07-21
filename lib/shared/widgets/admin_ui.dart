@@ -5,6 +5,7 @@ import '../../core/network/api_exception.dart';
 import '../../core/theme/app_colors.dart';
 import '../utils/contact_launcher.dart';
 import 'shine_buttons.dart';
+import 'user_avatar.dart';
 
 /// Slide-up form sheet with gradient header — replaces plain AlertDialogs.
 ///
@@ -524,9 +525,10 @@ class _AdminTeamTileState extends State<AdminTeamTile> {
                         width: 2,
                       ),
                     ),
-                    child: CircleAvatar(
+                    child: UserAvatar(
+                      name: widget.name,
+                      photoUrl: widget.photoUrl.isNotEmpty ? widget.photoUrl : null,
                       radius: 24,
-                      backgroundImage: NetworkImage(widget.photoUrl),
                     ),
                   ),
                   const SizedBox(width: 12),
