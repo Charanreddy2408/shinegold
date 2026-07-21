@@ -510,120 +510,112 @@ class _AdminTeamTileState extends State<AdminTeamTile> {
               ),
             ],
           ),
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.35),
-                    width: 2,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: AppColors.primary.withValues(alpha: 0.35),
+                        width: 2,
+                      ),
+                    ),
+                    child: CircleAvatar(
+                      radius: 24,
+                      backgroundImage: NetworkImage(widget.photoUrl),
+                    ),
                   ),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: AppColors.shadowGold,
-                      blurRadius: 8,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: CircleAvatar(
-                  radius: 26,
-                  backgroundImage: NetworkImage(widget.photoUrl),
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.name,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w800,
-                          ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      widget.subtitle,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
-                    ),
-                    if (widget.visitCount != null) ...[
-                      const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.route_rounded,
-                            size: 13,
-                            color: AppColors.secondary.withValues(alpha: 0.8),
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${widget.visitCount} visits logged',
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelSmall
-                                ?.copyWith(
-                                  color: AppColors.secondary,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                          ),
-                        ],
-                      ),
-                    ],
-                    if (widget.onboardedFarmsCount != null) ...[
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.add_business_rounded,
-                            size: 13,
-                            color: AppColors.primaryDark.withValues(alpha: 0.85),
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            _onboardedLabel(
-                              widget.onboardedFarmsCount!,
-                              widget.onboardedAcres ?? 0,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                widget.name,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleSmall
+                                    ?.copyWith(fontWeight: FontWeight.w800),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelSmall
-                                ?.copyWith(
-                                  color: AppColors.primaryDark,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                          ),
-                        ],
+                            const SizedBox(width: 8),
+                            _StatusDot(status: widget.status),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          widget.subtitle,
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: AppColors.textSecondary,
+                                  ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (widget.mobile != null &&
+                      widget.mobile!.trim().isNotEmpty)
+                    IconButton(
+                      tooltip: 'Call',
+                      visualDensity: VisualDensity.compact,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(
+                        minWidth: 36,
+                        minHeight: 36,
                       ),
-                    ],
+                      onPressed: () => ContactLauncher.callOrSnack(
+                        context,
+                        widget.mobile!,
+                      ),
+                      icon: const Icon(
+                        Icons.call_rounded,
+                        color: Color(0xFF1B7A4E),
+                        size: 22,
+                      ),
+                    ),
+                  const Icon(
+                    Icons.chevron_right_rounded,
+                    size: 20,
+                    color: AppColors.textMuted,
+                  ),
+                ],
+              ),
+              if (widget.visitCount != null ||
+                  widget.onboardedFarmsCount != null) ...[
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 6,
+                  children: [
+                    if (widget.visitCount != null)
+                      _TeamMetricChip(
+                        icon: Icons.route_rounded,
+                        label: '${widget.visitCount} visits',
+                        color: AppColors.secondary,
+                      ),
+                    if (widget.onboardedFarmsCount != null)
+                      _TeamMetricChip(
+                        icon: Icons.add_business_rounded,
+                        label: _onboardedLabel(
+                          widget.onboardedFarmsCount!,
+                          widget.onboardedAcres ?? 0,
+                        ),
+                        color: AppColors.primaryDark,
+                      ),
                   ],
                 ),
-              ),
-              if (widget.mobile != null && widget.mobile!.trim().isNotEmpty) ...[
-                FarmerContactActions(
-                  mobile: widget.mobile!,
-                  farmerName: widget.contactName ?? widget.name,
-                  dense: true,
-                ),
-                const SizedBox(width: 2),
               ],
-              _StatusDot(status: widget.status),
-              const SizedBox(width: 6),
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: AppColors.canvasDeep,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  size: 14,
-                  color: AppColors.textMuted,
-                ),
-              ),
             ],
           ),
         ),
@@ -643,6 +635,36 @@ class _AdminTeamTileState extends State<AdminTeamTile> {
     if (acres <= 0) return '0';
     if (acres == acres.roundToDouble()) return acres.toInt().toString();
     return acres.toStringAsFixed(1);
+  }
+}
+
+class _TeamMetricChip extends StatelessWidget {
+  const _TeamMetricChip({
+    required this.icon,
+    required this.label,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 13, color: color.withValues(alpha: 0.85)),
+        const SizedBox(width: 4),
+        Text(
+          label,
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: color,
+                fontWeight: FontWeight.w600,
+              ),
+        ),
+      ],
+    );
   }
 }
 

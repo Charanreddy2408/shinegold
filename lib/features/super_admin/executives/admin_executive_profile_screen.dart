@@ -360,6 +360,7 @@ class _ProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isBlocked = executive.status == ExecutiveStatus.blocked;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -367,72 +368,89 @@ class _ProfileHeader extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.borderSubtle),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          CircleAvatar(
-            radius: 32,
-            backgroundImage: CachedNetworkImageProvider(photo),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  executive.name,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  executive.employeeId,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                ),
-                const SizedBox(height: 6),
-                Row(
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CircleAvatar(
+                radius: 32,
+                backgroundImage: CachedNetworkImageProvider(photo),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    StatusChip(status: executive.status),
-                    const SizedBox(width: 8),
-                    Icon(
-                      Icons.phone_rounded,
-                      size: 14,
-                      color: AppColors.textMuted,
+                    Text(
+                      executive.name,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
                     ),
-                    const SizedBox(width: 4),
-                    Flexible(
-                      child: Text(
-                        executive.mobile,
-                        style: Theme.of(context).textTheme.bodySmall,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                    const SizedBox(height: 2),
+                    Text(
+                      executive.employeeId,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        StatusChip(status: executive.status),
+                        const SizedBox(width: 8),
+                        const Icon(
+                          Icons.phone_rounded,
+                          size: 14,
+                          color: AppColors.textMuted,
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            executive.mobile,
+                            style: Theme.of(context).textTheme.bodySmall,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-                if (executive.mobile.trim().isNotEmpty) ...[
-                  const SizedBox(height: 10),
-                  FarmerContactActions(
-                    mobile: executive.mobile,
-                    farmerName: executive.name,
-                  ),
-                ],
-              ],
-            ),
+              ),
+            ],
           ),
-          IconButton(
+          if (executive.mobile.trim().isNotEmpty) ...[
+            const SizedBox(height: 14),
+            OutlinedButton.icon(
+              onPressed: () =>
+                  ContactLauncher.callOrSnack(context, executive.mobile),
+              icon: const Icon(Icons.call_rounded, size: 20),
+              label: const Text('Call executive'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: const Color(0xFF1B7A4E),
+                side: const BorderSide(color: Color(0xFF1B7A4E), width: 1.4),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+            ),
+          ],
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
             onPressed: onToggleBlock,
-            tooltip: executive.status == ExecutiveStatus.active
-                ? 'Block executive'
-                : 'Unblock executive',
             icon: Icon(
-              executive.status == ExecutiveStatus.active
-                  ? Icons.block_rounded
-                  : Icons.check_circle_outline,
-              color: executive.status == ExecutiveStatus.active
-                  ? AppColors.error
-                  : AppColors.secondary,
+              isBlocked ? Icons.lock_open_rounded : Icons.block_rounded,
+              size: 20,
+            ),
+            label: Text(isBlocked ? 'Unblock executive' : 'Block executive'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor:
+                  isBlocked ? AppColors.secondary : AppColors.error,
+              side: BorderSide(
+                color: isBlocked ? AppColors.secondary : AppColors.error,
+                width: 1.4,
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 12),
             ),
           ),
         ],
