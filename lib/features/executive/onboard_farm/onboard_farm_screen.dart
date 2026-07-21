@@ -18,6 +18,7 @@ import '../../../data/models/farm.dart';
 import '../../../shared/models/farm_boundary.dart';
 import '../../../shared/providers/app_refresh_provider.dart';
 import '../../../shared/providers/auth_provider.dart';
+import '../../../shared/providers/executive_tab_provider.dart';
 import '../../../shared/providers/location_provider.dart';
 import '../../../shared/providers/repository_providers.dart';
 import '../../../shared/utils/geo_area.dart';
@@ -469,6 +470,17 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
               Text('The farm has been added successfully.',
                   style: Theme.of(context).textTheme.bodyMedium),
               const SizedBox(height: AppSpacing.xxxl),
+              if (!widget.isAdminCreate) ...[
+                ShinePrimaryButton(
+                  label: 'View dashboard',
+                  onPressed: () {
+                    bumpAppRefresh(ref);
+                    switchExecutiveTab(ref, 0);
+                    setState(_resetForm);
+                  },
+                ),
+                const SizedBox(height: AppSpacing.md),
+              ],
               ShineSecondaryButton(
                 label: 'Onboard Another',
                 onPressed: () => setState(_resetForm),

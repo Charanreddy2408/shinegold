@@ -10,7 +10,9 @@ import '../home/home_screen.dart';
 import '../my_visits/my_visits_screen.dart';
 import '../onboard_farm/onboard_farm_screen.dart';
 import '../profile/executive_profile_screen.dart';
+import '../../../shared/providers/app_refresh_provider.dart';
 import '../../../shared/providers/auth_provider.dart';
+import '../../../shared/providers/executive_tab_provider.dart';
 import '../../../shared/providers/harvest_reminder_provider.dart';
 import '../../../shared/providers/location_provider.dart';
 import '../../../shared/providers/visit_sync_provider.dart';
@@ -26,8 +28,6 @@ class ExecutiveShell extends ConsumerStatefulWidget {
 
 class _ExecutiveShellState extends ConsumerState<ExecutiveShell>
     with WidgetsBindingObserver {
-  int _index = 0;
-
   @override
   void initState() {
     super.initState();
@@ -116,28 +116,29 @@ class _ExecutiveShellState extends ConsumerState<ExecutiveShell>
     }
   }
 
-  Widget _screenFor(int index) {
-    switch (index) {
-      case 0:
-        return const HomeScreen();
-      case 1:
-        return const FarmsScreen();
-      case 2:
-        return const MyVisitsScreen();
-      case 3:
-        return const OnboardFarmScreen();
-      case 4:
-        return const ExecutiveProfileScreen();
-      default:
-        return const HomeScreen();
+  void _onTabSelected(int index) {
+    if (index == 0) {
+      bumpAppRefresh(ref);
     }
+    ref.read(executiveTabIndexProvider.notifier).state = index;
   }
 
   @override
   Widget build(BuildContext context) {
+    final tabIndex = ref.watch(executiveTabIndexProvider);
+
     return Scaffold(
       backgroundColor: AppColors.canvasDeep,
-      body: _screenFor(_index),
+      body: IndexedStack(
+        index: tabIndex,
+        children: const [
+          HomeScreen(),
+          FarmsScreen(),
+          MyVisitsScreen(),
+          OnboardFarmScreen(),
+          ExecutiveProfileScreen(),
+        ],
+      ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: AppColors.surfaceCard,
@@ -155,14 +156,14 @@ class _ExecutiveShellState extends ConsumerState<ExecutiveShell>
         child: SafeArea(
           top: false,
           child: NavigationBar(
-            selectedIndex: _index,
+            selectedIndex: tabIndex,
             backgroundColor: Colors.transparent,
             indicatorColor: AppColors.primarySoft,
             surfaceTintColor: Colors.transparent,
             elevation: 0,
             height: AppSpacing.navBarHeight,
             labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-            onDestinationSelected: (i) => setState(() => _index = i),
+            onDestinationSelected: _onTabSelected,
             destinations: const [
               NavigationDestination(
                 icon: Icon(Icons.home_outlined),
