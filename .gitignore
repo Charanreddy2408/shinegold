@@ -32,6 +32,7 @@ migrate_working_dir/
 .pub/
 /build/
 /coverage/
+/dist/
 
 # Production API URL (copy from dart_defines/production.json.example)
 /dart_defines/production.json

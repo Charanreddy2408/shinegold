@@ -224,22 +224,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.lg),
-                Container(
-                  padding: const EdgeInsets.all(AppSpacing.lg),
-                  decoration: BoxDecoration(
-                    color: AppColors.primarySoft.withValues(alpha: 0.6),
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                if (AppConfig.showDemoCredentials)
+                  Container(
+                    padding: const EdgeInsets.all(AppSpacing.lg),
+                    decoration: BoxDecoration(
+                      color: AppColors.primarySoft.withValues(alpha: 0.6),
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                    ),
+                    child: Text(
+                      'Demo: EXEC001 or ADMIN001 · ChangeMe123!',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: AppColors.primaryDark,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                          ),
+                    ),
                   ),
-                  child: Text(
-                    'Demo: EXEC001 or ADMIN001 · ChangeMe123!',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.primaryDark,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13,
-                        ),
-                  ),
-                ),
               ],
             ),
           ),

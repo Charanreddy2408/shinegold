@@ -1,7 +1,7 @@
 name: shine_gold
 description: Shine Gold Organic Agro Invention - field executive & admin app.
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.0.1+2
 
 environment:
   sdk: '>=3.2.0 <4.0.0'

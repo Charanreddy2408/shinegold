@@ -59,10 +59,13 @@ class AppConfig {
 
   static const Duration mockNetworkDelay = Duration.zero;
 
-  /// Pre-fills login when no saved employee ID exists (debug / local dev).
-  /// Override: `--dart-define=DEFAULT_EMPLOYEE_ID=EXEC002`
+  /// Pre-fills login when no saved employee ID exists (debug / local dev only).
+  /// Empty in production builds. Override: `--dart-define=DEFAULT_EMPLOYEE_ID=...`
   static const String defaultEmployeeId = String.fromEnvironment(
     'DEFAULT_EMPLOYEE_ID',
-    defaultValue: 'EXEC001',
+    defaultValue: '',
   );
+
+  /// Whether to show demo credentials on the login screen.
+  static bool get showDemoCredentials => !isProduction && !kReleaseMode;
 }
