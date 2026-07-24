@@ -10,6 +10,7 @@ import '../../data/models/user.dart';
 import '../../data/repositories/auth_repository.dart';
 import '../services/notification_service.dart';
 import 'repository_providers.dart';
+import 'session_expired_provider.dart';
 
 const _sessionKey = 'auth_session';
 const _lastEmployeeIdKey = 'last_employee_id';
@@ -278,7 +279,10 @@ final authProvider =
       return null;
     }
   };
-  dio.onAuthFailure = () => notifier.clearSession();
+  dio.onAuthFailure = () async {
+    ref.read(sessionExpiredProvider.notifier).markExpired();
+    await notifier.clearSession();
+  };
   return notifier;
 });
 

@@ -6,6 +6,7 @@ import '../../data/models/enums.dart';
 import '../../data/models/user.dart';
 import '../../features/auth/forgot_password_screen.dart';
 import '../../features/auth/login_screen.dart';
+import '../../features/auth/session_expired_screen.dart';
 import '../../features/executive/checkin/checkin_screen.dart';
 import '../../features/executive/farm_detail/farm_detail_screen.dart';
 import '../../features/executive/farms/farm_invitations_screen.dart';
@@ -20,6 +21,7 @@ import '../../features/welcome/welcome_screen.dart';
 import '../../data/models/interaction.dart';
 import '../../shared/models/farm_boundary.dart';
 import '../../shared/providers/auth_provider.dart';
+import '../../shared/providers/session_expired_provider.dart';
 
 final rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -40,18 +42,27 @@ class AppRoutes {
   static const interactionNew = '/executive/interactions/new';
   static const interactionEdit = '/executive/interactions/:id';
   static const adminCreateFarm = '/admin/create-farm';
+  static const sessionExpired = '/session-expired';
 }
 
-/// Notifies [GoRouter] when auth changes without recreating the router instance.
+/// Notifies [GoRouter] when auth or session-expiry state changes without
+/// recreating the router instance.
 class _RouterRefreshNotifier extends ChangeNotifier {
   _RouterRefreshNotifier(Ref ref) {
     ref.listen<AsyncValue<AuthSession?>>(authProvider, (_, __) {
       notifyListeners();
     });
+    ref.listen<bool>(sessionExpiredProvider, (_, __) {
+      notifyListeners();
+    });
   }
 }
 
-String? _resolveRedirect(GoRouterState state, AsyncValue<AuthSession?> authState) {
+String? _resolveRedirect(
+  GoRouterState state,
+  AsyncValue<AuthSession?> authState,
+  bool sessionExpired,
+) {
   if (authState.hasError) {
     final loc = state.matchedLocation;
     if (loc == AppRoutes.welcome ||
@@ -71,6 +82,13 @@ String? _resolveRedirect(GoRouterState state, AsyncValue<AuthSession?> authState
   if (authState.isLoading && !isWelcome) return AppRoutes.welcome;
 
   if (session == null) {
+    if (sessionExpired) {
+      return loc == AppRoutes.sessionExpired ? null : AppRoutes.sessionExpired;
+    }
+    if (loc == AppRoutes.sessionExpired) {
+      // Guard against a direct/deep link once the flag has been cleared.
+      return AppRoutes.login;
+    }
     if (loc.startsWith('/executive') ||
         loc.startsWith('/admin') ||
         loc.startsWith('/farm') ||
@@ -115,8 +133,11 @@ final routerProvider = Provider<GoRouter>((ref) {
     navigatorKey: rootNavigatorKey,
     initialLocation: AppRoutes.welcome,
     refreshListenable: refresh,
-    redirect: (context, state) =>
-        _resolveRedirect(state, ref.read(authProvider)),
+    redirect: (context, state) => _resolveRedirect(
+      state,
+      ref.read(authProvider),
+      ref.read(sessionExpiredProvider),
+    ),
     routes: [
       GoRoute(
         path: AppRoutes.welcome,
@@ -125,6 +146,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.login,
         builder: (_, __) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.sessionExpired,
+        builder: (_, __) => const SessionExpiredScreen(),
       ),
       GoRoute(
         path: AppRoutes.forgotPassword,
