@@ -26,6 +26,11 @@ class VisitSyncCoordinator {
   final ValueNotifier<VisitSyncResult?> lastResult =
       ValueNotifier<VisitSyncResult?>(null);
 
+  /// True while a sync is in flight, including the silent auto-sync
+  /// triggered on shell init/app-resume — lets any screen show progress,
+  /// not just the manual "Sync now" button.
+  final ValueNotifier<bool> isSyncing = ValueNotifier<bool>(false);
+
   Future<void> _onConnectivityChanged(List<ConnectivityResult> results) async {
     if (_disposed) return;
     final online = results.any((r) => r != ConnectivityResult.none);
@@ -45,6 +50,7 @@ class VisitSyncCoordinator {
           const VisitSyncResult(synced: 0, failed: 0, remaining: 0);
     }
     _syncing = true;
+    isSyncing.value = true;
     try {
       final result = await _ref.read(visitSyncServiceProvider).sync();
       if (_disposed) return result;
@@ -56,6 +62,7 @@ class VisitSyncCoordinator {
       return result;
     } finally {
       _syncing = false;
+      if (!_disposed) isSyncing.value = false;
     }
   }
 
@@ -64,6 +71,7 @@ class VisitSyncCoordinator {
     _subscription?.cancel();
     _subscription = null;
     lastResult.dispose();
+    isSyncing.dispose();
   }
 }
 

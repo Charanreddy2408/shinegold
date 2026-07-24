@@ -186,6 +186,15 @@ class _MyVisitsScreenState extends ConsumerState<MyVisitsScreen> {
       child: Column(
         children: [
           SoftRefreshBar(visible: _refreshing),
+          if (_syncing)
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: SlowOperationNotice(
+                active: true,
+                message:
+                    'Syncing offline visits — this can take a few minutes on a slow connection…',
+              ),
+            ),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             child: TextField(

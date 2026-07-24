@@ -18,6 +18,7 @@ import '../../../shared/providers/location_provider.dart';
 import '../../../shared/providers/visit_sync_provider.dart';
 import '../../../shared/services/offline_visit_store.dart';
 import '../../../shared/services/visit_sync_service.dart';
+import '../../../shared/widgets/animated_loading.dart';
 
 class ExecutiveShell extends ConsumerStatefulWidget {
   const ExecutiveShell({super.key});
@@ -129,14 +130,24 @@ class _ExecutiveShellState extends ConsumerState<ExecutiveShell>
 
     return Scaffold(
       backgroundColor: AppColors.canvasDeep,
-      body: IndexedStack(
-        index: tabIndex,
-        children: const [
-          HomeScreen(),
-          FarmsScreen(),
-          MyVisitsScreen(),
-          OnboardFarmScreen(),
-          ExecutiveProfileScreen(),
+      body: Column(
+        children: [
+          ValueListenableBuilder<bool>(
+            valueListenable: ref.watch(visitSyncCoordinatorProvider).isSyncing,
+            builder: (_, syncing, __) => SoftRefreshBar(visible: syncing),
+          ),
+          Expanded(
+            child: IndexedStack(
+              index: tabIndex,
+              children: const [
+                HomeScreen(),
+                FarmsScreen(),
+                MyVisitsScreen(),
+                OnboardFarmScreen(),
+                ExecutiveProfileScreen(),
+              ],
+            ),
+          ),
         ],
       ),
       bottomNavigationBar: Container(

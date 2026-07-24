@@ -221,6 +221,13 @@ class _VisitReportScreenState extends ConsumerState<VisitReportScreen> {
                                   const EdgeInsets.symmetric(vertical: 14),
                             ),
                           ),
+                          Center(
+                            child: SlowOperationNotice(
+                              active: _downloading,
+                              message:
+                                  'Fetching photos and assembling your PDF — this can take a few minutes…',
+                            ),
+                          ),
                           const SizedBox(height: AppSpacing.lg),
                           Text(
                             'Field Report',
