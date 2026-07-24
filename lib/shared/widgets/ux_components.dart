@@ -49,8 +49,12 @@ Future<void> ensureVoiceAudioContext() async {
     }
     _audioContextReady = true;
   } catch (_) {
-    // Don't block app start if audio context setup fails.
-    _audioContextReady = true;
+    // Leave _audioContextReady false so the next playback attempt retries.
+    // Marking it "ready" here previously meant a single transient failure
+    // (e.g. the native plugin channel not yet attached at cold start) would
+    // permanently skip AVAudioSessionCategory.playback for the whole app
+    // session, leaving iOS on its silent-switch-obeying default category —
+    // the player would show "playing" with correct duration but no sound.
   }
 }
 
