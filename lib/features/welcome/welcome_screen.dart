@@ -10,6 +10,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../data/models/enums.dart';
 import '../../shared/providers/auth_provider.dart';
+import '../../shared/widgets/animated_loading.dart';
 import '../../shared/widgets/shine_logo.dart';
 
 class WelcomeScreen extends ConsumerStatefulWidget {
@@ -46,6 +47,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
   late final Animation<double> _footerOpacity;
 
   bool _navigated = false;
+  bool _checkingSession = false;
 
   static const _splashDuration = Duration(milliseconds: 2800);
 
@@ -166,13 +168,21 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
     if (_navigated || !mounted) return;
     _navigated = true;
 
-    try {
-      await _exitController.forward();
-    } catch (_) {}
-
+    // Wait for auth to resolve *before* fading the splash out — otherwise a
+    // slow cold-start session check (the backend can take 30-60s to wake up)
+    // left the screen faded to blank, indistinguishable from a hang.
+    if (ref.read(authProvider).isLoading) {
+      setState(() => _checkingSession = true);
+    }
     while (ref.read(authProvider).isLoading && mounted) {
       await Future<void>.delayed(const Duration(milliseconds: 40));
     }
+    if (!mounted) return;
+    if (_checkingSession) setState(() => _checkingSession = false);
+
+    try {
+      await _exitController.forward();
+    } catch (_) {}
     if (!mounted) return;
 
     final auth = ref.read(authProvider);
@@ -554,7 +564,9 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
                                   Opacity(
                                     opacity: 0.5 + pulse * 0.5,
                                     child: Text(
-                                      'Tap anywhere to continue',
+                                      _checkingSession
+                                          ? 'Checking your session…'
+                                          : 'Tap anywhere to continue',
                                       style: Theme.of(context)
                                           .textTheme
                                           .labelSmall
@@ -564,6 +576,11 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
                                             letterSpacing: 0.4,
                                           ),
                                     ),
+                                  ),
+                                  SlowOperationNotice(
+                                    active: _checkingSession,
+                                    message:
+                                        'Still connecting — first load can take a moment…',
                                   ),
                                 ],
                               ),
