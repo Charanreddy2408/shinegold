@@ -10,6 +10,10 @@ import 'media_url.dart';
 class VoiceAudioCache {
   VoiceAudioCache._();
 
+  /// Below this size a "downloaded" file is almost certainly a truncated or
+  /// header-only stub, not real audio.
+  static const int _minValidBytes = 2048;
+
   static final Dio _dio = Dio(
     BaseOptions(
       connectTimeout: const Duration(seconds: 30),
@@ -37,7 +41,7 @@ class VoiceAudioCache {
     }
 
     final bytes = response.data;
-    if (bytes == null || bytes.length < 64) {
+    if (bytes == null || bytes.length < _minValidBytes) {
       throw Exception('Downloaded voice note is empty');
     }
 
@@ -59,7 +63,7 @@ class VoiceAudioCache {
       if (!await file.exists()) {
         throw Exception('Voice note file not found');
       }
-      if (await file.length() < 64) {
+      if (await file.length() < _minValidBytes) {
         throw Exception('Voice note file is empty');
       }
       return trimmed;
@@ -71,30 +75,72 @@ class VoiceAudioCache {
         '${Directory.systemTemp.path}/sg_voice_${resolved.hashCode.abs()}$ext';
     final cacheFile = File(cachePath);
 
+    // A stale/truncated cache entry from a prior interrupted download used to
+    // be trusted forever (only a >64 byte check, never compared against the
+    // server). Confirm the cached size still matches the server's reported
+    // size before reusing it; on any mismatch or HEAD failure, fall through
+    // to a fresh download rather than silently serving a broken file.
     if (await cacheFile.exists()) {
       final cachedLen = await cacheFile.length();
-      if (cachedLen > 64) return cachePath;
+      if (cachedLen > _minValidBytes) {
+        final remoteLen = await _remoteContentLength(resolved);
+        if (remoteLen == null || remoteLen == cachedLen) {
+          return cachePath;
+        }
+      }
+      await cacheFile.delete().catchError((_) => cacheFile);
     }
 
-    final response = await _dio.download(
-      resolved,
-      cachePath,
-      options: Options(
-        responseType: ResponseType.bytes,
-        validateStatus: (status) => status != null && status < 400,
-      ),
-    );
+    // Download to a temp part-file first and only move it into place once
+    // fully written, so a crash/interruption mid-download can never leave a
+    // partial file sitting at the real cache path for a later playback to
+    // pick up as "valid".
+    final partPath = '$cachePath.part';
+    final partFile = File(partPath);
+    try {
+      final response = await _dio.download(
+        resolved,
+        partPath,
+        options: Options(
+          responseType: ResponseType.bytes,
+          validateStatus: (status) => status != null && status < 400,
+        ),
+      );
 
-    if (response.statusCode != 200) {
-      throw Exception('Could not download voice note (${response.statusCode})');
+      if (response.statusCode != 200) {
+        throw Exception('Could not download voice note (${response.statusCode})');
+      }
+
+      final len = await partFile.length();
+      if (len < _minValidBytes) {
+        throw Exception('Downloaded voice note is empty');
+      }
+      final expectedLen = _parseContentLength(response.headers.value(Headers.contentLengthHeader));
+      if (expectedLen != null && expectedLen != len) {
+        throw Exception('Downloaded voice note is incomplete');
+      }
+
+      await partFile.rename(cachePath);
+      return cachePath;
+    } finally {
+      if (await partFile.exists()) {
+        await partFile.delete().catchError((_) => partFile);
+      }
     }
+  }
 
-    final len = await cacheFile.length();
-    if (len < 64) {
-      throw Exception('Downloaded voice note is empty');
+  static int? _parseContentLength(String? value) {
+    if (value == null) return null;
+    return int.tryParse(value);
+  }
+
+  static Future<int?> _remoteContentLength(String resolved) async {
+    try {
+      final response = await _dio.head(resolved);
+      return _parseContentLength(response.headers.value(Headers.contentLengthHeader));
+    } catch (_) {
+      return null;
     }
-
-    return cachePath;
   }
 
   static String _mediaExtension(String url) {
