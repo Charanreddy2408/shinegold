@@ -6,11 +6,13 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../../core/network/api_exception.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../data/models/enums.dart';
 import '../utils/media_url.dart';
 import '../utils/voice_audio_cache.dart';
+import 'animated_loading.dart';
 
 bool _audioContextReady = false;
 
@@ -672,7 +674,9 @@ class _VoiceNotePlayerState extends State<VoiceNotePlayer> {
       setState(() {
         _loading = false;
         _playing = false;
-        _error = 'Unable to play voice note';
+        _error = isNetworkError(e)
+            ? 'You appear to be offline — tap play to retry once connected.'
+            : "Couldn't load this voice note. Tap to retry.";
       });
     }
   }
@@ -691,11 +695,7 @@ class _VoiceNotePlayerState extends State<VoiceNotePlayer> {
           IconButton.filled(
             onPressed: _loading ? null : _togglePlayback,
             icon: _loading
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
+                ? const PulseLoader(size: 18, color: AppColors.secondary)
                 : Icon(_playing ? Icons.pause_rounded : Icons.play_arrow_rounded),
             style: IconButton.styleFrom(
               backgroundColor: AppColors.secondaryMuted,
@@ -730,7 +730,14 @@ class _VoiceNotePlayerState extends State<VoiceNotePlayer> {
               ],
             ),
           ),
-          const Icon(Icons.mic_rounded, color: AppColors.secondary),
+          Icon(
+            _error == null
+                ? Icons.mic_rounded
+                : (_error!.startsWith('You appear to be offline')
+                    ? Icons.wifi_off_rounded
+                    : Icons.error_outline_rounded),
+            color: _error == null ? AppColors.secondary : AppColors.error,
+          ),
         ],
       ),
     );
