@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_spacing.dart';
 
 /// Brand shimmer wrapper used by all skeleton loaders.
 class ShineShimmer extends StatelessWidget {
@@ -213,19 +216,105 @@ class SoftRefreshBar extends StatelessWidget {
 }
 
 class PulseLoader extends StatelessWidget {
-  const PulseLoader({super.key, this.size = 32});
+  const PulseLoader({super.key, this.size = 32, this.color = AppColors.primary});
 
   final double size;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: size,
       height: size,
-      child: const CircularProgressIndicator(
-        strokeWidth: 2.5,
-        color: AppColors.primary,
-      ),
+      child: CircularProgressIndicator(strokeWidth: 2.5, color: color),
+    );
+  }
+}
+
+/// Timer-driven notice for operations that can legitimately take a while
+/// (PDF export, offline sync, a cold-starting backend). Callers just flip
+/// [active] on their existing loading bool — once it's stayed true past
+/// [threshold] this swaps in reassuring copy instead of leaving the user
+/// staring at a spinner that looks stuck.
+class SlowOperationNotice extends StatefulWidget {
+  const SlowOperationNotice({
+    super.key,
+    required this.active,
+    this.threshold = const Duration(seconds: 5),
+    this.message = 'This may take a few minutes…',
+    this.icon = Icons.hourglass_top_rounded,
+  });
+
+  final bool active;
+  final Duration threshold;
+  final String message;
+  final IconData icon;
+
+  @override
+  State<SlowOperationNotice> createState() => _SlowOperationNoticeState();
+}
+
+class _SlowOperationNoticeState extends State<SlowOperationNotice> {
+  Timer? _timer;
+  bool _slow = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.active) _arm();
+  }
+
+  @override
+  void didUpdateWidget(covariant SlowOperationNotice oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.active && !oldWidget.active) {
+      _arm();
+    } else if (!widget.active && oldWidget.active) {
+      _timer?.cancel();
+      if (_slow) setState(() => _slow = false);
+    }
+  }
+
+  void _arm() {
+    _timer?.cancel();
+    _slow = false;
+    _timer = Timer(widget.threshold, () {
+      if (mounted) setState(() => _slow = true);
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 220),
+      child: _slow
+          ? Padding(
+              key: const ValueKey('slow'),
+              padding: const EdgeInsets.only(top: AppSpacing.sm),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(widget.icon, size: 14, color: AppColors.textMuted),
+                  const SizedBox(width: AppSpacing.xs),
+                  Flexible(
+                    child: Text(
+                      widget.message,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: AppColors.textMuted,
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : const SizedBox.shrink(key: ValueKey('idle')),
     );
   }
 }
