@@ -80,6 +80,14 @@ class GeocodingService {
         'countrycodes': 'in',
         'addressdetails': 1,
       },
+      options: Options(
+        headers: const {
+          'User-Agent': 'ShineGoldApp/1.0 (farm-boundary-picker)',
+          'Accept': 'application/json',
+        },
+        // Never leak the ShineGold bearer token to a third-party host.
+        extra: const {'_skipAuth': true},
+      ),
     );
 
     final data = response.data ?? [];
@@ -119,7 +127,34 @@ class GeocodingService {
         .toList();
   }
 
+  /// Coordinates → address. Best-effort: the address is always optional, so a
+  /// provider outage must never surface as an exception to the caller.
   Future<String?> reverseGeocode(LatLng point) async {
+    if (_usesApiClient) {
+      try {
+        return await _reverseViaApi(point);
+      } catch (_) {
+        // Fall through — direct Nominatim may work on devices with internet.
+      }
+    }
+
+    try {
+      return await _reverseNominatimDirect(point);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<String?> _reverseViaApi(LatLng point) async {
+    final response = await _dio.get<Map<String, dynamic>>(
+      '/api/v1/geo/reverse',
+      queryParameters: {'lat': point.latitude, 'lng': point.longitude},
+    );
+    final name = response.data?['display_name'] as String?;
+    return (name == null || name.isEmpty) ? null : name;
+  }
+
+  Future<String?> _reverseNominatimDirect(LatLng point) async {
     final response = await _dio.get<Map<String, dynamic>>(
       'https://nominatim.openstreetmap.org/reverse',
       queryParameters: {
@@ -127,8 +162,16 @@ class GeocodingService {
         'lon': point.longitude,
         'format': 'json',
       },
+      options: Options(
+        headers: const {
+          'User-Agent': 'ShineGoldApp/1.0 (farm-boundary-picker)',
+          'Accept': 'application/json',
+        },
+        // Never leak the ShineGold bearer token to a third-party host.
+        extra: const {'_skipAuth': true},
+      ),
     );
-
-    return response.data?['display_name'] as String?;
+    final name = response.data?['display_name'] as String?;
+    return (name == null || name.isEmpty) ? null : name;
   }
 }

@@ -37,6 +37,14 @@ class DioClient {
 
     _dio.interceptors.add(
       InterceptorsWrapper(
+        onRequest: (options, handler) {
+          // Requests to third-party hosts (e.g. Nominatim) opt out of our
+          // Authorization header — some providers reject unexpected auth.
+          if (options.extra['_skipAuth'] == true) {
+            options.headers.remove('Authorization');
+          }
+          handler.next(options);
+        },
         onError: (error, handler) async {
           final status = error.response?.statusCode;
           final path = error.requestOptions.path;

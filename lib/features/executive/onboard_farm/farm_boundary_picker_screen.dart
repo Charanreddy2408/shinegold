@@ -14,6 +14,7 @@ import '../../../shared/utils/geo_area.dart';
 import '../../../shared/utils/geocoding_service.dart';
 import '../../../shared/utils/india_map_bounds.dart';
 import '../../../shared/widgets/farm_boundary_map_view.dart';
+import '../../../shared/widgets/state_diagnostics.dart';
 
 /// Full-screen map — opens at employee GPS, then pins farm boundary polygon.
 class FarmBoundaryPickerScreen extends ConsumerStatefulWidget {
@@ -52,8 +53,16 @@ class _FarmBoundaryPickerScreenState
   bool _showClear = false;
   bool _locating = false;
   bool _mapReady = false;
+  bool _confirming = false;
   String? _selectedAddress;
   LatLng? _employeeLocation;
+
+  // Failure state kept visible instead of swallowed — surfaced in the
+  // diagnostics bar above the Confirm button.
+  String? _gpsError;
+  String? _searchError;
+  String? _addressError;
+  bool _addressLookupRan = false;
 
   late final MapOptions _mapOptions;
 
@@ -123,7 +132,10 @@ class _FarmBoundaryPickerScreenState
 
   Future<void> _bootstrapEmployeeLocation({bool forceRefresh = false}) async {
     if (!mounted) return;
-    setState(() => _locating = true);
+    setState(() {
+      _locating = true;
+      _gpsError = null;
+    });
 
     try {
       if (_employeeLocation == null || forceRefresh) {
@@ -133,10 +145,15 @@ class _FarmBoundaryPickerScreenState
         await ref.read(locationProvider.notifier).refreshLocation();
       }
 
-      final pos = ref.read(locationProvider).position;
+      final locationState = ref.read(locationProvider);
+      final pos = locationState.position;
       if (pos != null) {
         _employeeLocation = LatLng(pos.latitude, pos.longitude);
+      } else {
+        _gpsError = locationState.error ?? 'No GPS fix returned.';
       }
+    } catch (e) {
+      _gpsError = 'GPS lookup failed: $e';
     } finally {
       if (mounted) setState(() => _locating = false);
     }
@@ -145,7 +162,8 @@ class _FarmBoundaryPickerScreenState
 
     if (_employeeLocation == null) {
       _showMessage(
-        'Could not get GPS. Enable location, then tap Recenter.',
+        'Could not get GPS — you can still pin the boundary by hand. '
+        'Tap the status bar for details.',
       );
       return;
     }
@@ -182,9 +200,22 @@ class _FarmBoundaryPickerScreenState
 
   Future<void> _fillAddressFromLocation(LatLng point) async {
     if (!IndiaMapBounds.contains(point)) return;
-    final address = await _geocoding.reverseGeocode(point);
-    if (!mounted || address == null || address.isEmpty) return;
+
+    String? address;
+    String? error;
+    try {
+      address = await _geocoding
+          .reverseGeocode(point)
+          .timeout(const Duration(seconds: 8), onTimeout: () => null);
+    } catch (e) {
+      error = 'Could not fetch address: $e';
+    }
+
+    if (!mounted) return;
     setState(() {
+      _addressLookupRan = true;
+      _addressError = error;
+      if (address == null || address.isEmpty) return;
       _selectedAddress = address;
       if (_searchController.text.isEmpty) {
         _searchController.text = address.split(',').first;
@@ -227,15 +258,17 @@ class _FarmBoundaryPickerScreenState
       final results = await _geocoding.search(query);
       if (!mounted) return;
       setState(() {
+        _searchError = null;
         _searchResults
           ..clear()
           ..addAll(
             results.where((r) => IndiaMapBounds.contains(r.point)),
           );
       });
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
-      _showMessage('Location search failed. Try again.');
+      setState(() => _searchError = 'Search failed: $e');
+      _showMessage('Location search failed — you can still pin on the map.');
     } finally {
       if (mounted) setState(() => _searching = false);
     }
@@ -284,25 +317,137 @@ class _FarmBoundaryPickerScreenState
 
   void _clearPins() => setState(_pins.clear);
 
-  Future<void> _confirm() async {
-    if (!_canConfirm) return;
-    FocusManager.instance.primaryFocus?.unfocus();
+  /// Live health of every dependency this screen has. Drives the status bar so
+  /// a stuck flow always names its own cause instead of looking unresponsive.
+  List<DiagnosticItem> _diagnostics() {
+    final hasPins = _pins.length >= 3;
+    return [
+      DiagnosticItem(
+        label: 'Boundary pins',
+        status: hasPins ? DiagnosticStatus.ok : DiagnosticStatus.failed,
+        detail: hasPins
+            ? '${_pins.length} pins · ${_areaAcres.toStringAsFixed(2)} acres'
+            : '${_pins.length} of 3 minimum pins placed',
+        hint: hasPins ? null : 'Tap the map at each corner of the farm.',
+      ),
+      DiagnosticItem(
+        label: 'GPS location',
+        status: _locating
+            ? DiagnosticStatus.pending
+            : !_hasEmployeeLocation
+                ? DiagnosticStatus.warning
+                : !_employeeInIndia
+                    ? DiagnosticStatus.warning
+                    : DiagnosticStatus.ok,
+        detail: _locating
+            ? 'Getting a fix…'
+            : !_hasEmployeeLocation
+                ? (_gpsError ?? 'No GPS fix yet.')
+                : _employeeInIndia
+                    ? 'Lat ${_employeeLocation!.latitude.toStringAsFixed(4)}, '
+                        'Lng ${_employeeLocation!.longitude.toStringAsFixed(4)}'
+                    : 'Fix is outside India '
+                        '(${_employeeLocation!.latitude.toStringAsFixed(4)}, '
+                        '${_employeeLocation!.longitude.toStringAsFixed(4)}).',
+        hint: _hasEmployeeLocation && _employeeInIndia
+            ? null
+            : 'GPS is optional here — you can still pin the boundary manually. '
+                'Tap Recenter to retry.',
+      ),
+      DiagnosticItem(
+        label: 'Address lookup',
+        status: _addressError != null
+            ? DiagnosticStatus.warning
+            : (_selectedAddress?.isNotEmpty ?? false)
+                ? DiagnosticStatus.ok
+                : _addressLookupRan
+                    ? DiagnosticStatus.warning
+                    : DiagnosticStatus.pending,
+        detail: _addressError ??
+            (_selectedAddress?.isNotEmpty ?? false
+                ? _selectedAddress
+                : _addressLookupRan
+                    ? 'No address found for this location.'
+                    : 'Not looked up yet.'),
+        hint: (_selectedAddress?.isNotEmpty ?? false)
+            ? null
+            : 'Optional — you can type the address on the previous screen. '
+                'This never blocks Confirm.',
+      ),
+      if (_searchError != null)
+        DiagnosticItem(
+          label: 'Location search',
+          status: DiagnosticStatus.warning,
+          detail: _searchError,
+          hint: 'Search is optional — pin the boundary directly on the map.',
+        ),
+    ];
+  }
 
-    var address = _selectedAddress;
-    final center = GeoArea.centroid(_pins);
+  /// Builds the selection. Confirm must always succeed once 3+ pins exist, so
+  /// every optional step here is allowed to fail without taking the flow down.
+  Future<void> _confirm() async {
+    if (!_canConfirm || _confirming) return;
+    FocusManager.instance.primaryFocus?.unfocus();
+    setState(() => _confirming = true);
+
+    final pins = List<LatLng>.unmodifiable(_pins);
+    final center = GeoArea.centroid(pins);
+
+    String? address = _selectedAddress;
     if (address == null || address.isEmpty) {
-      address = await _geocoding.reverseGeocode(center);
+      // Address is a nicety, the polygon is the payload — never block on it.
+      try {
+        address = await _geocoding
+            .reverseGeocode(center)
+            .timeout(const Duration(seconds: 8), onTimeout: () => null);
+        if (mounted) {
+          _addressLookupRan = true;
+          _addressError = null;
+        }
+      } catch (e) {
+        if (mounted) {
+          _addressLookupRan = true;
+          _addressError = 'Could not fetch address: $e';
+        }
+        address = null;
+      }
+    }
+
+    Map<String, dynamic> geojson;
+    try {
+      geojson = GeoArea.toGeoJsonPolygon(pins);
+    } catch (_) {
+      // Unreachable with 3+ pins, but a malformed polygon must never strand the
+      // executive on this screen with a dead button — hand-build the ring.
+      geojson = {
+        'type': 'Polygon',
+        'coordinates': [
+          [
+            for (final p in pins) [p.longitude, p.latitude],
+            [pins.first.longitude, pins.first.latitude],
+          ],
+        ],
+      };
+    }
+
+    var acres = 0.0;
+    try {
+      acres = GeoArea.polygonAreaAcres(pins);
+    } catch (_) {
+      acres = 0.0;
     }
 
     if (!mounted) return;
+    setState(() => _confirming = false);
     Navigator.of(context).pop(
       FarmBoundarySelection(
-        pins: List.unmodifiable(_pins),
+        pins: pins,
         latitude: center.latitude,
         longitude: center.longitude,
-        totalAcres: _areaAcres,
+        totalAcres: acres,
         address: address,
-        boundaryGeojson: GeoArea.toGeoJsonPolygon(_pins),
+        boundaryGeojson: geojson,
       ),
     );
   }
@@ -392,61 +537,13 @@ class _FarmBoundaryPickerScreenState
               AppSpacing.lg,
               AppSpacing.sm,
             ),
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.md,
-                vertical: AppSpacing.sm,
-              ),
-              decoration: BoxDecoration(
-                color: (_hasEmployeeLocation
-                        ? (_employeeInIndia ? AppColors.info : AppColors.warning)
-                        : AppColors.textMuted)
-                    .withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                border: Border.all(
-                  color: (_hasEmployeeLocation
-                          ? (_employeeInIndia
-                              ? AppColors.info
-                              : AppColors.warning)
-                          : AppColors.borderSubtle)
-                      .withValues(alpha: 0.35),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    _hasEmployeeLocation
-                        ? (_employeeInIndia
-                            ? Icons.gps_fixed_rounded
-                            : Icons.gps_not_fixed_rounded)
-                        : Icons.gps_off_rounded,
-                    size: 18,
-                    color: _hasEmployeeLocation
-                        ? (_employeeInIndia
-                            ? AppColors.info
-                            : AppColors.warning)
-                        : AppColors.textMuted,
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                    Expanded(
-                      child: Text(
-                        !_hasEmployeeLocation
-                            ? 'Fetching your GPS… tap Recenter if this takes too long.'
-                            : _employeeInIndia
-                                ? 'Location OK · Lat ${_employeeLocation!.latitude.toStringAsFixed(4)}, Lng ${_employeeLocation!.longitude.toStringAsFixed(4)}. Blue pin = you — tap to mark boundary.'
-                                : 'GPS is working but outside India '
-                                    '(${_employeeLocation!.latitude.toStringAsFixed(4)}, '
-                                    '${_employeeLocation!.longitude.toStringAsFixed(4)}). '
-                                    'On emulator: Extended Controls → Location → set an India city, then tap Recenter.',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppColors.textSecondary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                      ),
-                    ),
-                ],
-              ),
+            child: StateDiagnosticsBar(
+              title: 'Farm boundary — status',
+              okMessage: _canConfirm
+                  ? 'Ready to confirm · ${_pins.length} pins, '
+                      '${_areaAcres.toStringAsFixed(2)} acres'
+                  : 'Tap the map to drop boundary corners',
+              items: _diagnostics(),
             ),
           ),
           if (_searchResults.isNotEmpty)
@@ -554,8 +651,23 @@ class _FarmBoundaryPickerScreenState
                     height: AppSpacing.buttonHeight,
                     width: double.infinity,
                     child: FilledButton(
-                      onPressed: _canConfirm ? _confirm : null,
-                      child: const Text('Confirm boundary'),
+                      onPressed: (_canConfirm && !_confirming)
+                          ? () => unawaited(_confirm())
+                          : null,
+                      child: _confirming
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : Text(
+                              _canConfirm
+                                  ? 'Confirm boundary'
+                                  : 'Add ${3 - _pins.length} more pin${_pins.length == 2 ? '' : 's'}',
+                            ),
                     ),
                   ),
                 ],
