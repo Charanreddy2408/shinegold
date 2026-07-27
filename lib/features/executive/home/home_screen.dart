@@ -21,6 +21,7 @@ import '../../../shared/widgets/dashboard_overview.dart';
 import '../../../shared/widgets/shine_empty_state.dart';
 import '../../../shared/widgets/status_chip.dart';
 import '../../../shared/widgets/ux_components.dart';
+import '../../../shared/utils/acres_format.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -109,11 +110,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-  String _formatAcres(double acres) {
-    if (acres <= 0) return '0';
-    if (acres == acres.roundToDouble()) return acres.toInt().toString();
-    return acres.toStringAsFixed(1);
-  }
+  String _formatAcres(double acres) => formatAcres(acres);
 
   String _greeting() {
     final hour = DateTime.now().hour;

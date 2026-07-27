@@ -28,6 +28,7 @@ import '../../../shared/widgets/ux_components.dart';
 import '../../../shared/utils/contact_launcher.dart';
 import '../../../shared/utils/media_url.dart';
 import '../../../shared/widgets/visit_log_tile.dart';
+import '../../../shared/utils/acres_format.dart';
 
 class FarmDetailScreen extends ConsumerStatefulWidget {
   const FarmDetailScreen({super.key, required this.farmId});
@@ -477,7 +478,7 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
               InfoMetricTile(
                 icon: Icons.square_foot_rounded,
                 label: 'Acres',
-                value: '${farm.totalAcres} ac',
+                value: formatAcresShort(farm.totalAcres),
                 color: AppColors.primary,
               ),
               InfoMetricTile(

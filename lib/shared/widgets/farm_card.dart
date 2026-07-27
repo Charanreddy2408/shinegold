@@ -7,6 +7,7 @@ import '../../data/models/enums.dart';
 import '../../data/models/farm.dart';
 import 'status_chip.dart';
 import 'ux_components.dart';
+import '../utils/acres_format.dart';
 
 class FarmCard extends StatelessWidget {
   const FarmCard({
@@ -114,7 +115,7 @@ class FarmCard extends StatelessWidget {
                                     Text(
                                       [
                                         if (farm.totalAcres > 0)
-                                          '${farm.totalAcres == farm.totalAcres.roundToDouble() ? farm.totalAcres.toInt() : farm.totalAcres.toStringAsFixed(1)} ac',
+                                          formatAcresShort(farm.totalAcres),
                                         if (farm.onboardedByName != null &&
                                             farm.onboardedByName!.isNotEmpty)
                                           'Onboarded by ${farm.onboardedByName}',

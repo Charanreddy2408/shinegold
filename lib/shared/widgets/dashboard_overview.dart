@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
+import '../utils/acres_format.dart';
 
 class DashboardOverviewCard extends StatelessWidget {
   const DashboardOverviewCard({
@@ -22,13 +23,7 @@ class DashboardOverviewCard extends StatelessWidget {
   final int harvestSoon;
   final int assignedFarms;
 
-  String _formatAcres(double acres) {
-    if (acres <= 0) return '0';
-    if (acres == acres.roundToDouble()) {
-      return acres.toInt().toString();
-    }
-    return acres.toStringAsFixed(1);
-  }
+  String _formatAcres(double acres) => formatAcres(acres);
 
   @override
   Widget build(BuildContext context) {
@@ -325,10 +320,7 @@ class OnboardedFarmTableRow extends StatelessWidget {
   final String crop;
   final VoidCallback? onTap;
 
-  String _formatAcres(double value) {
-    if (value == value.roundToDouble()) return value.toInt().toString();
-    return value.toStringAsFixed(1);
-  }
+  String _formatAcres(double value) => formatAcres(value);
 
   @override
   Widget build(BuildContext context) {

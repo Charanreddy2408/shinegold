@@ -1,7 +1,7 @@
 name: shine_gold
 description: Shine Gold Organic Agro Invention - field executive & admin app.
 publish_to: 'none'
-version: 1.0.5+5
+version: 1.0.6+6
 
 environment:
   sdk: '>=3.2.0 <4.0.0'
@@ -41,6 +41,25 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.3
+
+# Launcher icon generation. Regenerate after changing the source image:
+#   dart run flutter_launcher_icons
+#
+# app_icon.png must be 1024x1024 with a transparent background. Android 8+
+# masks adaptive icons into circles/squircles and crops the outer edges, so
+# adaptive_icon_foreground keeps the artwork inside the safe centre zone.
+flutter_launcher_icons:
+  image_path: assets/icons/app_icon.png
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: assets/icons/app_icon_foreground.png
+  web:
+    generate: true
+  windows:
+    generate: true
 
 flutter:
   uses-material-design: true

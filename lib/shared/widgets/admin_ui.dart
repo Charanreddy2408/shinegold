@@ -6,6 +6,7 @@ import '../../core/theme/app_colors.dart';
 import '../utils/contact_launcher.dart';
 import 'shine_buttons.dart';
 import 'user_avatar.dart';
+import '../utils/acres_format.dart';
 
 /// Slide-up form sheet with gradient header — replaces plain AlertDialogs.
 ///
@@ -630,11 +631,7 @@ class _AdminTeamTileState extends State<AdminTeamTile> {
     return '$farms farms onboarded · $acresLabel ac';
   }
 
-  String _formatAcres(double acres) {
-    if (acres <= 0) return '0';
-    if (acres == acres.roundToDouble()) return acres.toInt().toString();
-    return acres.toStringAsFixed(1);
-  }
+  String _formatAcres(double acres) => formatAcres(acres);
 }
 
 class _TeamMetricChip extends StatelessWidget {

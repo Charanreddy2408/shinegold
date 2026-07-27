@@ -20,6 +20,7 @@ import '../../../shared/widgets/status_chip.dart';
 import '../../../shared/widgets/user_avatar.dart';
 import '../../../shared/widgets/ux_components.dart';
 import '../../../shared/utils/contact_launcher.dart';
+import '../../../shared/utils/acres_format.dart';
 
 class AdminExecutiveProfileScreen extends ConsumerStatefulWidget {
   const AdminExecutiveProfileScreen({
@@ -116,11 +117,7 @@ class _AdminExecutiveProfileScreenState
   int get _completedCount =>
       _visits.where((v) => v.status == VisitStatus.completed).length;
 
-  String _formatAcres(double acres) {
-    if (acres <= 0) return '0';
-    if (acres == acres.roundToDouble()) return acres.toInt().toString();
-    return acres.toStringAsFixed(1);
-  }
+  String _formatAcres(double acres) => formatAcres(acres);
 
   @override
   Widget build(BuildContext context) {
