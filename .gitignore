@@ -47,3 +47,11 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Android release signing — never commit. Keystore lives in GitHub Actions
+# secrets (ANDROID_KEYSTORE_BASE64); keep an offline backup of the .jks too.
+# Losing it means no future build can update an installed app.
+android/key.properties
+android/*.jks
+android/keystore-password.txt
+android/keystore-base64.txt

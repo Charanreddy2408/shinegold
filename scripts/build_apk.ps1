@@ -77,7 +77,12 @@ if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 $apkPath = Join-Path $PWD "build/app/outputs/flutter-apk/app-release.apk"
 $shareDir = Join-Path $PWD "dist"
 New-Item -ItemType Directory -Force -Path $shareDir | Out-Null
-$shareApk = Join-Path $shareDir "ShineGold-1.0.1.apk"
+
+# Name the artifact from pubspec so every build is traceable to a version.
+# Hardcoding this meant each build silently overwrote the previous one.
+$pubspecVersion = (Select-String -Path "pubspec.yaml" -Pattern '^version:\s*(.+)$').Matches[0].Groups[1].Value.Trim()
+$appVersion = $pubspecVersion.Split('+')[0]
+$shareApk = Join-Path $shareDir "ShineGold-$appVersion.apk"
 Copy-Item -Force $apkPath $shareApk
 
 Write-Host ""
