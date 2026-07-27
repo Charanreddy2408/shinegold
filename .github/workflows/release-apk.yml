@@ -85,14 +85,35 @@ jobs:
              "dist/ShineGold-${{ steps.version.outputs.app }}.apk"
 
       - name: Confirm the APK is release-signed
+        # apksigner reads APK Signature Scheme v2/v3. keytool cannot: Flutter
+        # release APKs carry no META-INF/*.RSA, so a keytool check silently
+        # inspects nothing and passes a debug-signed APK.
         run: |
           APK="dist/ShineGold-${{ steps.version.outputs.app }}.apk"
-          SIGNER=$(unzip -p "$APK" META-INF/*.RSA | keytool -printcert | grep -m1 Owner || true)
-          echo "Signed by: $SIGNER"
-          if echo "$SIGNER" | grep -qi "Android Debug"; then
-            echo "::error::APK is debug-signed — the release keystore was not applied."
+          APKSIGNER=$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)
+          echo "Using $APKSIGNER"
+
+          CERTS=$("$APKSIGNER" verify --print-certs "$APK")
+          echo "$CERTS"
+
+          ACTUAL=$(echo "$CERTS" | grep -m1 -oiE 'SHA-256 digest: [0-9a-f]+' | awk '{print $NF}')
+          EXPECTED=$(keytool -list -v \
+            -keystore android/shinegold-release.jks \
+            -alias shinegold \
+            -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" \
+            | grep -m1 'SHA256:' | awk '{print $2}' | tr -d ':' | tr 'A-Z' 'a-z')
+
+          echo "expected: $EXPECTED"
+          echo "actual:   $ACTUAL"
+          if [ -z "$ACTUAL" ] || [ -z "$EXPECTED" ]; then
+            echo "::error::Could not read a certificate digest — signing is unverified."
             exit 1
           fi
+          if [ "$ACTUAL" != "$EXPECTED" ]; then
+            echo "::error::APK is not signed with the release keystore."
+            exit 1
+          fi
+          echo "Signature matches the release keystore."
 
       - uses: actions/upload-artifact@v4
         with:

@@ -23,6 +23,7 @@ import '../../../shared/providers/location_provider.dart';
 import '../../../shared/providers/repository_providers.dart';
 import '../../../shared/utils/geo_area.dart';
 import '../../../shared/utils/india_map_bounds.dart';
+import '../../../shared/utils/photo_picker.dart';
 import '../../../shared/widgets/farm_boundary_map_view.dart';
 import '../../../shared/widgets/shine_buttons.dart';
 
@@ -63,6 +64,7 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _recoverLostPhoto());
     _previewMapOptions = MapOptions(
       initialCenter: IndiaMapBounds.center,
       initialZoom: IndiaMapBounds.pickerZoom,
@@ -292,72 +294,22 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
       return;
     }
 
-    final source = await showModalBottomSheet<ImageSource>(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.photo_camera_rounded),
-              title: const Text('Take photo'),
-              onTap: () => Navigator.pop(ctx, ImageSource.camera),
-            ),
-            ListTile(
-              leading: const Icon(Icons.photo_library_rounded),
-              title: const Text('Choose from gallery'),
-              onTap: () => Navigator.pop(ctx, ImageSource.gallery),
-            ),
-          ],
-        ),
-      ),
-    );
-    if (source == null) return;
-
-    final image = await ImagePicker().pickImage(
-      source: source,
-      maxWidth: 1600,
-      imageQuality: 85,
-    );
+    final image = await PhotoPicker.pick(context);
     if (image != null && mounted) {
       setState(() => _farmPhotos.add(image));
     }
   }
 
-  Future<void> _replaceFarmPhoto(int index) async {
-    final source = await showModalBottomSheet<ImageSource>(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.photo_camera_rounded),
-              title: const Text('Take photo'),
-              onTap: () => Navigator.pop(ctx, ImageSource.camera),
-            ),
-            ListTile(
-              leading: const Icon(Icons.photo_library_rounded),
-              title: const Text('Choose from gallery'),
-              onTap: () => Navigator.pop(ctx, ImageSource.gallery),
-            ),
-          ],
-        ),
-      ),
-    );
-    if (source == null) return;
+  /// Android kills memory-hungry apps while the camera is open. Reclaim the
+  /// capture on the way back instead of losing it silently.
+  Future<void> _recoverLostPhoto() async {
+    final recovered = await PhotoPicker.recoverLostPhoto();
+    if (recovered == null || !mounted) return;
+    setState(() => _farmPhotos.add(recovered));
+  }
 
-    final image = await ImagePicker().pickImage(
-      source: source,
-      maxWidth: 1600,
-      imageQuality: 85,
-    );
+  Future<void> _replaceFarmPhoto(int index) async {
+    final image = await PhotoPicker.pick(context);
     if (image != null && mounted) {
       setState(() => _farmPhotos[index] = image);
     }

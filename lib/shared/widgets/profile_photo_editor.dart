@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../core/network/api_exception.dart';
 import '../../core/theme/app_colors.dart';
 import '../providers/auth_provider.dart';
+import '../utils/photo_picker.dart';
 import 'user_avatar.dart';
 import '../providers/repository_providers.dart';
 
@@ -38,43 +39,7 @@ class _ProfilePhotoEditorState extends ConsumerState<ProfilePhotoEditor> {
   XFile? _pickedPreview;
 
   Future<void> _pickPhoto() async {
-    ImageSource? source;
-
-    if (kIsWeb) {
-      source = ImageSource.gallery;
-    } else {
-      source = await showModalBottomSheet<ImageSource>(
-        context: context,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        builder: (ctx) => SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.photo_camera_rounded),
-                title: const Text('Take photo'),
-                onTap: () => Navigator.pop(ctx, ImageSource.camera),
-              ),
-              ListTile(
-                leading: const Icon(Icons.photo_library_rounded),
-                title: const Text('Choose from gallery'),
-                onTap: () => Navigator.pop(ctx, ImageSource.gallery),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    if (source == null) return;
-
-    final image = await ImagePicker().pickImage(
-      source: source,
-      maxWidth: 1200,
-      imageQuality: 85,
-    );
+    final image = await PhotoPicker.pick(context, maxWidth: 1200);
     if (image == null || !mounted) return;
 
     setState(() {

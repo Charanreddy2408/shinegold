@@ -26,6 +26,7 @@ import '../../../shared/providers/visit_sync_provider.dart';
 import '../../../shared/services/farm_brief_cache.dart';
 import '../../../shared/services/offline_visit_store.dart';
 import '../../../shared/services/visit_form_cache.dart';
+import '../../../shared/utils/photo_picker.dart';
 import '../../../shared/widgets/shine_buttons.dart';
 import '../../../shared/widgets/ux_components.dart';
 import '../../visits/presentation/widgets/dynamic_visit_form.dart';
@@ -75,7 +76,19 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _cleanupStaleVisits());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _cleanupStaleVisits();
+      _recoverLostPhoto();
+    });
+  }
+
+  /// Android kills memory-hungry apps while the camera is open. Reclaim the
+  /// capture on the way back instead of losing it silently.
+  Future<void> _recoverLostPhoto() async {
+    final recovered = await PhotoPicker.recoverLostPhoto();
+    if (recovered == null || !mounted) return;
+    if (_photos.length >= 5) return;
+    setState(() => _photos.add(recovered));
   }
 
   Future<void> _cleanupStaleVisits() async {
@@ -559,39 +572,7 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
       return;
     }
 
-    ImageSource source = ImageSource.camera;
-    if (kIsWeb) {
-      source = ImageSource.gallery;
-    } else {
-      final picked = await showModalBottomSheet<ImageSource>(
-        context: context,
-        builder: (ctx) => SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.photo_camera_rounded),
-                title: const Text('Take photo'),
-                onTap: () => Navigator.pop(ctx, ImageSource.camera),
-              ),
-              ListTile(
-                leading: const Icon(Icons.photo_library_rounded),
-                title: const Text('Choose from gallery'),
-                onTap: () => Navigator.pop(ctx, ImageSource.gallery),
-              ),
-            ],
-          ),
-        ),
-      );
-      if (picked == null) return;
-      source = picked;
-    }
-
-    final image = await ImagePicker().pickImage(
-      source: source,
-      maxWidth: 1600,
-      imageQuality: 85,
-    );
+    final image = await PhotoPicker.pick(context);
     if (image != null && mounted) {
       setState(() => _photos.add(image));
     }
