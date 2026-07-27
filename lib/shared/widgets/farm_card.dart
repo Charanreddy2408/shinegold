@@ -189,11 +189,23 @@ class FarmCard extends StatelessWidget {
                                     ),
                                   ],
                                   const SizedBox(height: AppSpacing.sm),
+                                  // Both chips are Flexible: "Needs Attention"
+                                  // beside a status chip overflowed the card
+                                  // row on narrow screens / enlarged text.
                                   Row(
                                     children: [
-                                      HealthBadge(status: farm.healthStatus),
+                                      Flexible(
+                                        child: HealthBadge(
+                                          status: farm.healthStatus,
+                                        ),
+                                      ),
+                                      const SizedBox(width: AppSpacing.sm),
                                       const Spacer(),
-                                      StatusChip(status: farm.status),
+                                      Flexible(
+                                        child: StatusChip(
+                                          status: farm.status,
+                                        ),
+                                      ),
                                     ],
                                   ),
                                   const SizedBox(height: AppSpacing.sm),

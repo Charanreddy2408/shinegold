@@ -96,12 +96,18 @@ class HealthBadge extends StatelessWidget {
         children: [
           Text(status.emoji, style: const TextStyle(fontSize: 11)),
           const SizedBox(width: AppSpacing.xs),
-          Text(
-            status.label,
-            style: TextStyle(
-              color: _color,
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
+          // Flexible: chips sit in card rows beside farm names, and a long
+          // status ("Needs Attention") pushed past the available width.
+          Flexible(
+            child: Text(
+              status.label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: _color,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],
@@ -128,9 +134,17 @@ class SyncStatusChip extends StatelessWidget {
       children: [
         Text(status.emoji, style: const TextStyle(fontSize: 11)),
         const SizedBox(width: 4),
-        Text(
-          status.label,
-          style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w500),
+        Flexible(
+          child: Text(
+            status.label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: color,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
         ),
       ],
     );
@@ -243,49 +257,72 @@ class ConditionSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GridView.count(
-      crossAxisCount: 2,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 12,
-      crossAxisSpacing: 12,
-      childAspectRatio: 1.6,
-      children: _options.map((option) {
-        final isSelected = selected == option;
-        return Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () => onSelected(option),
-            borderRadius: BorderRadius.circular(16),
-            child: Ink(
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? AppColors.primary.withValues(alpha: 0.15)
-                    : AppColors.surfaceCard,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: isSelected ? AppColors.primary : AppColors.borderSubtle,
-                  width: isSelected ? 2 : 1,
+    // Wrap, not GridView(childAspectRatio:) — a fixed ratio pins tile height,
+    // so a label wrapping to two lines ("Needs Attention" on a narrow phone)
+    // overflowed the tile. Wrap lets each row size to its tallest child.
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const spacing = 12.0;
+        final tileWidth = (constraints.maxWidth - spacing) / 2;
+        return Wrap(
+          spacing: spacing,
+          runSpacing: spacing,
+          children: _options.map((option) {
+            final isSelected = selected == option;
+            return SizedBox(
+              width: tileWidth,
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => onSelected(option),
+                  borderRadius: BorderRadius.circular(16),
+                  child: Ink(
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? AppColors.primary.withValues(alpha: 0.15)
+                          : AppColors.surfaceCard,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: isSelected
+                            ? AppColors.primary
+                            : AppColors.borderSubtle,
+                        width: isSelected ? 2 : 1,
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm,
+                        vertical: AppSpacing.lg,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            option.emoji,
+                            style: const TextStyle(fontSize: 28),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            option.label,
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(fontSize: 14),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(option.emoji, style: const TextStyle(fontSize: 28)),
-                  const SizedBox(height: 8),
-                  Text(
-                    option.label,
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontSize: 14,
-                        ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+            );
+          }).toList(),
         );
-      }).toList(),
+      },
     );
   }
 }

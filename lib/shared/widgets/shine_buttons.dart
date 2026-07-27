@@ -61,12 +61,22 @@ class ShinePrimaryButton extends StatelessWidget {
                           Icon(icon, size: 20, color: Colors.white),
                           const SizedBox(width: AppSpacing.sm),
                         ],
-                        Text(
-                          label,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                color: Colors.white,
-                                fontSize: 15,
-                              ),
+                        // Flexible + ellipsis: a long label beside the icon
+                        // overflowed the button on narrow screens.
+                        Flexible(
+                          child: Text(
+                            label,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                ),
+                          ),
                         ),
                       ],
                     ),
@@ -105,6 +115,9 @@ class ShineSecondaryButton extends StatelessWidget {
         ),
         child: Text(
           label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: AppColors.secondary,
                 fontSize: 15,

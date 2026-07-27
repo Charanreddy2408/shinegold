@@ -364,7 +364,17 @@ class _RatingScaleInput extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(minLabel, style: Theme.of(context).textTheme.labelSmall),
+            // Scale labels come from admin-authored form templates, so their
+            // length is unbounded — three unconstrained Texts in a row
+            // overflowed once a label was more than a few characters.
+            Flexible(
+              child: Text(
+                minLabel,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.labelSmall,
+              ),
+            ),
             Text(
               current.toString(),
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -372,7 +382,15 @@ class _RatingScaleInput extends StatelessWidget {
                     color: AppColors.primary,
                   ),
             ),
-            Text(maxLabel, style: Theme.of(context).textTheme.labelSmall),
+            Flexible(
+              child: Text(
+                maxLabel,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.end,
+                style: Theme.of(context).textTheme.labelSmall,
+              ),
+            ),
           ],
         ),
       ],

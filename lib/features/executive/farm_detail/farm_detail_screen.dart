@@ -461,13 +461,10 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
                 ),
           ),
           const SizedBox(height: 10),
-          GridView.count(
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: 10,
-            crossAxisSpacing: 10,
-            childAspectRatio: 2.1,
+          // Wrap, not GridView(childAspectRatio:) — the fixed 2.1 ratio pinned
+          // tile height, so a full address or several assigned executive names
+          // wrapped to a second line and overflowed the tile.
+          _MetricGrid(
             children: [
               InfoMetricTile(
                 icon: Icons.grass_rounded,
@@ -757,6 +754,35 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
                   ),
                 )
               : null,
+    );
+  }
+}
+
+/// Two-column metric layout whose rows size to their tallest tile.
+///
+/// Replaces GridView.count(childAspectRatio:), which fixes tile height and
+/// clips any tile whose value wraps — long addresses and multi-executive lists
+/// both did.
+class _MetricGrid extends StatelessWidget {
+  const _MetricGrid({required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const spacing = 10.0;
+        final tileWidth = (constraints.maxWidth - spacing) / 2;
+        return Wrap(
+          spacing: spacing,
+          runSpacing: spacing,
+          children: [
+            for (final child in children)
+              SizedBox(width: tileWidth, child: child),
+          ],
+        );
+      },
     );
   }
 }

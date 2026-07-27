@@ -653,13 +653,17 @@ class _TeamMetricChip extends StatelessWidget {
       children: [
         Icon(icon, size: 14, color: color.withValues(alpha: 0.85)),
         const SizedBox(width: 5),
-        Text(
-          label,
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: color,
-                fontWeight: FontWeight.w600,
-                height: 1.2,
-              ),
+        Flexible(
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: color,
+                  fontWeight: FontWeight.w600,
+                  height: 1.2,
+                ),
+          ),
         ),
       ],
     );

@@ -39,6 +39,21 @@ class _ShineGoldAppState extends ConsumerState<ShineGoldApp> {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.app,
       routerConfig: ref.watch(routerProvider),
+      builder: (context, child) {
+        // Executives run phones with the system font enlarged. Unclamped, a
+        // 1.5-2.0x scale overflows every fixed-height row and grid in the app.
+        // 1.3x keeps text meaningfully larger while staying inside the layouts.
+        final media = MediaQuery.of(context);
+        return MediaQuery(
+          data: media.copyWith(
+            textScaler: media.textScaler.clamp(
+              minScaleFactor: 0.9,
+              maxScaleFactor: 1.3,
+            ),
+          ),
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
     );
   }
 }
