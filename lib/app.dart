@@ -10,7 +10,6 @@ import 'l10n/app_localizations.dart';
 import 'shared/providers/app_remote_config_provider.dart';
 import 'shared/providers/locale_provider.dart';
 import 'shared/services/notification_service.dart';
-import 'shared/utils/l10n_ext.dart';
 
 class ShineGoldApp extends ConsumerStatefulWidget {
   const ShineGoldApp({super.key});
@@ -41,7 +40,7 @@ class _ShineGoldAppState extends ConsumerState<ShineGoldApp> {
     final locale = ref.watch(localeProvider);
 
     return MaterialApp.router(
-      title: context.l10n.appTitle,
+      onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.app,
       locale: locale,
