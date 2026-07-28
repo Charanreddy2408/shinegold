@@ -33,15 +33,18 @@ class AppBackground extends StatelessWidget {
 class GradientHeader extends StatelessWidget {
   const GradientHeader({
     super.key,
-    required this.title,
+    this.title,
+    this.titleWidget,
     this.subtitle,
     this.trailing,
     this.leading,
     this.compact = false,
     this.brandLogoSize,
-  });
+  }) : assert(title != null || titleWidget != null,
+            'Provide either title or titleWidget');
 
-  final String title;
+  final String? title;
+  final Widget? titleWidget;
   final String? subtitle;
   final Widget? trailing;
   final Widget? leading;
@@ -95,19 +98,23 @@ class GradientHeader extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSpacing.xs),
                   ],
-                  Text(
-                    title,
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: compact ? 22 : 24,
-                        ),
-                  ),
+                  titleWidget ??
+                      Text(
+                        title ?? '',
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineMedium
+                            ?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                              fontSize: compact ? 22 : 24,
+                            ),
+                      ),
                 ],
               ),
             ),
             if (trailing != null)
-              trailing!
+              Flexible(child: trailing!)
             else if (brandLogoSize != null || compact)
               ShineLogo(size: brandLogoSize ?? 32),
           ],

@@ -19,6 +19,7 @@ import '../../../shared/widgets/animated_loading.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/dashboard_overview.dart';
 import '../../../shared/widgets/shine_empty_state.dart';
+import '../../../shared/widgets/shine_logo.dart';
 import '../../../shared/widgets/status_chip.dart';
 import '../../../shared/widgets/ux_components.dart';
 import '../../../shared/utils/acres_format.dart';
@@ -41,14 +42,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   double _onboardedAcres = 0;
   bool _loading = true;
   String? _error;
-  String _firstName = '';
+  String _displayName = '';
   DateTime _dashboardDate = DateTime.now();
 
   @override
   void initState() {
     super.initState();
-    _firstName =
-        ref.read(currentUserProvider)?.name.split(' ').first ?? '';
+    _displayName = ref.read(currentUserProvider)?.name ?? '';
     WidgetsBinding.instance.addPostFrameCallback((_) => _load());
   }
 
@@ -85,10 +85,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       }
       if (!mounted) return;
       final greeting = dashboard.greetingName.isNotEmpty
-          ? dashboard.greetingName.split(' ').first
-          : user?.name.split(' ').first ?? '';
+          ? dashboard.greetingName
+          : user?.name ?? '';
       setState(() {
-        _firstName = greeting;
+        _displayName = greeting;
         _dashboardDate = dashboard.dashboardDate;
         _total = dashboard.totalFarms;
         _visited = dashboard.visitedCount;
@@ -130,13 +130,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return AppBackground(
       header: GradientHeader(
         subtitle: dateStr,
-        title: _firstName,
-        trailing: Text(
-          _greeting(),
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.white.withValues(alpha: 0.9),
-                fontWeight: FontWeight.w600,
-              ),
+        titleWidget: const ShineLogo(size: 40),
+        trailing: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              _greeting(),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              _displayName,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+              textAlign: TextAlign.right,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
         ),
       ),
       child: _loading
