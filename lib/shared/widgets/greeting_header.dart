@@ -21,7 +21,7 @@ class BrandGreetingHeader extends StatelessWidget {
     super.key,
     required this.name,
     this.date,
-    this.logoSize = 56,
+    this.logoSize = 112,
   });
 
   /// Already-formatted name line, e.g. `G. Muddugangappa` or `Hi, Priya`.
