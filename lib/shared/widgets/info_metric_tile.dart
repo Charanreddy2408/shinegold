@@ -5,7 +5,7 @@ import '../../shared/utils/l10n_ext.dart';
 
 /// Clean metric tile for farm summary, harvest info, etc.
 class InfoMetricTile extends StatelessWidget {
-  InfoMetricTile({
+  const InfoMetricTile({
     super.key,
     required this.icon,
     required this.label,

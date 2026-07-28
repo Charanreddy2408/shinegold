@@ -4,7 +4,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 
 class ShineEmptyState extends StatelessWidget {
-  ShineEmptyState({
+  const ShineEmptyState({
     super.key,
     required this.icon,
     required this.title,
@@ -127,7 +127,7 @@ class ShineSearchBar extends StatelessWidget {
 }
 
 class SectionHeader extends StatelessWidget {
-  SectionHeader({
+  const SectionHeader({
     super.key,
     required this.label,
     required this.title,

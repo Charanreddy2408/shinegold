@@ -714,7 +714,7 @@ class _StatusDot extends StatelessWidget {
 
 /// Polished menu tile for admin More sheet.
 class AdminMenuTile extends StatefulWidget {
-  AdminMenuTile({
+  const AdminMenuTile({
     super.key,
     required this.icon,
     required this.title,

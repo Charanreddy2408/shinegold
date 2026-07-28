@@ -153,7 +153,7 @@ class SyncStatusChip extends StatelessWidget {
 }
 
 class FriendlyErrorBanner extends StatelessWidget {
-  FriendlyErrorBanner({
+  const FriendlyErrorBanner({
     super.key,
     required this.message,
     this.onRetry,
