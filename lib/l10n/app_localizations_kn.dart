@@ -1515,6 +1515,11 @@ class AppLocalizationsKn extends AppLocalizations {
   String get goodEvening => 'ಶುಭ ಸಂಜೆ';
 
   @override
+  String hiName(String name) {
+    return 'ನಮಸ್ಕಾರ, $name';
+  }
+
+  @override
   String get recordConversations =>
       'ನೀವು ಆನ್‌ಬೋರ್ಡ್ ಮಾಡಲು ಬಯಸುವ ರೈತರೊಂದಿಗೆ ಸಂವಾದಗಳನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡಿ';
 

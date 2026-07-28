@@ -458,6 +458,7 @@
   "goodMorning": "శుభోదయం",
   "goodAfternoon": "శుభ మధ్యాహ్నం",
   "goodEvening": "శుభ సాయంత్రం",
+  "hiName": "నమస్కారం, {name}",
   "recordConversations": "మీరు ఆన్‌బోర్డ్ చేయాలనుకునే రైతులతో సంభాషణలను రికార్డ్ చేయండి",
   "farmsYouOnboarded": "మీరు ఆన్‌బోర్డ్ చేసిన ఫారమ్‌లు",
   "noFarmsOnboardedYet": "ఇంకా ఫారమ్‌లు ఆన్‌బోర్డ్ కాలేదు",

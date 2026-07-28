@@ -2854,6 +2854,12 @@ abstract class AppLocalizations {
   /// **'Good evening'**
   String get goodEvening;
 
+  /// No description provided for @hiName.
+  ///
+  /// In en, this message translates to:
+  /// **'Hi, {name}'**
+  String hiName(String name);
+
   /// No description provided for @recordConversations.
   ///
   /// In en, this message translates to:

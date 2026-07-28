@@ -12,12 +12,14 @@ import '../../../data/models/enums.dart';
 import '../../../data/models/executive.dart';
 import '../../../data/models/farm.dart';
 import '../../../shared/providers/app_refresh_provider.dart';
+import '../../../shared/providers/auth_provider.dart';
 import '../../../shared/providers/repository_providers.dart';
 import '../../../shared/utils/l10n_ext.dart';
 import '../../../shared/widgets/admin_farm_map.dart';
 import '../../../shared/widgets/admin_network_hero.dart';
 import '../../../shared/widgets/animated_loading.dart';
 import '../../../shared/widgets/app_background.dart';
+import '../../../shared/widgets/greeting_header.dart';
 import '../../../shared/widgets/admin_ui.dart';
 import '../../../shared/widgets/ux_components.dart';
 import '../executives/admin_executive_profile_screen.dart';
@@ -88,18 +90,11 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       if (previous != null && previous != next) _load();
     });
 
+    final adminName = ref.watch(currentUserProvider)?.name.trim() ?? '';
+
     return AppBackground(
-      header: GradientHeader(
-        title: context.l10n.dashboard,
-        subtitle: context.l10n.shineGoldOverview,
-        trailing: Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: const Icon(Icons.insights_rounded, color: Colors.white),
-        ),
+      header: BrandGreetingHeader(
+        name: adminName.isEmpty ? '' : context.l10n.hiName(adminName),
       ),
       child: _loading
           ? const DashboardLoadingSkeleton()

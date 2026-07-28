@@ -800,6 +800,14 @@
   "goodMorning": "Good morning",
   "goodAfternoon": "Good afternoon",
   "goodEvening": "Good evening",
+  "hiName": "Hi, {name}",
+  "@hiName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "recordConversations": "Record conversations with farmers you want to onboard",
   "farmsYouOnboarded": "Farms you onboarded",
   "noFarmsOnboardedYet": "No farms onboarded yet",

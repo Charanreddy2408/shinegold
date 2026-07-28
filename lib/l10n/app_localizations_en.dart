@@ -1511,6 +1511,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get goodEvening => 'Good evening';
 
   @override
+  String hiName(String name) {
+    return 'Hi, $name';
+  }
+
+  @override
   String get recordConversations =>
       'Record conversations with farmers you want to onboard';
 

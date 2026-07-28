@@ -18,8 +18,8 @@ import '../../../shared/utils/location_coords.dart';
 import '../../../shared/widgets/animated_loading.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/dashboard_overview.dart';
+import '../../../shared/widgets/greeting_header.dart';
 import '../../../shared/widgets/shine_empty_state.dart';
-import '../../../shared/widgets/shine_logo.dart';
 import '../../../shared/widgets/status_chip.dart';
 import '../../../shared/widgets/ux_components.dart';
 import '../../../shared/utils/acres_format.dart';
@@ -113,48 +113,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   String _formatAcres(double acres) => formatAcres(acres);
 
-  String _greeting(BuildContext context) {
-    final hour = DateTime.now().hour;
-    if (hour < 12) return context.l10n.goodMorning;
-    if (hour < 17) return context.l10n.goodAfternoon;
-    return context.l10n.goodEvening;
-  }
-
   @override
   Widget build(BuildContext context) {
     ref.listen<int>(appRefreshProvider, (previous, next) {
       if (previous != null && previous != next) _load();
     });
 
-    final dateStr = DateFormat('EEEE, dd MMM').format(_dashboardDate);
-
     return AppBackground(
-      header: GradientHeader(
-        subtitle: dateStr,
-        titleWidget: const ShineLogo(size: 40),
-        trailing: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              _greeting(context),
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.white.withValues(alpha: 0.9),
-                    fontWeight: FontWeight.w600,
-                  ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              _displayName,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                  ),
-              textAlign: TextAlign.right,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
+      header: BrandGreetingHeader(
+        name: _displayName,
+        date: _dashboardDate,
       ),
       child: _loading
           ? const DashboardLoadingSkeleton()

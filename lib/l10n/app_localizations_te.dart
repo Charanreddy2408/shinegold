@@ -1517,6 +1517,11 @@ class AppLocalizationsTe extends AppLocalizations {
   String get goodEvening => 'శుభ సాయంత్రం';
 
   @override
+  String hiName(String name) {
+    return 'నమస్కారం, $name';
+  }
+
+  @override
   String get recordConversations =>
       'మీరు ఆన్‌బోర్డ్ చేయాలనుకునే రైతులతో సంభాషణలను రికార్డ్ చేయండి';
 
