@@ -10,6 +10,7 @@ import '../../../shared/providers/app_refresh_provider.dart';
 import '../../../shared/providers/location_provider.dart';
 import '../../../shared/providers/repository_providers.dart';
 import '../../../shared/utils/async_ui.dart';
+import '../../../shared/utils/l10n_ext.dart';
 import '../../../shared/widgets/animated_loading.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/farm_card.dart';
@@ -107,14 +108,14 @@ class _AdminFarmsScreenState extends ConsumerState<AdminFarmsScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push(AppRoutes.adminCreateFarm),
         icon: const Icon(Icons.add_location_alt_rounded),
-        label: const Text('Create Farm'),
+        label: Text(context.l10n.createFarm),
       ),
       body: AppBackground(
         header: GradientHeader(
-          title: 'All Farms',
+          title: context.l10n.allFarms,
           subtitle: _initialLoading
-              ? 'Loading...'
-              : '${_farms.length} farms total',
+              ? context.l10n.loading
+              : context.l10n.xFarmsTotal(_farms.length),
           compact: true,
         ),
         child: Column(
@@ -124,7 +125,7 @@ class _AdminFarmsScreenState extends ConsumerState<AdminFarmsScreen> {
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
               child: ShineSearchBar(
                 controller: _searchController,
-                hint: 'Search farms...',
+                hint: context.l10n.searchFarmsEllipsis,
               ),
             ),
             Expanded(
@@ -141,9 +142,9 @@ class _AdminFarmsScreenState extends ConsumerState<AdminFarmsScreen> {
                           ),
                         )
                       : _farms.isEmpty
-                          ? const ShineEmptyState(
+                          ? ShineEmptyState(
                               icon: Icons.eco_outlined,
-                              title: 'No farms found',
+                              title: context.l10n.noFarmsFound,
                             )
                           : RefreshIndicator(
                               onRefresh: () => _load(isRefresh: true),

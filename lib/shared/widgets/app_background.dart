@@ -31,7 +31,7 @@ class AppBackground extends StatelessWidget {
 }
 
 class GradientHeader extends StatelessWidget {
-  const GradientHeader({
+  GradientHeader({
     super.key,
     this.title,
     this.titleWidget,

@@ -58,7 +58,7 @@ class _ProfilePhotoEditorState extends ConsumerState<ProfilePhotoEditor> {
       await ref.read(authProvider.notifier).refreshUser();
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('Profile photo updated'),
           behavior: SnackBarBehavior.floating,
         ),

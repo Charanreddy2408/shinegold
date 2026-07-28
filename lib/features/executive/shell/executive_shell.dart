@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../shared/utils/l10n_ext.dart';
 import '../farms/farms_screen.dart';
 import '../home/home_screen.dart';
 import '../my_visits/my_visits_screen.dart';
@@ -76,8 +77,8 @@ class _ExecutiveShellState extends ConsumerState<ExecutiveShell>
         SnackBar(
           content: Text(
             result.synced == 1
-                ? '1 offline visit synced'
-                : '${result.synced} offline visits synced',
+                ? context.l10n.offlineVisitSynced(result.synced)
+                : context.l10n.offlineVisitsSynced(result.synced),
           ),
           duration: const Duration(seconds: 3),
         ),
@@ -94,8 +95,8 @@ class _ExecutiveShellState extends ConsumerState<ExecutiveShell>
         SnackBar(
           content: Text(
             count == 1
-                ? '1 harvest reminder scheduled'
-                : '$count harvest reminders scheduled',
+                ? context.l10n.harvestReminderScheduled(count)
+                : context.l10n.harvestRemindersScheduled(count),
           ),
           duration: const Duration(seconds: 3),
         ),
@@ -175,31 +176,31 @@ class _ExecutiveShellState extends ConsumerState<ExecutiveShell>
             height: AppSpacing.navBarHeight,
             labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
             onDestinationSelected: _onTabSelected,
-            destinations: const [
+            destinations: [
               NavigationDestination(
-                icon: Icon(Icons.home_outlined),
-                selectedIcon: Icon(Icons.home_rounded),
-                label: 'Home',
+                icon: const Icon(Icons.home_outlined),
+                selectedIcon: const Icon(Icons.home_rounded),
+                label: context.l10n.navHome,
               ),
               NavigationDestination(
-                icon: Icon(Icons.eco_outlined),
-                selectedIcon: Icon(Icons.eco_rounded),
-                label: 'Farms',
+                icon: const Icon(Icons.eco_outlined),
+                selectedIcon: const Icon(Icons.eco_rounded),
+                label: context.l10n.navFarms,
               ),
               NavigationDestination(
-                icon: Icon(Icons.history_outlined),
-                selectedIcon: Icon(Icons.history_rounded),
-                label: 'Visits',
+                icon: const Icon(Icons.history_outlined),
+                selectedIcon: const Icon(Icons.history_rounded),
+                label: context.l10n.navVisits,
               ),
               NavigationDestination(
-                icon: Icon(Icons.add_location_alt_outlined),
-                selectedIcon: Icon(Icons.add_location_alt_rounded),
-                label: 'Onboard',
+                icon: const Icon(Icons.add_location_alt_outlined),
+                selectedIcon: const Icon(Icons.add_location_alt_rounded),
+                label: context.l10n.navOnboard,
               ),
               NavigationDestination(
-                icon: Icon(Icons.person_outline),
-                selectedIcon: Icon(Icons.person_rounded),
-                label: 'Profile',
+                icon: const Icon(Icons.person_outline),
+                selectedIcon: const Icon(Icons.person_rounded),
+                label: context.l10n.navProfile,
               ),
             ],
           ),

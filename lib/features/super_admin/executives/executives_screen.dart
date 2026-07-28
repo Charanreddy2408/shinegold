@@ -16,6 +16,7 @@ import '../../../shared/widgets/animated_loading.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/shine_empty_state.dart';
 import 'admin_executive_profile_screen.dart';
+import '../../../shared/utils/l10n_ext.dart';
 
 class ExecutivesScreen extends ConsumerStatefulWidget {
   const ExecutivesScreen({super.key});
@@ -86,15 +87,14 @@ class _ExecutivesScreenState extends ConsumerState<ExecutivesScreen> {
 
     final created = await showAdminFormSheet<bool>(
       context: context,
-      title: 'Add Executive',
-      subtitle:
-          'Address + PIN must Locate successfully so home GPS is stored.',
+      title: context.l10n.addExecutive,
+      subtitle: context.l10n.addressPinLocateInfo,
       icon: Icons.person_add_alt_1_rounded,
       submitLabel: 'Create Executive',
       fields: [
         AdminFormField(
           controller: name,
-          label: 'Full Name',
+          label: context.l10n.fullName,
           icon: Icons.person_outline_rounded,
           validator: (v) {
             if (v == null || v.trim().isEmpty) {
@@ -105,7 +105,7 @@ class _ExecutivesScreenState extends ConsumerState<ExecutivesScreen> {
         ),
         AdminFormField(
           controller: mobile,
-          label: 'Mobile Number',
+          label: context.l10n.mobileNumber,
           icon: Icons.phone_rounded,
           keyboardType: TextInputType.phone,
           hint: '10-digit mobile',
@@ -123,7 +123,7 @@ class _ExecutivesScreenState extends ConsumerState<ExecutivesScreen> {
         AddressAutocompleteField(
           controller: address,
           pincodeController: pincode,
-          label: 'Address',
+          label: context.l10n.address,
           hint: 'Start typing to search address',
           validator: (v) {
             final addressText = v?.trim() ?? '';
@@ -150,7 +150,7 @@ class _ExecutivesScreenState extends ConsumerState<ExecutivesScreen> {
         ),
         AdminFormField(
           controller: pincode,
-          label: 'PIN code',
+          label: context.l10n.pincode,
           icon: Icons.markunread_mailbox_outlined,
           keyboardType: TextInputType.number,
           hint: 'Auto-filled from suggestion when possible',
@@ -176,7 +176,7 @@ class _ExecutivesScreenState extends ConsumerState<ExecutivesScreen> {
         ),
         AdminFormField(
           controller: password,
-          label: 'Password',
+          label: context.l10n.password,
           icon: Icons.lock_outline_rounded,
           obscureText: true,
           hint: 'At least 6 characters',
@@ -260,7 +260,7 @@ class _ExecutivesScreenState extends ConsumerState<ExecutivesScreen> {
 
     return AppBackground(
       header: GradientHeader(
-        title: 'Team',
+        title: context.l10n.navTeam,
         subtitle: _loading
             ? 'Loading...'
             : '${filtered.length} of ${_executives.length} executives',
@@ -575,16 +575,14 @@ class _ExecutiveHomeLocationFieldState
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              'Home GPS pin (required)',
+            Text(context.l10n.homeGpsPinRequired,
               style: Theme.of(context).textTheme.labelLarge?.copyWith(
                     fontWeight: FontWeight.w700,
                     color: AppColors.textSecondary,
                   ),
             ),
-            const SizedBox(height: 4),
-            Text(
-              'Tap Locate after entering address + PIN. Create stays blocked until the pin is verified.',
+            SizedBox(height: 4),
+            Text(context.l10n.tapLocateAfterAddress,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: AppColors.textMuted,
                   ),

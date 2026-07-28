@@ -15,6 +15,7 @@ import '../../../shared/utils/geocoding_service.dart';
 import '../../../shared/utils/india_map_bounds.dart';
 import '../../../shared/widgets/farm_boundary_map_view.dart';
 import '../../../shared/widgets/state_diagnostics.dart';
+import '../../../shared/utils/l10n_ext.dart';
 
 /// Full-screen map — opens at employee GPS, then pins farm boundary polygon.
 class FarmBoundaryPickerScreen extends ConsumerStatefulWidget {
@@ -323,7 +324,7 @@ class _FarmBoundaryPickerScreenState
     final hasPins = _pins.length >= 3;
     return [
       DiagnosticItem(
-        label: 'Boundary pins',
+        label: context.l10n.boundaryPinsLabel,
         status: hasPins ? DiagnosticStatus.ok : DiagnosticStatus.failed,
         detail: hasPins
             ? '${_pins.length} pins · ${_areaAcres.toStringAsFixed(2)} acres'
@@ -331,7 +332,7 @@ class _FarmBoundaryPickerScreenState
         hint: hasPins ? null : 'Tap the map at each corner of the farm.',
       ),
       DiagnosticItem(
-        label: 'GPS location',
+        label: context.l10n.gpsLocationLabel,
         status: _locating
             ? DiagnosticStatus.pending
             : !_hasEmployeeLocation
@@ -355,7 +356,7 @@ class _FarmBoundaryPickerScreenState
                 'Tap Recenter to retry.',
       ),
       DiagnosticItem(
-        label: 'Address lookup',
+        label: context.l10n.addressLookup,
         status: _addressError != null
             ? DiagnosticStatus.warning
             : (_selectedAddress?.isNotEmpty ?? false)
@@ -376,7 +377,7 @@ class _FarmBoundaryPickerScreenState
       ),
       if (_searchError != null)
         DiagnosticItem(
-          label: 'Location search',
+          label: context.l10n.locationSearchLabel,
           status: DiagnosticStatus.warning,
           detail: _searchError,
           hint: 'Search is optional — pin the boundary directly on the map.',
@@ -477,7 +478,7 @@ class _FarmBoundaryPickerScreenState
     return Scaffold(
       backgroundColor: AppColors.canvasDeep,
       appBar: AppBar(
-        title: const Text('Select Farm Boundary'),
+        title: Text(context.l10n.selectFarmBoundary),
         backgroundColor: AppColors.surfaceCard,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
@@ -485,12 +486,12 @@ class _FarmBoundaryPickerScreenState
           IconButton(
             onPressed: _locating ? null : () => unawaited(_recenterOnEmployee()),
             icon: const Icon(Icons.my_location_rounded),
-            tooltip: 'Recenter on my location',
+            tooltip: context.l10n.recenterOnMyLocation,
           ),
           IconButton(
             onPressed: _fitIndia,
             icon: const Icon(Icons.public_rounded),
-            tooltip: 'Show India',
+            tooltip: context.l10n.showIndia,
           ),
         ],
       ),
@@ -510,10 +511,10 @@ class _FarmBoundaryPickerScreenState
               onChanged: _onSearchChanged,
               textInputAction: TextInputAction.search,
               decoration: InputDecoration(
-                hintText: 'Search village, district in India...',
+                hintText: context.l10n.searchVillageDistrict,
                 prefixIcon: const Icon(Icons.search_rounded),
                 suffixIcon: _searching
-                    ? const Padding(
+                    ? Padding(
                         padding: EdgeInsets.all(12),
                         child: SizedBox(
                           width: 18,
@@ -538,7 +539,7 @@ class _FarmBoundaryPickerScreenState
               AppSpacing.sm,
             ),
             child: StateDiagnosticsBar(
-              title: 'Farm boundary — status',
+              title: context.l10n.farmBoundaryStatus,
               okMessage: _canConfirm
                   ? 'Ready to confirm · ${_pins.length} pins, '
                       '${_areaAcres.toStringAsFixed(2)} acres'
@@ -617,7 +618,7 @@ class _FarmBoundaryPickerScreenState
                   Row(
                     children: [
                       _statChip(Icons.place_rounded, '${_pins.length} pins'),
-                      const SizedBox(width: AppSpacing.sm),
+                      SizedBox(width: AppSpacing.sm),
                       _statChip(
                         Icons.square_foot_rounded,
                         _pins.length >= 3
@@ -626,22 +627,22 @@ class _FarmBoundaryPickerScreenState
                       ),
                     ],
                   ),
-                  const SizedBox(height: AppSpacing.md),
+                  SizedBox(height: AppSpacing.md),
                   Row(
                     children: [
                       Expanded(
                         child: OutlinedButton.icon(
                           onPressed: _pins.isEmpty ? null : _undoLastPin,
                           icon: const Icon(Icons.undo_rounded, size: 18),
-                          label: const Text('Undo'),
+                          label: Text(context.l10n.undoPoint),
                         ),
                       ),
-                      const SizedBox(width: AppSpacing.sm),
+                      SizedBox(width: AppSpacing.sm),
                       Expanded(
                         child: OutlinedButton.icon(
                           onPressed: _pins.isEmpty ? null : _clearPins,
                           icon: const Icon(Icons.clear_all_rounded, size: 18),
-                          label: const Text('Clear'),
+                          label: Text(context.l10n.clearLabel),
                         ),
                       ),
                     ],

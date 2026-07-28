@@ -11,6 +11,7 @@ import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/profile_photo_editor.dart';
 import '../../../shared/widgets/shine_buttons.dart';
 import '../../../shared/widgets/user_avatar.dart';
+import '../../../shared/utils/l10n_ext.dart';
 
 class AdminProfileScreen extends ConsumerWidget {
   const AdminProfileScreen({super.key});
@@ -25,14 +26,14 @@ class AdminProfileScreen extends ConsumerWidget {
 
       final saved = await showAdminFormSheet<bool>(
         context: context,
-        title: 'Edit Mobile Number',
-        subtitle: 'Update your contact number',
+        title: context.l10n.editMobileNumber,
+        subtitle: context.l10n.updateContactNumber,
         icon: Icons.phone_rounded,
         submitLabel: 'Save Mobile Number',
         fields: [
           AdminFormField(
             controller: mobile,
-            label: 'Mobile Number',
+            label: context.l10n.mobileNumber,
             icon: Icons.phone_rounded,
             keyboardType: TextInputType.phone,
             textInputAction: TextInputAction.done,
@@ -55,8 +56,7 @@ class AdminProfileScreen extends ConsumerWidget {
 
       if (saved == true && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Mobile number updated'),
+          SnackBar(content: Text(context.l10n.mobileNumberUpdated),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -68,14 +68,14 @@ class AdminProfileScreen extends ConsumerWidget {
 
       final saved = await showAdminFormSheet<bool>(
         context: context,
-        title: 'Edit Office Address',
-        subtitle: 'Update your administrator address',
+        title: context.l10n.editOfficeAddress,
+        subtitle: context.l10n.updateAdminAddress,
         icon: Icons.location_on_rounded,
         submitLabel: 'Save Address',
         fields: [
           AdminFormField(
             controller: address,
-            label: 'Office Address',
+            label: context.l10n.officeAddress,
             icon: Icons.location_on_outlined,
             textInputAction: TextInputAction.done,
             validator: (value) {
@@ -97,8 +97,7 @@ class AdminProfileScreen extends ConsumerWidget {
 
       if (saved == true && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Office address updated'),
+          SnackBar(content: Text(context.l10n.officeAddressUpdated),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -112,13 +111,13 @@ class AdminProfileScreen extends ConsumerWidget {
       final changed = await showAdminFormSheet<bool>(
         context: context,
         title: 'Change Password',
-        subtitle: 'Choose a new password for your admin account',
+        subtitle: context.l10n.chooseNewPassword,
         icon: Icons.lock_reset_rounded,
         submitLabel: 'Change Password',
         fields: [
           AdminFormField(
             controller: newPassword,
-            label: 'New Password',
+            label: context.l10n.newPassword,
             icon: Icons.lock_outline_rounded,
             obscureText: true,
             textInputAction: TextInputAction.next,
@@ -132,7 +131,7 @@ class AdminProfileScreen extends ConsumerWidget {
           ),
           AdminFormField(
             controller: confirmPassword,
-            label: 'Confirm New Password',
+            label: context.l10n.confirmNewPassword,
             icon: Icons.lock_rounded,
             obscureText: true,
             textInputAction: TextInputAction.done,
@@ -157,8 +156,7 @@ class AdminProfileScreen extends ConsumerWidget {
 
       if (changed == true && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Password changed successfully'),
+          SnackBar(content: Text(context.l10n.passwordChangedSuccessfully),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -192,16 +190,15 @@ class AdminProfileScreen extends ConsumerWidget {
                 employeeId: user.employeeId,
                 photoUrl: photoUrl,
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Tap your photo above to update it',
+              SizedBox(height: 8),
+              Text(context.l10n.tapPhotoToUpdate,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: AppColors.textMuted,
                       fontWeight: FontWeight.w600,
                     ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               AdminContactHub(
                 mobile: user.mobile ?? '—',
                 address: user.address ?? '—',
@@ -209,14 +206,14 @@ class AdminProfileScreen extends ConsumerWidget {
                 onEditMobile: editMobile,
                 onEditAddress: editAddress,
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24),
               ShineSecondaryButton(
                 label: 'Change Password',
                 onPressed: changePassword,
               ).animate().fadeIn(delay: 280.ms, duration: 400.ms),
-              const SizedBox(height: 10),
+              SizedBox(height: 10),
               ShineSecondaryButton(
-                label: 'Logout',
+                label: context.l10n.logout,
                 onPressed: () async {
                   await ref.read(authProvider.notifier).logout();
                   if (context.mounted) context.go(AppRoutes.login);
@@ -299,9 +296,8 @@ class _ProfileHero extends StatelessWidget {
                         size: 14,
                         color: Colors.white.withValues(alpha: 0.9),
                       ),
-                      const SizedBox(width: 5),
-                      Text(
-                        'Super Administrator',
+                      SizedBox(width: 5),
+                      Text(context.l10n.superAdministrator,
                         style: TextStyle(
                           color: Colors.white.withValues(alpha: 0.95),
                           fontSize: 11,
@@ -311,9 +307,8 @@ class _ProfileHero extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'Managing Shine Gold operations',
+                SizedBox(height: 8),
+                Text(context.l10n.managingShineGold,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Colors.white.withValues(alpha: 0.8),
                       ),

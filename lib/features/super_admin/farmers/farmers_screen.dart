@@ -19,6 +19,7 @@ import '../../../shared/widgets/animated_loading.dart';
 import '../../../shared/widgets/status_chip.dart';
 import '../../../shared/widgets/ux_components.dart';
 import '../../../shared/widgets/shine_empty_state.dart';
+import '../../../shared/utils/l10n_ext.dart';
 
 class FarmersScreen extends ConsumerStatefulWidget {
   const FarmersScreen({super.key});
@@ -89,7 +90,7 @@ class _FarmersScreenState extends ConsumerState<FarmersScreen> {
       backgroundColor: AppColors.canvasDeep,
       body: AppBackground(
         header: GradientHeader(
-          title: 'Farmers',
+          title: context.l10n.farmers,
           subtitle: _loading
               ? 'Loading...'
               : '${filtered.length} of ${_farmers.length} farmers',
@@ -294,7 +295,7 @@ class _FarmerExpansionTileState extends ConsumerState<_FarmerExpansionTile> {
           ),
           children: [
             if (_loadingDetail)
-              const Padding(
+              Padding(
                 padding: EdgeInsets.symmetric(vertical: 16),
                 child: Center(
                   child: SizedBox(
@@ -317,41 +318,39 @@ class _FarmerExpansionTileState extends ConsumerState<_FarmerExpansionTile> {
             else ...[
               _DetailRow(
                 icon: Icons.person_outline_rounded,
-                label: 'Gender',
+                label: context.l10n.gender,
                 value: _genderLabel(farmer.gender),
               ),
               if (farmer.age != null)
                 _DetailRow(
                   icon: Icons.cake_outlined,
-                  label: 'Age',
+                  label: context.l10n.age,
                   value: '${farmer.age} years',
                 ),
               if (farmer.aadharNumber != null &&
                   farmer.aadharNumber!.isNotEmpty)
                 _DetailRow(
                   icon: Icons.badge_outlined,
-                  label: 'Aadhar',
+                  label: context.l10n.aadhar,
                   value: farmer.aadharNumber!,
                 ),
               if (farmer.mobile.isNotEmpty) ...[
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 FarmerContactActions(
                   mobile: farmer.mobile,
                   farmerName: farmer.name,
                 ),
               ],
-              const SizedBox(height: 12),
-              Text(
-                'Linked Farms',
+              SizedBox(height: 12),
+              Text(context.l10n.linkedFarms,
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
                       fontWeight: FontWeight.w800,
                       color: AppColors.primaryDark,
                     ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               if (farms.isEmpty)
-                Text(
-                  'No farm linked to this farmer yet.',
+                Text(context.l10n.noFarmLinked,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: AppColors.textSecondary,
                       ),

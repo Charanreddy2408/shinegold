@@ -29,6 +29,7 @@ import '../../../shared/utils/contact_launcher.dart';
 import '../../../shared/utils/media_url.dart';
 import '../../../shared/widgets/visit_log_tile.dart';
 import '../../../shared/utils/acres_format.dart';
+import '../../../shared/utils/l10n_ext.dart';
 
 class FarmDetailScreen extends ConsumerStatefulWidget {
   const FarmDetailScreen({super.key, required this.farmId});
@@ -129,13 +130,12 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(
-                    'Update harvest date',
+                  Text(context.l10n.updateHarvestDate,
                     style: Theme.of(ctx).textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.w800,
                         ),
                   ),
-                  const SizedBox(height: 6),
+                  SizedBox(height: 6),
                   Text(
                     farm.hasHarvestDate
                         ? 'Current: ${DateFormat('dd MMM yyyy').format(farm.harvestDate)}'
@@ -144,12 +144,12 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
                           color: AppColors.textSecondary,
                         ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     leading: const Icon(Icons.event_rounded, color: AppColors.primary),
                     title: Text(DateFormat('dd MMM yyyy').format(selected)),
-                    subtitle: const Text('Tap to pick a new date'),
+                    subtitle: Text(context.l10n.tapToPickNewDate),
                     onTap: () async {
                       final picked = await showDatePicker(
                         context: ctx,
@@ -162,24 +162,24 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
                       }
                     },
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   TextField(
                     controller: reasonController,
                     maxLines: 2,
                     maxLength: 500,
-                    decoration: const InputDecoration(
-                      labelText: 'Reason (optional)',
-                      hintText: 'Why is the harvest date changing?',
+                    decoration: InputDecoration(
+                      labelText: context.l10n.reasonOptional,
+                      hintText: context.l10n.whyHarvestDateChanging,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   ShinePrimaryButton(
-                    label: 'Save harvest date',
+                    label: context.l10n.saveHarvestDate,
                     onPressed: () => Navigator.pop(ctx, true),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   ShineSecondaryButton(
-                    label: 'Cancel',
+                    label: context.l10n.cancel,
                     onPressed: () => Navigator.pop(ctx, false),
                   ),
                 ],
@@ -200,8 +200,7 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
         selected.day == farm.harvestDate.day;
     if (sameDay) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Pick a different date to save a change'),
+        SnackBar(content: Text(context.l10n.pickDifferentDateToSave),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -219,8 +218,7 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
       await _load();
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Harvest date updated'),
+        SnackBar(content: Text(context.l10n.harvestDateUpdated),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -290,7 +288,7 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
         actions: [
           if (isAdmin)
             IconButton(
-              tooltip: 'Assign executives',
+              tooltip: context.l10n.assignExecutives,
               onPressed: () async {
                 final updated = await showAdminFarmAssignSheet(
                   context,
@@ -443,7 +441,7 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
                     ],
                   ),
                   if (farm.farmer.mobile.trim().isNotEmpty) ...[
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12),
                     FarmerContactActions(
                       mobile: farm.farmer.mobile,
                       farmerName: farm.farmer.name,
@@ -453,14 +451,13 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 20),
-          Text(
-            'Farm Summary',
+          SizedBox(height: 20),
+          Text(context.l10n.farmSummary,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10),
           // Wrap, not GridView(childAspectRatio:) — the fixed 2.1 ratio pinned
           // tile height, so a full address or several assigned executive names
           // wrapped to a second line and overflowed the tile.
@@ -468,25 +465,25 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
             children: [
               InfoMetricTile(
                 icon: Icons.grass_rounded,
-                label: 'Crop',
+                label: context.l10n.cropInput,
                 value: farm.crop,
                 color: AppColors.secondary,
               ),
               InfoMetricTile(
                 icon: Icons.square_foot_rounded,
-                label: 'Acres',
+                label: context.l10n.acres,
                 value: formatAcresShort(farm.totalAcres),
                 color: AppColors.primary,
               ),
               InfoMetricTile(
                 icon: Icons.spa_rounded,
-                label: 'Plants',
+                label: context.l10n.plants,
                 value: farm.plantCount != null ? '${farm.plantCount}' : '—',
                 color: AppColors.secondary,
               ),
               InfoMetricTile(
                 icon: Icons.location_on_rounded,
-                label: 'Location',
+                label: context.l10n.location,
                 value: farm.location,
                 color: AppColors.info,
               ),
@@ -502,9 +499,8 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          Text(
-            'Harvest Information',
+          SizedBox(height: 20),
+          Text(context.l10n.harvestInformation,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -529,20 +525,19 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
                         size: 22,
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'SET HARVEST DATE',
+                          Text(context.l10n.setHarvestDate,
                             style: Theme.of(context).textTheme.labelSmall?.copyWith(
                                   color: AppColors.textMuted,
                                   fontWeight: FontWeight.w700,
                                   letterSpacing: 0.4,
                                 ),
                           ),
-                          const SizedBox(height: 2),
+                          SizedBox(height: 2),
                           Text(
                             farm.hasHarvestDate
                                 ? dateFormat.format(farm.harvestDate)
@@ -557,34 +552,34 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
                 Row(
                   children: [
                     Expanded(
                       child: InfoMetricTile(
                         icon: Icons.spa_outlined,
-                        label: 'Type',
+                        label: context.l10n.type,
                         value: farm.harvestType.isNotEmpty
                             ? farm.harvestType
                             : '—',
                         color: AppColors.secondary,
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    SizedBox(width: 10),
                     Expanded(
                       child: InfoMetricTile(
                         icon: Icons.grass_rounded,
-                        label: 'Crop',
+                        label: context.l10n.cropInput,
                         value: farm.crop.isNotEmpty ? farm.crop : '—',
                         color: AppColors.primary,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 10),
+                SizedBox(height: 10),
                 InfoMetricTile(
                   icon: Icons.fact_check_rounded,
-                  label: 'Harvest Status',
+                  label: context.l10n.harvestStatusLabel,
                   value: farm.harvestStatus.label,
                   color: AppColors.secondary,
                   fullWidth: true,
@@ -593,16 +588,15 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
             ),
           ),
           if (isExecutive || isAdmin) ...[
-            const SizedBox(height: 10),
+            SizedBox(height: 10),
             ShineSecondaryButton(
               label: _updatingHarvest ? 'Updating…' : 'Update harvest date',
               onPressed: _updatingHarvest ? null : _editHarvestDate,
             ),
           ],
           if (_harvestHistory.isNotEmpty) ...[
-            const SizedBox(height: 20),
-            Text(
-              'Harvest date history',
+            SizedBox(height: 20),
+            Text(context.l10n.harvestDateHistory,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
@@ -631,7 +625,7 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
                           ),
                           if (change.reason != null &&
                               change.reason!.trim().isNotEmpty) ...[
-                            const SizedBox(height: 4),
+                            SizedBox(height: 4),
                             Text(
                               change.reason!,
                               style: Theme.of(context).textTheme.bodySmall,
@@ -643,9 +637,9 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
                   ),
                 ),
           ],
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           CollapsibleSection(
-            title: 'Map',
+            title: context.l10n.mapLabel,
             icon: Icons.map_outlined,
             initiallyExpanded: true,
             child: FarmMapPreview(
@@ -655,9 +649,8 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
             ),
           ),
           if (farm.photoUrls.isNotEmpty) ...[
-            const SizedBox(height: 20),
-            Text(
-              'Farm Photos',
+            SizedBox(height: 20),
+            Text(context.l10n.farmPhotosLabel,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
@@ -702,14 +695,13 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
               ),
             ),
           ],
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           CollapsibleSection(
-            title: 'Visit History',
+            title: context.l10n.visitHistory,
             icon: Icons.history,
             initiallyExpanded: farm.visitLogs.isNotEmpty,
             child: farm.visitLogs.isEmpty
-                ? Text(
-                    'No visits recorded yet',
+                ? Text(context.l10n.noVisitsRecordedYet,
                     style: Theme.of(context).textTheme.bodyMedium,
                   )
                 : Column(

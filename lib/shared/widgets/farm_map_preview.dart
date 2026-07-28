@@ -127,7 +127,7 @@ class FarmMapPreview extends StatelessWidget {
           OutlinedButton.icon(
             onPressed: () => _openInGoogleMaps(context),
             icon: const Icon(Icons.map_rounded, size: 18),
-            label: const Text('Open in Google Maps'),
+            label: Text('Open in Google Maps'),
             style: OutlinedButton.styleFrom(
               foregroundColor: AppColors.secondary,
               side: const BorderSide(color: AppColors.secondary),

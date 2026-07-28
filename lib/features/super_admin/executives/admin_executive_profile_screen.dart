@@ -21,6 +21,7 @@ import '../../../shared/widgets/user_avatar.dart';
 import '../../../shared/widgets/ux_components.dart';
 import '../../../shared/utils/contact_launcher.dart';
 import '../../../shared/utils/acres_format.dart';
+import '../../../shared/utils/l10n_ext.dart';
 
 class AdminExecutiveProfileScreen extends ConsumerStatefulWidget {
   const AdminExecutiveProfileScreen({
@@ -182,25 +183,25 @@ class _AdminExecutiveProfileScreenState
                         child: Row(
                           children: [
                             _StatPill(
-                              label: 'Total',
+                              label: context.l10n.total,
                               value: '${_visits.length}',
                               color: AppColors.primary,
                             ),
-                            const SizedBox(width: 8),
+                            SizedBox(width: 8),
                             _StatPill(
-                              label: 'Ongoing',
+                              label: context.l10n.ongoing,
                               value: '$_ongoingCount',
                               color: AppColors.info,
                             ),
-                            const SizedBox(width: 8),
+                            SizedBox(width: 8),
                             _StatPill(
-                              label: 'Done',
+                              label: context.l10n.done,
                               value: '$_completedCount',
                               color: AppColors.secondary,
                             ),
-                            const SizedBox(width: 8),
+                            SizedBox(width: 8),
                             _StatPill(
-                              label: 'Farms',
+                              label: context.l10n.navFarms,
                               value: '${_executive.farmsAssigned}',
                               color: AppColors.secondarySoft,
                             ),
@@ -214,8 +215,7 @@ class _AdminExecutiveProfileScreenState
                         child: Row(
                           children: [
                             Expanded(
-                              child: Text(
-                                'Assigned Farms',
+                              child: Text(context.l10n.assignedFarms,
                                 style: Theme.of(context)
                                     .textTheme
                                     .titleMedium
@@ -234,10 +234,10 @@ class _AdminExecutiveProfileScreenState
                       ),
                     ),
                     if (_assignedFarms.isEmpty)
-                      const SliverToBoxAdapter(
+                      SliverToBoxAdapter(
                         child: Padding(
                           padding: EdgeInsets.fromLTRB(16, 0, 16, 8),
-                          child: Text('No farms assigned yet'),
+                          child: Text(context.l10n.noFarmsAssigned),
                         ),
                       )
                     else
@@ -269,8 +269,7 @@ class _AdminExecutiveProfileScreenState
                         child: Row(
                           children: [
                             Expanded(
-                              child: Text(
-                                'Visit History',
+                              child: Text(context.l10n.visitHistory,
                                 style: Theme.of(context)
                                     .textTheme
                                     .titleMedium
@@ -301,15 +300,15 @@ class _AdminExecutiveProfileScreenState
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: SegmentedButton<VisitStatus?>(
-                          segments: const [
-                            ButtonSegment(value: null, label: Text('All')),
+                          segments: [
+                            ButtonSegment(value: null, label: Text(context.l10n.all)),
                             ButtonSegment(
                               value: VisitStatus.ongoing,
-                              label: Text('Ongoing'),
+                              label: Text(context.l10n.ongoing),
                             ),
                             ButtonSegment(
                               value: VisitStatus.completed,
-                              label: Text('Completed'),
+                              label: Text(context.l10n.visitCompleted),
                             ),
                           ],
                           selected: {_visitFilter},
@@ -476,7 +475,7 @@ class _ProfileHeader extends StatelessWidget {
             ],
           ),
           if (executive.mobile.trim().isNotEmpty) ...[
-            const SizedBox(height: 14),
+            SizedBox(height: 14),
             Row(
               children: [
                 Expanded(
@@ -486,7 +485,7 @@ class _ProfileHeader extends StatelessWidget {
                       executive.mobile,
                     ),
                     icon: const Icon(Icons.call_rounded, size: 20),
-                    label: const Text('Call'),
+                    label: Text(context.l10n.call),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: const Color(0xFF1B7A4E),
                       side: const BorderSide(
@@ -497,7 +496,7 @@ class _ProfileHeader extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
+                SizedBox(width: 10),
                 Expanded(
                   child: FilledButton.icon(
                     onPressed: () => ContactLauncher.whatsappOrSnack(
@@ -507,7 +506,7 @@ class _ProfileHeader extends StatelessWidget {
                           'Hello ${executive.name.split(' ').first}, this is Shine Gold.',
                     ),
                     icon: const Icon(Icons.chat_rounded, size: 20),
-                    label: const Text('WhatsApp'),
+                    label: Text(context.l10n.whatsapp),
                     style: FilledButton.styleFrom(
                       backgroundColor: const Color(0xFF25D366),
                       foregroundColor: Colors.white,
@@ -758,13 +757,12 @@ class _OnboardingCoverageCard extends StatelessWidget {
               color: AppColors.secondary,
             ),
           ),
-          const SizedBox(width: 14),
+          SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Onboarding coverage',
+                Text(context.l10n.onboardingCoverage,
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
                         color: AppColors.textSecondary,
                         fontWeight: FontWeight.w700,

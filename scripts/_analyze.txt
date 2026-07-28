@@ -1,0 +1,256 @@
+Resolving dependencies...
+Downloading packages...
+  cli_util 0.4.2 (0.5.2 available)
+  connectivity_plus 7.2.0 (7.3.1 available)
+  cross_file 0.3.5+2 (0.3.5+4 available)
+  dbus 0.7.13 (0.7.14 available)
+  dio 5.9.2 (5.11.0 available)
+  dio_web_adapter 2.1.2 (2.2.1 available)
+  flutter_cache_manager 3.4.1 (3.4.2 available)
+  flutter_lints 5.0.0 (6.0.0 available)
+  flutter_local_notifications 22.0.1 (22.2.0 available)
+  flutter_local_notifications_platform_interface 12.0.0 (12.1.0 available)
+  flutter_map 7.0.2 (8.3.1 available)
+  flutter_riverpod 2.6.1 (3.4.1 available)
+  geolocator 13.0.4 (14.0.3 available)
+  geolocator_android 4.6.2 (5.0.3 available)
+  go_router 14.8.1 (17.3.0 available)
+  google_fonts 6.3.3 (8.2.0 available)
+  hooks 2.0.2 (2.1.0 available)
+  image_picker 1.2.2 (1.2.3 available)
+  intl 0.20.2 (0.20.3 available)
+  jni 1.0.0 (1.0.2 available)
+  jni_flutter 1.0.1 (1.0.2 available)
+  latlong2 0.9.1 (0.10.1 available)
+  lints 5.1.1 (6.1.0 available)
+  matcher 0.12.19 (0.12.20 available)
+  meta 1.18.0 (1.19.0 available)
+  mgrs_dart 2.0.0 (3.0.0 available)
+  objective_c 9.4.1 (9.5.0 available)
+  package_config 2.2.0 (3.0.0 available)
+  path_provider_linux 2.2.1 (2.2.2 available)
+  permission_handler 11.4.0 (12.0.3 available)
+  permission_handler_android 12.1.0 (13.0.1 available)
+  posix 6.5.0 (6.5.2 available)
+  proj4dart 2.1.0 (3.0.0 available)
+  qr 3.0.2 (4.0.0 available)
+  record 6.2.1 (7.1.1 available)
+  record_android 1.5.2 (2.1.2 available)
+  record_ios 1.2.1 (2.1.1 available)
+  record_linux 1.3.1 (2.1.1 available)
+  record_macos 1.2.2 (2.1.1 available)
+  record_platform_interface 1.6.0 (2.1.0 available)
+  record_use 0.6.0 (1.0.0 available)
+  record_web 1.3.0 (2.1.1 available)
+  record_windows 1.0.7 (2.2.2 available)
+  riverpod 2.6.1 (3.4.1 available)
+  share_plus 10.1.4 (13.3.0 available)
+  share_plus_platform_interface 5.0.2 (7.2.0 available)
+  shared_preferences_android 2.4.26 (2.4.27 available)
+  sqflite_darwin 2.4.3 (2.4.3+1 available)
+  synchronized 3.4.1 (3.4.1+1 available)
+  test_api 0.7.11 (0.7.13 available)
+  unicode 0.3.1 (1.1.9 available)
+  uuid 4.5.3 (4.6.0 available)
+  vector_math 2.2.0 (2.4.1 available)
+  win32 5.15.0 (6.3.0 available)
+Got dependencies!
+54 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Analyzing lib...                                                
+
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\core\network\dio_client.dart:18:25 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\core\network\dio_client.dart:19:25 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\core\theme\app_typography.dart:10:38 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\data\datasources\mock\mock_auth_datasource.dart:22:14 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\data\datasources\mock\mock_auth_datasource.dart:30:14 - prefer_const_constructors
+   info - The member 'getFarms' overrides an inherited member but isn't annotated with '@override'. Try adding the '@override' annotation - lib\data\datasources\mock\mock_farm_datasource.dart:18:22 - annotate_overrides
+   info - The member 'getFarmById' overrides an inherited member but isn't annotated with '@override'. Try adding the '@override' annotation - lib\data\datasources\mock\mock_farm_datasource.dart:121:17 - annotate_overrides
+   info - The member 'onboardFarm' overrides an inherited member but isn't annotated with '@override'. Try adding the '@override' annotation - lib\data\datasources\mock\mock_farm_datasource.dart:130:16 - annotate_overrides
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\data\datasources\mock\mock_seed_data.dart:361:53 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\data\datasources\mock\mock_seed_data.dart:374:11 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\data\datasources\mock\mock_seed_data.dart:404:11 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\data\datasources\mock\mock_seed_data.dart:424:11 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\data\datasources\mock\mock_seed_data.dart:446:11 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\data\datasources\mock\mock_seed_data.dart:460:11 - prefer_const_constructors
+   info - Use the null-aware operator '?.' rather than an explicit 'null' comparison. Try using '?.' - lib\data\models\visit_form.dart:362:10 - prefer_null_aware_operators
+   info - Use interpolation to compose strings and values. Try using string interpolation to build the composite string - lib\features\auth\forgot_password_screen.dart:142:62 - prefer_interpolation_to_compose_strings
+   info - Don't use 'BuildContext's across async gaps. Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check - lib\features\auth\login_screen.dart:75:11 - use_build_context_synchronously
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\checkin\checkin_screen.dart:305:36 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\checkin\checkin_screen.dart:427:34 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\checkin\checkin_screen.dart:479:34 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\checkin\checkin_screen.dart:544:34 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\checkin\checkin_screen.dart:563:32 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\checkin\checkin_screen.dart:662:25 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\checkin\checkin_screen.dart:717:23 - undefined_identifier
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\checkin\checkin_screen.dart:805:19 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\checkin\checkin_screen.dart:888:25 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\checkin\checkin_screen.dart:1004:27 - prefer_const_constructors
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\features\executive\checkin\checkin_screen.dart:1249:11 - unused_local_variable
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\features\executive\checkin\checkin_screen.dart:1301:11 - unused_local_variable
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\farm_detail\farm_detail_screen.dart:133:24 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\farm_detail\farm_detail_screen.dart:152:36 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\farm_detail\farm_detail_screen.dart:171:34 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\farm_detail\farm_detail_screen.dart:172:33 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\farm_detail\farm_detail_screen.dart:177:28 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\farm_detail\farm_detail_screen.dart:182:28 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\farm_detail\farm_detail_screen.dart:203:32 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\farm_detail\farm_detail_screen.dart:221:32 - undefined_identifier
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\farm_detail\farm_detail_screen.dart:246:14 - prefer_const_constructors
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\features\executive\farm_detail\farm_detail_screen.dart:766:11 - unused_local_variable
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\farms\farms_screen.dart:149:28 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\farms\farms_screen.dart:156:37 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\farms\farms_screen.dart:182:39 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\farms\farms_screen.dart:192:39 - undefined_identifier
+  error - Invalid constant value - lib\features\executive\home\home_screen.dart:282:36 - invalid_constant
+  error - Invalid constant value - lib\features\executive\home\home_screen.dart:283:39 - invalid_constant
+  error - Invalid constant value - lib\features\executive\home\home_screen.dart:318:36 - invalid_constant
+  error - Invalid constant value - lib\features\executive\home\home_screen.dart:319:39 - invalid_constant
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\interactions\interaction_form_screen.dart:104:32 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\interactions\interaction_form_screen.dart:110:32 - undefined_identifier
+   info - 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre. Try replacing the use of the deprecated member with the replacement - lib\features\executive\interactions\interaction_form_screen.dart:235:17 - deprecated_member_use
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\features\executive\interactions\interactions_list_screen.dart:230:11 - unused_local_variable
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\features\executive\interactions\interactions_list_screen.dart:266:11 - unused_local_variable
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\my_visits\my_visits_screen.dart:133:34 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\my_visits\my_visits_screen.dart:139:34 - undefined_identifier
+  error - Invalid constant value - lib\features\executive\my_visits\my_visits_screen.dart:194:26 - invalid_constant
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\my_visits\my_visits_screen.dart:206:29 - prefer_const_constructors
+  error - Invalid constant value - lib\features\executive\my_visits\my_visits_screen.dart:214:56 - invalid_constant
+  error - Invalid constant value - lib\features\executive\my_visits\my_visits_screen.dart:217:31 - invalid_constant
+  error - Invalid constant value - lib\features\executive\my_visits\my_visits_screen.dart:221:31 - invalid_constant
+  error - Invalid constant value - lib\features\executive\my_visits\my_visits_screen.dart:248:36 - invalid_constant
+  error - Invalid constant value - lib\features\executive\my_visits\my_visits_screen.dart:249:39 - invalid_constant
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\features\executive\my_visits\my_visits_screen.dart:415:11 - unused_local_variable
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\onboard_farm\farm_boundary_picker_screen.dart:327:16 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\onboard_farm\farm_boundary_picker_screen.dart:335:16 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\onboard_farm\farm_boundary_picker_screen.dart:359:16 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\onboard_farm\farm_boundary_picker_screen.dart:380:18 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\onboard_farm\onboard_farm_screen.dart:370:36 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\onboard_farm\onboard_farm_screen.dart:505:50 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\onboard_farm\onboard_farm_screen.dart:615:24 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\onboard_farm\onboard_farm_screen.dart:616:23 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\onboard_farm\onboard_farm_screen.dart:622:50 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\onboard_farm\onboard_farm_screen.dart:627:50 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\onboard_farm\onboard_farm_screen.dart:634:23 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\onboard_farm\onboard_farm_screen.dart:655:24 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\onboard_farm\onboard_farm_screen.dart:667:24 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\onboard_farm\onboard_farm_screen.dart:668:23 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\onboard_farm\onboard_farm_screen.dart:682:27 - undefined_identifier
+  error - Invalid constant value - lib\features\executive\onboard_farm\onboard_farm_screen.dart:735:28 - invalid_constant
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\onboard_farm\onboard_farm_screen.dart:735:28 - undefined_identifier
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\onboard_farm\onboard_farm_screen.dart:761:23 - prefer_const_constructors
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\onboard_farm\onboard_farm_screen.dart:767:50 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\onboard_farm\onboard_farm_screen.dart:775:24 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\onboard_farm\onboard_farm_screen.dart:776:23 - undefined_identifier
+   info - 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre. Try replacing the use of the deprecated member with the replacement - lib\features\executive\onboard_farm\onboard_farm_screen.dart:782:11 - deprecated_member_use
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\onboard_farm\onboard_farm_screen.dart:783:50 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\onboard_farm\onboard_farm_screen.dart:793:50 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\profile\executive_profile_screen.dart:1113:20 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\profile\executive_profile_screen.dart:1119:20 - undefined_identifier
+  error - Invalid constant value - lib\features\executive\profile\executive_profile_screen.dart:1129:33 - invalid_constant
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\profile\executive_profile_screen.dart:1129:33 - undefined_identifier
+  error - Invalid constant value - lib\features\executive\profile\executive_profile_screen.dart:1134:33 - invalid_constant
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\profile\executive_profile_screen.dart:1134:33 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\profile\executive_profile_screen.dart:1152:26 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\profile\executive_profile_screen.dart:1169:32 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\profile\executive_profile_screen.dart:1170:31 - undefined_identifier
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\profile\executive_profile_screen.dart:1171:33 - prefer_const_constructors
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\executive\profile\executive_profile_screen.dart:1249:24 - undefined_identifier
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\shell\executive_shell.dart:158:21 - prefer_const_constructors
+   info - Use 'const' literals as arguments to constructors of '@immutable' classes. Try adding 'const' before the literal - lib\features\executive\shell\executive_shell.dart:163:22 - prefer_const_literals_to_create_immutables
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\shell\executive_shell.dart:164:13 - prefer_const_constructors
+  error - Invalid constant value - lib\features\super_admin\executives\admin_executive_profile_screen.dart:241:39 - invalid_constant
+  error - Invalid constant value - lib\features\super_admin\executives\admin_executive_profile_screen.dart:305:68 - invalid_constant
+  error - Invalid constant value - lib\features\super_admin\executives\admin_executive_profile_screen.dart:308:43 - invalid_constant
+  error - Invalid constant value - lib\features\super_admin\executives\admin_executive_profile_screen.dart:312:43 - invalid_constant
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\features\super_admin\executives\admin_executive_profile_screen.dart:559:11 - unused_local_variable
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\features\super_admin\executives\admin_executive_profile_screen.dart:606:11 - unused_local_variable
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\features\super_admin\executives\admin_executive_profile_screen.dart:806:11 - unused_local_variable
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\super_admin\executives\executives_screen.dart:90:14 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\super_admin\executives\executives_screen.dart:91:17 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\super_admin\executives\executives_screen.dart:97:18 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\super_admin\executives\executives_screen.dart:108:18 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\super_admin\executives\executives_screen.dart:126:18 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\super_admin\executives\executives_screen.dart:153:18 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\super_admin\executives\executives_screen.dart:179:18 - undefined_identifier
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\features\super_admin\farmers\farmers_screen.dart:460:11 - unused_local_variable
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\features\super_admin\nearby\admin_nearby_farms_section.dart:404:11 - unused_local_variable
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\super_admin\password_reset\admin_password_reset_screen.dart:67:21 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\super_admin\password_reset\admin_password_reset_screen.dart:75:25 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\super_admin\password_reset\admin_password_reset_screen.dart:79:25 - undefined_identifier
+  error - Invalid constant value - lib\features\super_admin\password_reset\admin_password_reset_screen.dart:175:33 - invalid_constant
+  error - Invalid constant value - lib\features\super_admin\password_reset\admin_password_reset_screen.dart:180:33 - invalid_constant
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\visits\presentation\visit_report_screen.dart:112:34 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\features\visits\presentation\visit_report_screen.dart:118:32 - undefined_identifier
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\visits\presentation\visit_report_screen.dart:140:18 - prefer_const_constructors
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\features\visits\presentation\visit_report_screen.dart:393:11 - unused_local_variable
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\features\visits\presentation\visit_report_screen.dart:439:11 - unused_local_variable
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\features\visits\presentation\visit_report_screen.dart:480:11 - unused_local_variable
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\visits\presentation\widgets\dynamic_visit_form.dart:243:17 - prefer_const_constructors
+   info - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre. Try replacing the use of the deprecated member with the replacement - lib\features\visits\presentation\widgets\dynamic_visit_form.dart:284:11 - deprecated_member_use
+   info - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre. Try replacing the use of the deprecated member with the replacement - lib\features\visits\presentation\widgets\dynamic_visit_form.dart:285:11 - deprecated_member_use
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\features\welcome\welcome_screen.dart:612:11 - unused_local_variable
+warning - The member 'state' can only be used within 'package:state_notifier/state_notifier.dart' or a test - lib\shared\providers\auth_provider.dart:270:30 - invalid_use_of_visible_for_testing_member
+warning - The member 'state' can only be used within instance members of subclasses of 'StateNotifier' - lib\shared\providers\auth_provider.dart:270:30 - invalid_use_of_protected_member
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\services\visit_report_pdf_service.dart:51:22 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\services\visit_report_pdf_service.dart:96:28 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\services\visit_report_pdf_service.dart:155:18 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\services\visit_report_pdf_service.dart:177:24 - prefer_const_constructors
+  error - Target of URI doesn't exist: '../l10n/app_localizations.dart'. Try creating the file referenced by the URI, or try using a URI for a file that does exist - lib\shared\utils\l10n_ext.dart:3:8 - uri_does_not_exist
+  error - Target of URI doesn't exist: '../l10n/app_localizations.dart'. Try creating the file referenced by the URI, or try using a URI for a file that does exist - lib\shared\utils\l10n_ext.dart:5:8 - uri_does_not_exist
+  error - Undefined class 'AppLocalizations'. Try changing the name to the name of an existing class, or creating a class with the name 'AppLocalizations' - lib\shared\utils\l10n_ext.dart:8:3 - undefined_class
+  error - Undefined name 'AppLocalizations'. Try correcting the name to one that is defined, or defining the name - lib\shared\utils\l10n_ext.dart:8:32 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\shared\utils\photo_picker.dart:99:27 - undefined_identifier
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\shared\utils\photo_picker.dart:104:27 - undefined_identifier
+  error - Invalid constant value - lib\shared\utils\photo_picker.dart:131:18 - invalid_constant
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\shared\utils\photo_picker.dart:131:18 - undefined_identifier
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\utils\visit_report_pdf.dart:38:26 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\utils\visit_report_pdf.dart:74:20 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\utils\visit_report_pdf.dart:77:22 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\utils\visit_report_pdf.dart:83:20 - prefer_const_constructors
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\shared\utils\visit_report_pdf.dart:102:19 - undefined_identifier
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\utils\visit_report_pdf.dart:103:20 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\utils\visit_report_pdf.dart:114:22 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\utils\visit_report_pdf.dart:169:22 - prefer_const_constructors
+   info - The import of 'dart:typed_data' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/foundation.dart'. Try removing the import directive - lib\shared\utils\voice_audio_cache.dart:2:8 - unnecessary_import
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\shared\widgets\admin_farm_map.dart:671:11 - unused_local_variable
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\shared\widgets\admin_farm_map.dart:709:11 - unused_local_variable
+warning - The declaration '_StateClusterBadge' isn't referenced. Try removing the declaration of '_StateClusterBadge' - lib\shared\widgets\admin_farm_map.dart:779:7 - unused_element
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\shared\widgets\admin_farm_map.dart:794:11 - unused_local_variable
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\shared\widgets\admin_farm_map.dart:880:11 - unused_local_variable
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\shared\widgets\admin_farm_map.dart:960:11 - unused_local_variable
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\shared\widgets\admin_farm_map.dart:1002:11 - unused_local_variable
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\shared\widgets\admin_farm_map.dart:1086:11 - unused_local_variable
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\shared\widgets\admin_farm_map.dart:1183:11 - unused_local_variable
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\admin_network_hero.dart:349:11 - prefer_const_constructors
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\shared\widgets\admin_ui.dart:379:11 - unused_local_variable
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\shared\widgets\admin_ui.dart:654:11 - unused_local_variable
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\shared\widgets\admin_ui.dart:685:11 - unused_local_variable
+   info - Constructors in '@immutable' classes should be declared as 'const'. Try adding 'const' to the constructor declaration - lib\shared\widgets\admin_ui.dart:722:3 - prefer_const_constructors_in_immutables
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\shared\widgets\admin_ui.dart:748:11 - unused_local_variable
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\shared\widgets\admin_ui.dart:877:11 - unused_local_variable
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\shared\widgets\admin_ui.dart:1154:11 - unused_local_variable
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\shared\widgets\dashboard_overview.dart:197:11 - unused_local_variable
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\shared\widgets\dashboard_overview.dart:250:11 - unused_local_variable
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\shared\widgets\dashboard_overview.dart:334:11 - unused_local_variable
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\shared\widgets\farm_boundary_map_view.dart:219:11 - unused_local_variable
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\farm_card.dart:215:41 - prefer_const_constructors
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\shared\widgets\info_metric_tile.dart:25:11 - unused_local_variable
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\shine_bottom_nav.dart:20:19 - prefer_const_constructors
+   info - Use 'const' literals as arguments to constructors of '@immutable' classes. Try adding 'const' before the literal - lib\shared\widgets\shine_bottom_nav.dart:22:20 - prefer_const_literals_to_create_immutables
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\shine_bottom_nav.dart:23:11 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\shine_empty_state.dart:31:27 - prefer_const_constructors
+  error - Undefined name 'l10n'. Try correcting the name to one that is defined, or defining the name - lib\shared\widgets\state_diagnostics.dart:222:29 - undefined_identifier
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\shared\widgets\state_diagnostics.dart:239:11 - unused_local_variable
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\shared\widgets\ux_components.dart:86:11 - unused_local_variable
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\shared\widgets\ux_components.dart:128:11 - unused_local_variable
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\shared\widgets\ux_components.dart:217:11 - unused_local_variable
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\shared\widgets\ux_components.dart:265:11 - unused_local_variable
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\shared\widgets\ux_components.dart:392:11 - unused_local_variable
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\shared\widgets\ux_components.dart:522:11 - unused_local_variable
+   info - Unnecessary braces in a string interpolation. Try removing the braces - lib\shared\widgets\ux_components.dart:624:13 - unnecessary_brace_in_string_interps
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\shared\widgets\ux_components.dart:731:11 - unused_local_variable
+warning - The value of the local variable 'l10n' isn't used. Try removing the variable or using it - lib\shared\widgets\ux_components.dart:842:11 - unused_local_variable
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\visit_log_tile.dart:50:29 - prefer_const_constructors
+
+193 issues found. (ran in 24.9s)

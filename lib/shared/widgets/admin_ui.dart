@@ -7,6 +7,7 @@ import '../utils/contact_launcher.dart';
 import 'shine_buttons.dart';
 import 'user_avatar.dart';
 import '../utils/acres_format.dart';
+import '../../shared/utils/l10n_ext.dart';
 
 /// Slide-up form sheet with gradient header — replaces plain AlertDialogs.
 ///
@@ -306,9 +307,9 @@ class _AdminFormSheetState extends State<_AdminFormSheet> {
                             isLoading: _submitting,
                             onPressed: _submitting ? null : _handleSubmit,
                           ),
-                          const SizedBox(height: 8),
+                          SizedBox(height: 8),
                           ShineSecondaryButton(
-                            label: 'Cancel',
+                            label: context.l10n.cancel,
                             onPressed: _submitting
                                 ? null
                                 : () => Navigator.pop(context),
@@ -546,7 +547,7 @@ class _AdminTeamTileState extends State<AdminTeamTile> {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 2),
+                        SizedBox(height: 2),
                         Text(
                           widget.subtitle,
                           style:
@@ -556,7 +557,7 @@ class _AdminTeamTileState extends State<AdminTeamTile> {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 6),
+                        SizedBox(height: 6),
                         _StatusDot(status: widget.status),
                       ],
                     ),
@@ -564,7 +565,7 @@ class _AdminTeamTileState extends State<AdminTeamTile> {
                   if (widget.mobile != null &&
                       widget.mobile!.trim().isNotEmpty)
                     IconButton(
-                      tooltip: 'Call',
+                      tooltip: context.l10n.call,
                       visualDensity: VisualDensity.compact,
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(
@@ -713,7 +714,7 @@ class _StatusDot extends StatelessWidget {
 
 /// Polished menu tile for admin More sheet.
 class AdminMenuTile extends StatefulWidget {
-  const AdminMenuTile({
+  AdminMenuTile({
     super.key,
     required this.icon,
     required this.title,
@@ -996,7 +997,7 @@ class AdminContactHub extends StatelessWidget {
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            const SizedBox(width: 10),
+            SizedBox(width: 10),
             Text(
               'Contact & Identity',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -1008,13 +1009,13 @@ class AdminContactHub extends StatelessWidget {
             .animate()
             .fadeIn(duration: 350.ms)
             .slideX(begin: -0.04, end: 0),
-        const SizedBox(height: 14),
+        SizedBox(height: 14),
         Row(
           children: [
             Expanded(
               child: _ContactTile(
                 icon: Icons.phone_in_talk_rounded,
-                label: 'Mobile',
+                label: context.l10n.mobile,
                 value: mobile,
                 color: AppColors.info,
                 actionIcon: Icons.edit_rounded,
@@ -1023,11 +1024,11 @@ class AdminContactHub extends StatelessWidget {
                 onTap: onEditMobile,
               ),
             ),
-            const SizedBox(width: 10),
+            SizedBox(width: 10),
             Expanded(
               child: _ContactTile(
                 icon: Icons.badge_rounded,
-                label: 'Employee ID',
+                label: context.l10n.employeeId,
                 value: employeeId,
                 color: AppColors.primary,
                 delay: 140.ms,
@@ -1035,10 +1036,10 @@ class AdminContactHub extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 10),
+        SizedBox(height: 10),
         _ContactTile(
           icon: Icons.location_on_rounded,
-          label: 'Office Address',
+          label: context.l10n.officeAddress,
           value: address,
           color: AppColors.secondary,
           actionIcon: Icons.edit_rounded,

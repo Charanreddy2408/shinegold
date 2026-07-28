@@ -7,6 +7,7 @@ import '../../../core/network/api_exception.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/auth_provider.dart';
+import '../../../shared/utils/l10n_ext.dart';
 import '../../../shared/widgets/shine_buttons.dart';
 import '../../../shared/widgets/shine_logo.dart';
 
@@ -58,7 +59,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
 
   Future<void> _continueWithId() async {
     if (_employeeId.isEmpty) {
-      setState(() => _statusMessage = 'Enter your employee ID.');
+      setState(() => _statusMessage = context.l10n.enterYourEmployeeId);
       return;
     }
     setState(() {
@@ -96,7 +97,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
       if (!mounted) return;
       setState(() {
         _step = _ForgotStep.waiting;
-        _statusMessage = 'Request sent. Waiting for super admin approval.';
+        _statusMessage = '${ context.l10n.requestWithAdmin.split('.').first}. ${context.l10n.waitingAdminApproval.split('.').last}';
       });
     } catch (e) {
       if (!mounted) return;
@@ -105,7 +106,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         setState(() {
           _step = _ForgotStep.approved;
           _statusMessage =
-              'Your reset is already approved. Set your new password below.';
+              context.l10n.resetApprovedSetPassword;
         });
       } else if (message.toLowerCase().contains('already pending')) {
         setState(() {
@@ -135,9 +136,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           approved: info.isApproved,
           pending: info.isPending,
           message: info.isApproved
-              ? 'Approved! Set your new password below.'
+              ? context.l10n.statusApproved.split(':').last.trim() + '! ' + context.l10n.resetApprovedSetPassword
               : info.isPending
-                  ? 'Still waiting for admin approval.'
+                  ? context.l10n.waitingAdminApproval
                   : info.message,
         );
       });
@@ -163,8 +164,8 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Password updated. Sign in with your new password.'),
+        SnackBar(
+          content: Text(context.l10n.passwordUpdatedSignIn),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -216,7 +217,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                         color: color,
                       ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 Text(
                   body,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -236,7 +237,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Forgot Password'),
+        title: Text(context.l10n.forgotPasswordTitle),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.go(AppRoutes.login),
@@ -248,37 +249,37 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Center(child: ShineLogo(size: 72)),
-              const SizedBox(height: 24),
+              Center(child: ShineLogo(size: 72)),
+              SizedBox(height: 24),
               FadeSlideIn(
                 child: Text(
                   switch (_step) {
                     _ForgotStep.enterId =>
-                      'Forgot your password? Enter your employee ID — we will show the right next step.',
+                      context.l10n.forgotYourPassword,
                     _ForgotStep.request =>
-                      'Request admin approval to reset your password.',
+                      context.l10n.requestAdminApproval,
                     _ForgotStep.waiting =>
-                      'Your request is with the super admin.',
+                      context.l10n.requestWithAdmin,
                     _ForgotStep.approved =>
-                      'Admin approved your reset. Choose a new password.',
+                      context.l10n.adminApprovedChoose,
                   },
                   style: theme.textTheme.bodyLarge,
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24),
               if (_step == _ForgotStep.enterId) ...[
                 TextField(
                   controller: _employeeIdController,
                   textCapitalization: TextCapitalization.characters,
-                  decoration: const InputDecoration(
-                    labelText: 'Employee ID',
-                    prefixIcon: Icon(Icons.badge_outlined),
+                  decoration: InputDecoration(
+                    labelText: context.l10n.employeeId,
+                    prefixIcon: const Icon(Icons.badge_outlined),
                   ),
                   onSubmitted: (_) => _continueWithId(),
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: 24),
                 ShinePrimaryButton(
-                  label: 'Continue',
+                  label: context.l10n.continueButton,
                   isLoading: _loading,
                   onPressed: _continueWithId,
                 ),
@@ -287,7 +288,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                   children: [
                     Expanded(
                       child: Text(
-                        'Employee ID: $_employeeId',
+                        '${context.l10n.employeeIdLabel}: $_employeeId',
                         style: theme.textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.w800,
                         ),
@@ -295,38 +296,36 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                     ),
                     TextButton(
                       onPressed: _loading ? null : _changeEmployeeId,
-                      child: const Text('Change'),
+                      child: Text(context.l10n.change),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
                 if (_step == _ForgotStep.waiting)
                   _statusCard(
-                    title: 'Status: Pending approval',
-                    body:
-                        'Super admin has not approved yet. Tap refresh after they approve.',
+                    title: context.l10n.statusPendingApproval,
+                    body: context.l10n.adminNotApprovedYet,
                     color: AppColors.warning,
                     icon: Icons.hourglass_top_rounded,
                   ),
                 if (_step == _ForgotStep.approved)
                   _statusCard(
-                    title: 'Status: Approved',
-                    body:
-                        'You can set a new password now. No login or temporary password needed.',
+                    title: context.l10n.statusApproved,
+                    body: context.l10n.setNewPasswordNoLogin,
                     color: AppColors.success,
                     icon: Icons.check_circle_outline_rounded,
                   ),
-                const SizedBox(height: 20),
+                SizedBox(height: 20),
                 if (_step == _ForgotStep.request) ...[
                   ShinePrimaryButton(
-                    label: 'Request password reset',
+                    label: context.l10n.requestPasswordResetButton,
                     isLoading: _loading,
                     onPressed: _requestReset,
                   ),
                 ],
                 if (_step == _ForgotStep.waiting) ...[
                   ShinePrimaryButton(
-                    label: 'Refresh status',
+                    label: context.l10n.refreshStatusButton,
                     isLoading: _loading,
                     onPressed: _refreshStatus,
                   ),
@@ -340,7 +339,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                           controller: _newPassword,
                           obscureText: _obscureNew,
                           decoration: InputDecoration(
-                            labelText: 'New password',
+                            labelText: context.l10n.newPassword,
                             prefixIcon: const Icon(Icons.lock_rounded),
                             suffixIcon: IconButton(
                               icon: Icon(
@@ -354,20 +353,20 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                           ),
                           validator: (v) {
                             if (v == null || v.isEmpty) {
-                              return 'Enter new password';
+                              return context.l10n.enterNewPassword;
                             }
                             if (v.length < 6) {
-                              return 'Password must be at least 6 characters';
+                              return context.l10n.passwordTooShort;
                             }
                             return null;
                           },
                         ),
-                        const SizedBox(height: 12),
+                        SizedBox(height: 12),
                         TextFormField(
                           controller: _confirm,
                           obscureText: _obscureConfirm,
                           decoration: InputDecoration(
-                            labelText: 'Confirm new password',
+                            labelText: context.l10n.confirmNewPassword,
                             prefixIcon: const Icon(Icons.lock_rounded),
                             suffixIcon: IconButton(
                               icon: Icon(
@@ -382,17 +381,17 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                           ),
                           validator: (v) {
                             if (v == null || v.isEmpty) {
-                              return 'Confirm your new password';
+                              return context.l10n.confirmYourPassword;
                             }
                             if (v != _newPassword.text) {
-                              return 'Passwords do not match';
+                              return context.l10n.passwordsDoNotMatch;
                             }
                             return null;
                           },
                         ),
-                        const SizedBox(height: 20),
+                        SizedBox(height: 20),
                         ShinePrimaryButton(
-                          label: 'Update password',
+                          label: context.l10n.updatePassword,
                           isLoading: _loading,
                           onPressed: _loading ? null : _setPassword,
                         ),

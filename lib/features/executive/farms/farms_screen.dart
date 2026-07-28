@@ -21,6 +21,7 @@ import '../../../shared/widgets/farm_card.dart';
 import '../../../shared/widgets/shine_buttons.dart';
 import '../../../shared/widgets/shine_empty_state.dart';
 import '../../../shared/widgets/ux_components.dart';
+import '../../../shared/utils/l10n_ext.dart';
 
 class FarmsScreen extends ConsumerStatefulWidget {
   const FarmsScreen({super.key});
@@ -142,17 +143,17 @@ class _FarmsScreenState extends ConsumerState<FarmsScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                   Row(
                     children: [
-                      Text('Filters',
+                      Text(context.l10n.filters,
                           style: Theme.of(context).textTheme.titleLarge),
                       const Spacer(),
                       TextButton(
                         onPressed: () {
                           setModalState(() => _filter = const FarmFilter());
                         },
-                        child: const Text('Clear all'),
+                        child: Text(context.l10n.clearAll),
                       ),
                     ],
                   ),
@@ -172,23 +173,23 @@ class _FarmsScreenState extends ConsumerState<FarmsScreen> {
                       );
                     }).toList(),
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
                   Row(
                     children: [
                       Expanded(
                         child: OutlinedButton(
                           onPressed: () => Navigator.pop(ctx),
-                          child: const Text('Cancel'),
+                          child: Text(context.l10n.cancel),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: 12),
                       Expanded(
                         child: FilledButton(
                           onPressed: () {
                             Navigator.pop(ctx);
                             _loadFarms(isRefresh: _farms.isNotEmpty);
                           },
-                          child: const Text('Apply'),
+                          child: Text(context.l10n.apply),
                         ),
                       ),
                     ],
@@ -232,13 +233,13 @@ class _FarmsScreenState extends ConsumerState<FarmsScreen> {
 
     return AppBackground(
       header: GradientHeader(
-        title: 'Farms',
+        title: context.l10n.navFarms,
         subtitle: _initialLoading
             ? 'Loading...'
             : '${_farms.length} assigned farms',
         compact: true,
         trailing: IconButton(
-          tooltip: 'Nearby unassigned farms',
+          tooltip: context.l10n.nearbyUnassignedFarms,
           onPressed: () => context.push(AppRoutes.farmInvitations),
           icon: const Icon(Icons.explore_outlined, color: Colors.white),
         ),
@@ -289,7 +290,7 @@ class _FarmsScreenState extends ConsumerState<FarmsScreen> {
               }).toList(),
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Expanded(
             child: _initialLoading
                 ? const ListLoadingSkeleton()
@@ -304,10 +305,10 @@ class _FarmsScreenState extends ConsumerState<FarmsScreen> {
                     : _farms.isEmpty
                         ? ShineEmptyState(
                             icon: Icons.eco_outlined,
-                            title: 'No farms found',
-                            subtitle: 'Try adjusting your search or filters',
+                            title: context.l10n.noFarmsFound,
+                            subtitle: context.l10n.tryAdjustingFilters,
                             action: ShineSecondaryButton(
-                              label: 'Clear Filters',
+                              label: context.l10n.clearFilters,
                               onPressed: () {
                                 _searchController.clear();
                                 setState(() => _filter = const FarmFilter());

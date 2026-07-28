@@ -14,6 +14,7 @@ import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/shine_buttons.dart';
 import '../../../shared/widgets/shine_empty_state.dart';
 import '../../../shared/widgets/ux_components.dart';
+import '../../../shared/utils/l10n_ext.dart';
 
 class FarmInvitationsScreen extends ConsumerStatefulWidget {
   const FarmInvitationsScreen({super.key});
@@ -95,7 +96,7 @@ class _FarmInvitationsScreenState extends ConsumerState<FarmInvitationsScreen> {
       backgroundColor: AppColors.canvasDeep,
       body: AppBackground(
         header: GradientHeader(
-          title: 'Nearby Farms',
+          title: context.l10n.nearbyFarms,
           subtitle: _loading
               ? 'Loading...'
               : '${_invitations.length} unassigned farms within 70 km',
@@ -118,11 +119,10 @@ class _FarmInvitationsScreenState extends ConsumerState<FarmInvitationsScreen> {
                   : _invitations.isEmpty
                       ? ShineEmptyState(
                           icon: Icons.explore_off_rounded,
-                          title: 'No nearby invitations',
-                          subtitle:
-                              'Unassigned farms within 70 km of your home location will appear here. Set your home location in Profile if needed.',
+                          title: context.l10n.noNearbyInvitations,
+                          subtitle: context.l10n.unassignedFarmsDescription,
                           action: ShineSecondaryButton(
-                            label: 'Refresh',
+                            label: context.l10n.refresh,
                             onPressed: _load,
                           ),
                         )
@@ -212,7 +212,7 @@ class _InvitationCard extends StatelessWidget {
                   ),
                 ],
                 if (invitation.distanceKm != null) ...[
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   Row(
                     children: [
                       const Icon(
@@ -220,7 +220,7 @@ class _InvitationCard extends StatelessWidget {
                         size: 14,
                         color: AppColors.primary,
                       ),
-                      const SizedBox(width: 4),
+                      SizedBox(width: 4),
                       Text(
                         '${invitation.distanceKm!.toStringAsFixed(1)} km away',
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
@@ -234,9 +234,9 @@ class _InvitationCard extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           ShinePrimaryButton(
-            label: 'Accept Assignment',
+            label: context.l10n.acceptAssignment,
             isLoading: accepting,
             icon: Icons.check_rounded,
             onPressed: accepting ? null : onAccept,

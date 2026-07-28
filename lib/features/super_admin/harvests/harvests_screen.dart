@@ -14,6 +14,7 @@ import '../../../shared/widgets/animated_loading.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/shine_empty_state.dart';
 import '../../../shared/widgets/ux_components.dart';
+import '../../../shared/utils/l10n_ext.dart';
 
 class HarvestsScreen extends ConsumerStatefulWidget {
   const HarvestsScreen({super.key});
@@ -155,7 +156,7 @@ class _HarvestsScreenState extends ConsumerState<HarvestsScreen> {
 
     return AppBackground(
       header: GradientHeader(
-        title: 'Harvests',
+        title: context.l10n.navHarvests,
         subtitle: _initialLoading
             ? 'Loading...'
             : '${_harvests.length} scheduled',

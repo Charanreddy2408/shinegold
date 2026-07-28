@@ -1,0 +1,340 @@
+files_with_english 44
+ 27 lib/features/executive/onboard_farm/onboard_farm_screen.dart
+    - Farm created successfully
+    - The farm has been added successfully.
+    - Onboard Farm
+    - Harvest Date
+    - ${_harvestDate.day}/${_harvestDate.month}/${_harvestDate.year}
+    - Farm Photos
+    - ${_farmPhotos.length}/$_maxFarmPhotos
+    - Add photo
+    - Remove
+    - View dashboard
+    - Onboard Another
+    - Next: Farmer Details
+ 26 lib/features/executive/farm_detail/farm_detail_screen.dart
+    - Update harvest date
+    - Tap to pick a new date
+    - Pick a different date to save a change
+    - Harvest date updated
+    - Aadhar: ${farm.farmer.aadharNumber}
+    - Farm Summary
+    - Harvest Information
+    - SET HARVEST DATE
+    - Harvest date history
+    - ${dateFormat.format(change.oldDate)} ΓåÆ ${dateFormat.format(change.newDate)}
+    - By ${change.changedByName} ┬╖ ${DateFormat(
+    - Farm Photos
+ 24 lib/features/executive/checkin/checkin_screen.dart
+    - Could not cancel visit: ${formatApiError(e)}
+    - Offline mode ΓÇö visit will sync when internet returns
+    - Microphone permission is required to record
+    - Could not start recording: ${formatApiError(e)}
+    - Voice note auto-saved at the 2:30 limit
+    - Could not stop recording: ${formatApiError(e)}
+    - Voice saved locally ΓÇö will upload when online
+    - Voice upload failed: ${formatApiError(e)}
+    - Maximum 5 photos allowed
+    - Visit submitted successfully
+    - Visit saved offline. It will sync automatically when internet returns.
+    - Offline ΓÇö answers & media stay on this device until sync
+ 18 lib/features/super_admin/profile/admin_profile_screen.dart
+    - Mobile number updated
+    - Office address updated
+    - Password changed successfully
+    - Tap your photo above to update it
+    - Super Administrator
+    - Managing Shine Gold operations
+    - Mobile Number
+    - Office Address
+    - New Password
+    - Confirm New Password
+    - Change Password
+    - Logout
+ 17 lib/shared/widgets/admin_farm_map.dart
+    - Farm Network ΓÇö India
+    - ${_scale.toStringAsFixed(1)}├ù
+    - Pinch to zoom ┬╖ drag to pan ┬╖ tap a pin for farm details
+    - $state ($count)
+    - $state ΓÇö ${farms.length} farm(s)
+    - View Farm Details
+    - India farm map
+    - Zoom out
+    - Zoom in
+    - Pinch with two fingers ┬╖ drag to pan ┬╖ ${_plotted.length} farms ┬╖ ${_scale.toStringAsFixed
+    - Farms
+    - States
+ 17 lib/features/executive/interactions/interaction_form_screen.dart
+    - Please select crop and planned months
+    - Enter the crop name
+    - Planning to take
+    - ${options[index]} month${options[index] == 1 ? 
+    - ${options.first} mo
+    - ${options.last} mo
+    - Onboarding status
+    - ${options[index]} mo
+    - Capture prospect farmer details from your conversation
+    - Farmer name
+    - Phone number
+    - Land location
+ 16 lib/features/super_admin/executives/admin_executive_profile_screen.dart
+    - Assigned Farms
+    - ${_assignedFarms.length} farms
+    - No farms assigned yet
+    - Visit History
+    - ${_visits.length} records
+    - All
+    - Ongoing
+    - Completed
+    - Call
+    - WhatsApp
+    - ${visit.durationMinutes} min on site
+    - Onboarding coverage
+ 16 lib/data/datasources/mock/mock_seed_data.dart
+    - Visit Information
+    - General Health Assessment of Trees
+    - Excellent
+    - Good
+    - Fair
+    - Poor
+    - Observed Pest or Disease Presence
+    - No major issues
+    - Aphids
+    - Farm Infrastructure Condition
+    - Farmer adoption of agronomic practices
+    - Does the farmer require immediate assistance?
+ 14 lib/features/executive/home/home_screen.dart
+    - Interactions
+    - Record conversations with farmers you want to onboard
+    - $_onboardedCount ┬╖ ${_formatAcres(_onboardedAcres)} ac
+    - +${_onboardedCount - 8} more onboarded farms
+    - ${_todayFarms.length}
+    - Harvest ${DateFormat(
+    - ONBOARDED
+    - PRIORITY
+    - Farms you onboarded
+    - No farms onboarded yet
+    - Farms you add from the Onboard tab will show here
+    - No priority farms
+ 13 lib/features/super_admin/nearby/admin_nearby_farms_section.dart
+    - Farms Near You
+    - Within ${AdminNearbyConfig.radiusKm.toStringAsFixed(0)} km ┬╖ updates every 3 min
+    - View all ${nearby.farms.length} nearby farms
+    - Open full map list
+    - Refresh nearby
+    - Lat ${location.position!.latitude.toStringAsFixed(4)}, 
+    - Updated ${timeFormat.format(lastRefresh!.toLocal())}
+    - Live
+    - ${farm.distanceKm!.toStringAsFixed(1)} km
+    - Nearby Farms
+    - Within ${AdminNearbyConfig.radiusKm.toStringAsFixed(0)} km radius
+    - No farms nearby
+ 13 lib/features/super_admin/password_reset/admin_password_reset_screen.dart
+    - Approve password reset?
+    - Allow ${request.userName} (${request.employeeId}) to set a new 
+    - Cancel
+    - Approve
+    - Approved ΓÇö ${request.employeeId} can now set a new password
+    - Password Resets
+    - Review executive password-reset requests. Approve so they can set a new password themselve
+    - Pending
+    - All
+    - Requested ${dateFormat.format(request.requestedAt.toLocal())}
+    - Retry
+    - Could not load requests
+ 11 lib/shared/widgets/dashboard_overview.dart
+    - YOUR COVERAGE
+    - acres
+    - Field activity
+    - Farm
+    - Acres
+    - Crop
+    - Onboarded
+    - Pending
+    - Visits
+    - Assigned farms
+    - Harvest soon
+ 11 lib/features/super_admin/executives/executives_screen.dart
+    - Home GPS pin (required)
+    - Tap Locate after entering address + PIN. Create stays blocked until the pin is verified.
+    - Verified ┬╖ ${draft.lat!.toStringAsFixed(5)}, ${draft.lng!.toStringAsFixed(5)}
+    - Full Name
+    - Mobile Number
+    - Address
+    - PIN code
+    - Password
+    - Add Executive
+    - Address + PIN must Locate successfully so home GPS is stored.
+    - Team
+ 11 lib/features/executive/onboard_farm/farm_boundary_picker_screen.dart
+    - Select Farm Boundary
+    - Undo
+    - Clear
+    - Boundary pins
+    - GPS location
+    - Address lookup
+    - Location search
+    - Farm boundary ΓÇö status
+    - Search village, district in India...
+    - Recenter on my location
+    - Show India
+ 11 lib/features/executive/profile/executive_profile_screen.dart
+    - ${user.homeLat!.toStringAsFixed(5)}, ${user.homeLng!.toStringAsFixed(5)}
+    - Update home location
+    - Choose how to set the pin used for nearby farms.
+    - Enter manually
+    - Current location
+    - WeΓÇÖll use your phone GPS and fill the address automatically.
+    - Pin ┬╖ ${_lat!.toStringAsFixed(5)}, ${_lng!.toStringAsFixed(5)}
+    - Address
+    - Cancel
+    - PIN code (optional)
+    - Auto-filled from suggestion when possible
+ 10 lib/shared/widgets/admin_ui.dart
+    - $crop ┬╖ $harvestType
+    - Contact & Identity
+    - Verified Administrator
+    - Full access to farms, team & harvest data
+    - Cancel
+    - ${widget.visitCount} visits
+    - Mobile
+    - Employee ID
+    - Office Address
+    - Call
+ 10 lib/features/visits/presentation/visit_report_screen.dart
+    - Preparing PDFΓÇª
+    - Report PDF ready to share/save
+    - Visit Report
+    - Download PDF
+    - Field Report
+    - No structured report answers were saved for this visit.
+    - Voice Note
+    - Voice note was recorded but the audio file is not available.
+    - Photos (${_visit!.photos.length})
+    - Download report PDF
+ 10 lib/features/executive/my_visits/my_visits_screen.dart
+    - Still offline ΓÇö sync will retry later
+    - Nothing waiting to sync
+    - All
+    - Ongoing
+    - Completed
+    - My Visits
+    - No visits yet
+    - Your farm visits will appear here
+    - Search by farm name...
+    - Sync now
+  9 lib/features/executive/farms/farms_screen.dart
+    - Filters
+    - Clear all
+    - Cancel
+    - Apply
+    - Clear Filters
+    - Farms
+    - No farms found
+    - Try adjusting your search or filters
+    - Nearby unassigned farms
+  9 lib/features/executive/interactions/interactions_list_screen.dart
+    - Record
+    - ${item.landLocation} ┬╖ ${item.acres} ac ┬╖ ${item.currentCrop}
+    - Planning ${item.plannedMonths} month${item.plannedMonths == 1 ? 
+    - All
+    - Record interaction
+    - Interactions
+    - No interactions yet
+    - Log conversations with farmers you are trying to bring into the plan
+    - Search name, phone, location
+  8 lib/features/executive/farms/farm_invitations_screen.dart
+    - ${invitation.name} added to your farms
+    - Farmer: ${invitation.farmerName}
+    - ${invitation.distanceKm!.toStringAsFixed(1)} km away
+    - Refresh
+    - Accept Assignment
+    - Nearby Farms
+    - No nearby invitations
+    - Unassigned farms within 70 km of your home location will appear here. Set your home locati
+  7 lib/shared/utils/visit_report_pdf.dart
+    - $key: $value
+    - Shine Gold ΓÇö Visit Report
+    - Field Report
+    - No written notes.
+    - Form Answers
+    - Form: ${template.name}
+    - Generated by Shine Gold ┬╖ ${DateFormat(
+  6 lib/features/super_admin/farmers/farmers_screen.dart
+    - Linked Farms
+    - No farm linked to this farmer yet.
+    - Gender
+    - Age
+    - Aadhar
+    - Farmers
+  5 lib/shared/services/visit_report_pdf_service.dart
+    - Shine Gold ┬╖ Visit Report
+    - Page ${context.pageNumber} of ${context.pagesCount}
+    - No structured report answers were saved for this visit.
+    - Photo files could not be embedded. Count: ${visit.photos.length}.
+    - ${e.key}: ${e.value}
+  5 lib/shared/widgets/state_diagnostics.dart
+    - Details
+    - Report copied
+    - Close
+    - ΓåÆ ${item.hint!}
+    - Copy report
+  4 lib/shared/utils/contact_launcher.dart
+    - Could not open phone dialer
+    - Could not open WhatsApp
+    - Call
+    - WhatsApp
+  4 lib/shared/widgets/admin_network_hero.dart
+    - Network Overview
+    - Across all field operations
+    - $totalVisits
+    - Total field visits logged
+  4 lib/shared/widgets/farm_boundary_map_view.dart
+    - India only
+    - Zoom in
+    - Zoom out
+    - Recenter on me
+  4 lib/shared/widgets/ux_components.dart
+    - Retry
+    - ${_formatClock(widget.elapsed)} / ${_formatClock(widget.maxDuration)}
+    - Tap to record (max ${_formatClock(widget.maxDuration)})
+    - ${_index + 1} / ${widget.urls.length}
+  3 lib/shared/utils/photo_picker.dart
+    - Take photo
+    - Choose from gallery
+    - Settings
+  3 lib/features/welcome/welcome_screen.dart
+    - SHINE GOLD
+    - ORGANIC AGRO INVENTION
+    - Field intelligence for a greener harvest
+  2 lib/shared/utils/whatsapp_launcher.dart
+    - Invalid phone number for WhatsApp
+    - Could not open WhatsApp
+  2 lib/shared/widgets/info_metric_tile.dart
+    - Type
+    - Date
+  2 lib/shared/widgets/profile_photo_editor.dart
+    - Profile photo updated
+    - Tap to update photo
+  2 lib/features/super_admin/farms/admin_farm_assign_sheet.dart
+    - Assign Executives
+    - Save Assignment
+  2 lib/features/super_admin/harvests/harvests_screen.dart
+    - Harvests on ${selected.day}/${selected.month}/${selected.year}
+    - Harvests
+  1 lib/app.dart
+    - Shine Gold
+  1 lib/shared/widgets/address_autocomplete_field.dart
+    - Search address
+  1 lib/shared/widgets/farm_card.dart
+    - ${farm.distanceKm!.toStringAsFixed(1)} km
+  1 lib/shared/widgets/farm_map_preview.dart
+    - Open in Google Maps
+  1 lib/shared/widgets/visit_log_tile.dart
+    - View full report
+  1 lib/features/auth/forgot_password_screen.dart
+    - ${l10n.employeeIdLabel}: $_employeeId
+  1 lib/features/visits/presentation/widgets/dynamic_visit_form.dart
+    - Enter your response
+  1 lib/features/visits/presentation/widgets/visit_form_prefill_card.dart
+    - Visit Information

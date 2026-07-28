@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
+import '../../shared/utils/l10n_ext.dart';
 
 /// Health of one step in a flow.
 enum DiagnosticStatus {
@@ -129,7 +130,7 @@ class StateDiagnosticsBar extends StatelessWidget {
           child: Row(
             children: [
               Icon(worst.icon, size: 18, color: worst.color),
-              const SizedBox(width: AppSpacing.sm),
+              SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
                   summary,
@@ -141,9 +142,8 @@ class StateDiagnosticsBar extends StatelessWidget {
                       ),
                 ),
               ),
-              const SizedBox(width: AppSpacing.xs),
-              Text(
-                'Details',
+              SizedBox(width: AppSpacing.xs),
+              Text(context.l10n.details,
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
                       color: worst.color,
                       fontWeight: FontWeight.w700,
@@ -196,29 +196,29 @@ Future<void> showStateDiagnostics(
                     final report = items.map((i) => i.toPlainText()).join('\n');
                     Clipboard.setData(ClipboardData(text: '$title\n\n$report'));
                     ScaffoldMessenger.of(sheetContext).showSnackBar(
-                      const SnackBar(content: Text('Report copied')),
+                      SnackBar(content: Text('Report copied')),
                     );
                   },
                 ),
               ],
             ),
-            const SizedBox(height: AppSpacing.sm),
+            SizedBox(height: AppSpacing.sm),
             Flexible(
               child: ListView.separated(
                 shrinkWrap: true,
                 itemCount: items.length,
                 separatorBuilder: (_, __) =>
-                    const SizedBox(height: AppSpacing.md),
+                    SizedBox(height: AppSpacing.md),
                 itemBuilder: (_, index) => _DiagnosticTile(item: items[index]),
               ),
             ),
-            const SizedBox(height: AppSpacing.lg),
+            SizedBox(height: AppSpacing.lg),
             SizedBox(
               width: double.infinity,
               height: AppSpacing.buttonHeight,
               child: FilledButton(
                 onPressed: () => Navigator.of(sheetContext).pop(),
-                child: const Text('Close'),
+                child: Text(context.l10n.close),
               ),
             ),
           ],

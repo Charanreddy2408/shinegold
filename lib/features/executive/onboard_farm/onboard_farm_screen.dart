@@ -26,6 +26,7 @@ import '../../../shared/utils/india_map_bounds.dart';
 import '../../../shared/utils/photo_picker.dart';
 import '../../../shared/widgets/farm_boundary_map_view.dart';
 import '../../../shared/widgets/shine_buttons.dart';
+import '../../../shared/utils/l10n_ext.dart';
 
 class OnboardFarmScreen extends ConsumerStatefulWidget {
   const OnboardFarmScreen({super.key, this.isAdminCreate = false});
@@ -366,7 +367,7 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
             );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Farm created successfully')),
+            SnackBar(content: Text(context.l10n.farmCreatedSuccessfully)),
           );
           context.pop();
         }
@@ -413,28 +414,28 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
                       size: 80, color: AppColors.fieldGreen)
                   .animate()
                   .scale(duration: 500.ms, curve: Curves.easeOutBack),
-              const SizedBox(height: AppSpacing.xxl),
+              SizedBox(height: AppSpacing.xxl),
               Text(
                 widget.isAdminCreate ? 'Farm Created!' : 'Farm Onboarded!',
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
-              const SizedBox(height: AppSpacing.md),
-              Text('The farm has been added successfully.',
+              SizedBox(height: AppSpacing.md),
+              Text(context.l10n.farmAddedSuccessfully,
                   style: Theme.of(context).textTheme.bodyMedium),
-              const SizedBox(height: AppSpacing.xxxl),
+              SizedBox(height: AppSpacing.xxxl),
               if (!widget.isAdminCreate) ...[
                 ShinePrimaryButton(
-                  label: 'View dashboard',
+                  label: context.l10n.viewDashboard,
                   onPressed: () {
                     bumpAppRefresh(ref);
                     switchExecutiveTab(ref, 0);
                     setState(_resetForm);
                   },
                 ),
-                const SizedBox(height: AppSpacing.md),
+                SizedBox(height: AppSpacing.md),
               ],
               ShineSecondaryButton(
-                label: 'Onboard Another',
+                label: context.l10n.onboardAnother,
                 onPressed: () => setState(_resetForm),
               ),
             ],
@@ -452,9 +453,9 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Onboard Farm',
+                  Text(context.l10n.onboardFarmTitleCase,
                       style: Theme.of(context).textTheme.headlineMedium),
-                  const SizedBox(height: AppSpacing.md),
+                  SizedBox(height: AppSpacing.md),
                   LinearProgressIndicator(
                     value: (_step + 1) / 2,
                     backgroundColor: AppColors.borderSubtle,
@@ -474,13 +475,13 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
               padding: const EdgeInsets.all(AppSpacing.lg),
               child: _step == 0
                   ? ShinePrimaryButton(
-                      label: 'Next: Farmer Details',
+                      label: context.l10n.nextFarmerDetails,
                       onPressed: () {
                         if (_validateFarmStep()) setState(() => _step = 1);
                       },
                     )
                   : ShinePrimaryButton(
-                      label: 'Submit',
+                      label: context.l10n.submit,
                       isLoading: _loading,
                       onPressed: _loading ? null : _submit,
                     ),
@@ -500,7 +501,7 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
       children: [
         TextField(
           controller: _farmName,
-          decoration: const InputDecoration(labelText: 'Farm Name'),
+          decoration: InputDecoration(labelText: context.l10n.farmNameInput),
         ),
         const SizedBox(height: AppSpacing.md),
         ClipRRect(
@@ -606,30 +607,30 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
             ),
           ],
         ),
-        const SizedBox(height: AppSpacing.md),
+        SizedBox(height: AppSpacing.md),
         TextField(
           controller: _location,
-          decoration: const InputDecoration(
-            labelText: 'Location address (optional)',
-            hintText: 'Area, city, PIN — display only; map pin drives distance',
+          decoration: InputDecoration(
+            labelText: context.l10n.locationAddressOptional,
+            hintText: context.l10n.locationAddressHint,
           ),
         ),
-        const SizedBox(height: AppSpacing.md),
+        SizedBox(height: AppSpacing.md),
         TextField(
           controller: _crop,
-          decoration: const InputDecoration(labelText: 'Crop'),
+          decoration: InputDecoration(labelText: context.l10n.cropInput),
         ),
-        const SizedBox(height: AppSpacing.md),
+        SizedBox(height: AppSpacing.md),
         TextField(
           controller: _harvestType,
-          decoration: const InputDecoration(labelText: 'Harvest Type'),
+          decoration: InputDecoration(labelText: context.l10n.harvestTypeInput),
         ),
-        const SizedBox(height: AppSpacing.md),
+        SizedBox(height: AppSpacing.md),
         _farmPhotosSection(),
-        const SizedBox(height: AppSpacing.md),
+        SizedBox(height: AppSpacing.md),
         ListTile(
           contentPadding: EdgeInsets.zero,
-          title: const Text('Harvest Date'),
+          title: Text(context.l10n.harvestDateInput),
           subtitle: Text(
             '${_harvestDate.day}/${_harvestDate.month}/${_harvestDate.year}',
           ),
@@ -644,26 +645,26 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
             if (picked != null) setState(() => _harvestDate = picked);
           },
         ),
-        const SizedBox(height: AppSpacing.md),
+        SizedBox(height: AppSpacing.md),
         TextField(
           controller: _acres,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           readOnly: hasBoundary,
           decoration: InputDecoration(
-            labelText: 'Total Acres',
+            labelText: context.l10n.totalAcresInput,
             hintText: hasBoundary ? null : 'Calculated from boundary pins',
             suffixIcon: hasBoundary
                 ? const Icon(Icons.lock_outline, size: 18)
                 : null,
           ),
         ),
-        const SizedBox(height: AppSpacing.md),
+        SizedBox(height: AppSpacing.md),
         TextField(
           controller: _plantCount,
           keyboardType: TextInputType.number,
-          decoration: const InputDecoration(
-            labelText: 'Number of Plants',
-            hintText: 'Total plants on this farm',
+          decoration: InputDecoration(
+            labelText: context.l10n.numberOfPlantsInput,
+            hintText: context.l10n.totalPlantsOnFarm,
           ),
         ),
       ],
@@ -677,8 +678,7 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
         Row(
           children: [
             Expanded(
-              child: Text(
-                'Farm Photos',
+              child: Text(context.l10n.farmPhotosLabel,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
@@ -724,16 +724,16 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
                   decoration: AppColors.cardDecoration(radius: 14),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      Icon(
+                    children: [
+                      const Icon(
                         Icons.add_a_photo_outlined,
                         color: AppColors.primary,
                         size: 28,
                       ),
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       Text(
-                        'Add photo',
-                        style: TextStyle(
+                        context.l10n.addPhotoLabel,
+                        style: const TextStyle(
                           color: AppColors.primary,
                           fontWeight: FontWeight.w700,
                           fontSize: 12,
@@ -754,43 +754,43 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
       children: [
         if (_farmPhotos.isNotEmpty) ...[
           _farmPhotosSection(compact: true),
-          const SizedBox(height: AppSpacing.lg),
+          SizedBox(height: AppSpacing.lg),
         ],
         TextField(
           controller: _farmerName,
-          decoration: const InputDecoration(labelText: 'Farmer Name'),
+          decoration: InputDecoration(labelText: context.l10n.farmerName),
         ),
-        const SizedBox(height: AppSpacing.md),
+        SizedBox(height: AppSpacing.md),
         TextField(
           controller: _farmerMobile,
           keyboardType: TextInputType.phone,
-          decoration: const InputDecoration(labelText: 'Mobile Number'),
+          decoration: InputDecoration(labelText: context.l10n.mobileNumber),
         ),
-        const SizedBox(height: AppSpacing.md),
+        SizedBox(height: AppSpacing.md),
         TextField(
           controller: _farmerAadhar,
           keyboardType: TextInputType.number,
           maxLength: 12,
-          decoration: const InputDecoration(
-            labelText: 'Aadhar Number',
-            hintText: '12-digit Aadhar',
+          decoration: InputDecoration(
+            labelText: context.l10n.aadharNumberInput,
+            hintText: context.l10n.aadharHint,
             counterText: '',
           ),
         ),
-        const SizedBox(height: AppSpacing.md),
+        SizedBox(height: AppSpacing.md),
         DropdownButtonFormField<Gender>(
           value: _gender,
-          decoration: const InputDecoration(labelText: 'Gender'),
+          decoration: InputDecoration(labelText: context.l10n.gender),
           items: Gender.values
               .map((g) => DropdownMenuItem(value: g, child: Text(g.label)))
               .toList(),
           onChanged: (v) => setState(() => _gender = v),
         ),
-        const SizedBox(height: AppSpacing.md),
+        SizedBox(height: AppSpacing.md),
         TextField(
           controller: _farmerAge,
           keyboardType: TextInputType.number,
-          decoration: const InputDecoration(labelText: 'Age'),
+          decoration: InputDecoration(labelText: context.l10n.age),
         ),
       ],
     );
@@ -826,7 +826,7 @@ class _FarmPhotoTile extends StatelessWidget {
                     width: 108,
                     height: 108,
                     color: AppColors.surfaceElevated,
-                    child: const Center(
+                    child: Center(
                       child: CircularProgressIndicator(strokeWidth: 2),
                     ),
                   );
@@ -841,11 +841,11 @@ class _FarmPhotoTile extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: 6),
+        SizedBox(height: 6),
         TextButton.icon(
           onPressed: onRemove,
           icon: const Icon(Icons.delete_outline_rounded, size: 16),
-          label: const Text('Remove'),
+          label: Text(context.l10n.removeLabel),
           style: TextButton.styleFrom(
             foregroundColor: AppColors.error,
             padding: EdgeInsets.zero,

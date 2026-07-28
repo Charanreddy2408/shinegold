@@ -11,7 +11,7 @@ Future<void> openWhatsAppChat(
   if (digits == null) {
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Invalid phone number for WhatsApp')),
+        SnackBar(content: Text('Invalid phone number for WhatsApp')),
       );
     }
     return;
@@ -38,7 +38,7 @@ Future<void> openWhatsAppChat(
 
   if (context.mounted) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Could not open WhatsApp')),
+      SnackBar(content: Text('Could not open WhatsApp')),
     );
   }
 }

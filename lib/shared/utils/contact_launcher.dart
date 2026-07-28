@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../shared/utils/l10n_ext.dart';
 
 /// Opens phone dialer / WhatsApp for farmer contact numbers.
 class ContactLauncher {
@@ -57,7 +58,7 @@ class ContactLauncher {
     final ok = await call(mobile);
     if (!ok && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not open phone dialer')),
+        SnackBar(content: Text('Could not open phone dialer')),
       );
     }
   }
@@ -70,7 +71,7 @@ class ContactLauncher {
     final ok = await openWhatsApp(mobile, message: message);
     if (!ok && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not open WhatsApp')),
+        SnackBar(content: Text('Could not open WhatsApp')),
       );
     }
   }
@@ -102,13 +103,13 @@ class FarmerContactActions extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           IconButton(
-            tooltip: 'Call',
+            tooltip: context.l10n.call,
             onPressed: () => ContactLauncher.callOrSnack(context, mobile),
             icon: const Icon(Icons.call_rounded),
             color: const Color(0xFF1B7A4E),
           ),
           IconButton(
-            tooltip: 'WhatsApp',
+            tooltip: context.l10n.whatsapp,
             onPressed: () => ContactLauncher.whatsappOrSnack(
               context,
               mobile,
@@ -127,7 +128,7 @@ class FarmerContactActions extends StatelessWidget {
           child: OutlinedButton.icon(
             onPressed: () => ContactLauncher.callOrSnack(context, mobile),
             icon: const Icon(Icons.call_rounded, size: 20),
-            label: const Text('Call'),
+            label: Text(context.l10n.call),
             style: OutlinedButton.styleFrom(
               foregroundColor: const Color(0xFF1B7A4E),
               side: const BorderSide(color: Color(0xFF1B7A4E), width: 1.4),
@@ -136,7 +137,7 @@ class FarmerContactActions extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(width: 10),
+        SizedBox(width: 10),
         Expanded(
           child: FilledButton.icon(
             onPressed: () => ContactLauncher.whatsappOrSnack(
@@ -145,7 +146,7 @@ class FarmerContactActions extends StatelessWidget {
               message: message,
             ),
             icon: const Icon(Icons.chat_rounded, size: 20),
-            label: const Text('WhatsApp'),
+            label: Text(context.l10n.whatsapp),
             style: FilledButton.styleFrom(
               backgroundColor: const Color(0xFF25D366),
               foregroundColor: Colors.white,

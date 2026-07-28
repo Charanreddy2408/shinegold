@@ -11,6 +11,7 @@ import '../../../data/models/interaction.dart';
 import '../../../shared/providers/repository_providers.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/shine_buttons.dart';
+import '../../../shared/utils/l10n_ext.dart';
 
 const _cropOptions = <String>[
   'Cotton',
@@ -100,13 +101,13 @@ class _InteractionFormScreenState extends ConsumerState<InteractionFormScreen> {
     if (!_formKey.currentState!.validate()) return;
     if (_crop == null || _plannedMonths == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select crop and planned months')),
+        SnackBar(content: Text(context.l10n.pleaseSelectCropAndMonths)),
       );
       return;
     }
     if (_crop == 'Other' && _otherCrop.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Enter the crop name')),
+        SnackBar(content: Text(context.l10n.enterTheCropName)),
       );
       return;
     }
@@ -167,7 +168,7 @@ class _InteractionFormScreenState extends ConsumerState<InteractionFormScreen> {
       body: AppBackground(
         header: GradientHeader(
           title: _isEdit ? 'Edit interaction' : 'Record interaction',
-          subtitle: 'Capture prospect farmer details from your conversation',
+          subtitle: context.l10n.captureProspectFarmerDetails,
           compact: true,
           leading: IconButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -182,11 +183,11 @@ class _InteractionFormScreenState extends ConsumerState<InteractionFormScreen> {
               TextFormField(
                 controller: _name,
                 textCapitalization: TextCapitalization.words,
-                decoration: const InputDecoration(labelText: 'Farmer name'),
+                decoration: InputDecoration(labelText: context.l10n.farmerName),
                 validator: (v) =>
                     (v == null || v.trim().isEmpty) ? 'Required' : null,
               ),
-              const SizedBox(height: AppSpacing.md),
+              SizedBox(height: AppSpacing.md),
               TextFormField(
                 controller: _phone,
                 keyboardType: TextInputType.phone,
@@ -194,7 +195,7 @@ class _InteractionFormScreenState extends ConsumerState<InteractionFormScreen> {
                   FilteringTextInputFormatter.allow(RegExp(r'[0-9+\-\s]')),
                   LengthLimitingTextInputFormatter(15),
                 ],
-                decoration: const InputDecoration(labelText: 'Phone number'),
+                decoration: InputDecoration(labelText: context.l10n.farmerPhone),
                 validator: (v) {
                   if (v == null || v.trim().length < 7) {
                     return 'Enter a valid phone number';
@@ -202,18 +203,18 @@ class _InteractionFormScreenState extends ConsumerState<InteractionFormScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: AppSpacing.md),
+              SizedBox(height: AppSpacing.md),
               TextFormField(
                 controller: _location,
                 textCapitalization: TextCapitalization.words,
-                decoration: const InputDecoration(
-                  labelText: 'Land location',
-                  hintText: 'Village / mandal / area',
+                decoration: InputDecoration(
+                  labelText: context.l10n.landLocationInput,
+                  hintText: context.l10n.landLocationHint,
                 ),
                 validator: (v) =>
                     (v == null || v.trim().isEmpty) ? 'Required' : null,
               ),
-              const SizedBox(height: AppSpacing.md),
+              SizedBox(height: AppSpacing.md),
               TextFormField(
                 controller: _acres,
                 keyboardType:
@@ -221,17 +222,17 @@ class _InteractionFormScreenState extends ConsumerState<InteractionFormScreen> {
                 inputFormatters: [
                   FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
                 ],
-                decoration: const InputDecoration(labelText: 'Acres'),
+                decoration: InputDecoration(labelText: context.l10n.acres),
                 validator: (v) {
                   final value = double.tryParse(v?.trim() ?? '');
                   if (value == null || value <= 0) return 'Enter acres';
                   return null;
                 },
               ),
-              const SizedBox(height: AppSpacing.md),
+              SizedBox(height: AppSpacing.md),
               DropdownButtonFormField<String>(
                 value: _crop,
-                decoration: const InputDecoration(labelText: 'Current crop'),
+                decoration: InputDecoration(labelText: context.l10n.currentCropInput),
                 items: _cropOptions
                     .map((c) => DropdownMenuItem(value: c, child: Text(c)))
                     .toList(),
@@ -239,11 +240,11 @@ class _InteractionFormScreenState extends ConsumerState<InteractionFormScreen> {
                 validator: (v) => v == null ? 'Select a crop' : null,
               ),
               if (_crop == 'Other') ...[
-                const SizedBox(height: AppSpacing.md),
+                SizedBox(height: AppSpacing.md),
                 TextFormField(
                   controller: _otherCrop,
                   decoration:
-                      const InputDecoration(labelText: 'Specify crop'),
+                      InputDecoration(labelText: context.l10n.specifyCrop),
                   validator: (v) {
                     if (_crop == 'Other' &&
                         (v == null || v.trim().isEmpty)) {
@@ -253,23 +254,23 @@ class _InteractionFormScreenState extends ConsumerState<InteractionFormScreen> {
                   },
                 ),
               ],
-              const SizedBox(height: AppSpacing.md),
+              SizedBox(height: AppSpacing.md),
               _PlannedMonthsSlider(
                 options: _monthOptions,
                 value: _plannedMonths ?? 6,
                 onChanged: (months) => setState(() => _plannedMonths = months),
               ),
-              const SizedBox(height: AppSpacing.lg),
+              SizedBox(height: AppSpacing.lg),
               _OnboardingStatusPicker(
                 value: _status,
                 onChanged: (status) => setState(() => _status = status),
               ),
-              const SizedBox(height: AppSpacing.md),
+              SizedBox(height: AppSpacing.md),
               TextFormField(
                 controller: _notes,
                 maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: 'Notes (optional)',
+                decoration: InputDecoration(
+                  labelText: context.l10n.notesOptionalInput,
                   alignLabelWithHint: true,
                 ),
               ),
@@ -310,8 +311,7 @@ class _PlannedMonthsSlider extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Planning to take',
+          Text(context.l10n.planningToTake,
             style: Theme.of(context).textTheme.labelLarge?.copyWith(
                   color: AppColors.textSecondary,
                   fontWeight: FontWeight.w600,
@@ -420,8 +420,7 @@ class _OnboardingStatusPicker extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.only(left: 4, bottom: 10),
-          child: Text(
-            'Onboarding status',
+          child: Text(context.l10n.onboardingStatusLabel,
             style: Theme.of(context).textTheme.labelLarge?.copyWith(
                   color: AppColors.textSecondary,
                   fontWeight: FontWeight.w600,

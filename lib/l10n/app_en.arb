@@ -1,0 +1,1384 @@
+{
+  "@@locale": "en",
+  "appTitle": "Shine Gold",
+  "language": "Language",
+  "chooseLanguage": "Choose language",
+  "chooseLanguageSubtitle": "You can change this anytime from the menu.",
+  "continueLabel": "Continue",
+  "changeLanguage": "Change language",
+  "changeLanguageSubtitle": "English, Telugu, or Kannada",
+  "english": "English",
+  "telugu": "తెలుగు",
+  "kannada": "ಕನ್ನಡ",
+  "cancel": "Cancel",
+  "save": "Save",
+  "saving": "Saving…",
+  "delete": "Delete",
+  "edit": "Edit",
+  "done": "Done",
+  "ok": "OK",
+  "retry": "Retry",
+  "refresh": "Refresh",
+  "loading": "Loading…",
+  "search": "Search",
+  "filter": "Filter",
+  "close": "Close",
+  "back": "Back",
+  "next": "Next",
+  "submit": "Submit",
+  "confirm": "Confirm",
+  "yes": "Yes",
+  "no": "No",
+  "logout": "Logout",
+  "logoutSubtitle": "Sign out of Shine Gold",
+  "profile": "Profile",
+  "settings": "Settings",
+  "errorGeneric": "Something went wrong. Please try again.",
+  "noData": "Nothing here yet",
+  "viewAll": "View all",
+  "requiredField": "Required",
+  "navHome": "Home",
+  "navFarms": "Farms",
+  "navVisits": "Visits",
+  "navOnboard": "Onboard",
+  "navProfile": "Profile",
+  "navDashboard": "Dashboard",
+  "navTeam": "Team",
+  "navHarvests": "Harvests",
+  "navMore": "More",
+  "welcomeBack": "Welcome back",
+  "signInToShineGold": "Sign in to Shine Gold",
+  "signIn": "Sign in",
+  "useEmployeeCredentials": "Use your employee credentials",
+  "employeeId": "Employee ID",
+  "employeeIdHint": "EXEC001",
+  "enterEmployeeId": "Enter employee ID",
+  "password": "Password",
+  "enterPassword": "Enter password",
+  "forgotPassword": "Forgot password?",
+  "invalidCredentials": "Invalid employee ID or password. Please check your credentials and try again.",
+  "demoCredentials": "Demo: EXEC001 or ADMIN001 · ChangeMe123!",
+  "sessionExpiredTitle": "Session expired",
+  "sessionExpiredBody": "Please sign in again to continue.",
+  "forgotPasswordTitle": "Forgot password",
+  "forgotPasswordSubtitle": "Request a password reset from your admin",
+  "requestReset": "Request reset",
+  "resetRequested": "Reset request submitted",
+  "moreOptions": "More Options",
+  "manageAdminWorkspace": "Manage your admin workspace",
+  "nearbyFarms": "Nearby Farms",
+  "nearbyFarmsSubtitle": "Farms near you while travelling",
+  "farmers": "Farmers",
+  "farmersSubtitle": "View all onboarded farmers",
+  "passwordResets": "Password Resets",
+  "passwordResetsSubtitle": "Approve executive forgot-password requests",
+  "profileSubtitle": "Your admin account details",
+  "fieldExecutive": "Field Executive",
+  "superAdmin": "Super Admin",
+  "farmsVisited": "Farms Visited",
+  "onboarded": "Onboarded",
+  "sendTestNotification": "Send test notification",
+  "testingNotification": "Sending…",
+  "testNotificationSent": "Test notification sent",
+  "homeLocationUpdated": "Home location updated",
+  "passwordUpdated": "Password updated successfully",
+  "mobile": "Mobile",
+  "address": "Address",
+  "updateLocation": "Update location",
+  "setHomeLocation": "Set home location",
+  "usedForNearbyFarms": "Used to show nearby farms",
+  "notSetNearbyFarms": "Not set — nearby farms need a GPS pin",
+  "newPassword": "New Password",
+  "confirmNewPassword": "Confirm New Password",
+  "updatePassword": "Update password",
+  "refreshStatus": "Refresh status",
+  "refreshing": "Refreshing…",
+  "requesting": "Requesting…",
+  "enterManually": "Enter manually",
+  "currentLocation": "Current location",
+  "pinCodeOptional": "PIN code (optional)",
+  "pinCodeHint": "Auto-filled from suggestion when possible",
+  "locateFromAddress": "Locate from address",
+  "locating": "Locating…",
+  "fetchCurrentLocation": "Fetch current location",
+  "fetching": "Fetching…",
+  "saveLocation": "Save location",
+  "chooseHomeLocation": "Choose how to set the pin used for nearby farms.",
+  "dashboard": "Dashboard",
+  "farms": "Farms",
+  "team": "Team",
+  "harvests": "Harvests",
+  "executives": "Executives",
+  "totalFarms": "Total farms",
+  "totalAcres": "Total acres",
+  "activeVisits": "Active visits",
+  "pendingApprovals": "Pending",
+  "farmsNearYou": "Farms Near You",
+  "withinKmUpdates": "Within {km} km · updates every 3 min",
+  "@withinKmUpdates": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "noFarmsNearby": "No farms nearby",
+  "noFarmsWithinKm": "No farms within {km} km of your current location.",
+  "@noFarmsWithinKm": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "closestFarmAway": "Closest farm is {km} km away.",
+  "@closestFarmAway": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "viewAllNearbyFarms": "View all {count} nearby farms",
+  "@viewAllNearbyFarms": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "refreshNearby": "Refresh nearby",
+  "withinKmRadius": "Within {km} km radius",
+  "@withinKmRadius": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "turnOnLocationNearby": "Turn on location to see farms near you while travelling.",
+  "usingHomeLocation": "Using home location",
+  "lastUpdated": "Updated {time}",
+  "@lastUpdated": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "myFarms": "My Farms",
+  "allFarms": "All Farms",
+  "searchFarms": "Search farms",
+  "noFarmsFound": "No farms found",
+  "farmDetails": "Farm details",
+  "farmer": "Farmer",
+  "location": "Location",
+  "acres": "Acres",
+  "plants": "Plants",
+  "plantCount": "Plant count",
+  "aadhar": "Aadhar",
+  "call": "Call",
+  "whatsapp": "WhatsApp",
+  "checkIn": "Check in",
+  "startVisit": "Start visit",
+  "visitReport": "Visit report",
+  "downloadPdf": "Download PDF",
+  "sharePdf": "Share PDF",
+  "lastVisit": "Last visit",
+  "neverVisited": "Never visited",
+  "assignedTo": "Assigned to",
+  "unassigned": "Unassigned",
+  "status": "Status",
+  "distance": "{km} km",
+  "@distance": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "sortNearby": "Nearby first",
+  "sortName": "Name A–Z",
+  "sortFarthest": "Farthest first",
+  "myVisits": "My Visits",
+  "noVisitsYet": "No visits yet",
+  "visitInProgress": "In progress",
+  "visitCompleted": "Completed",
+  "offlineVisitSynced": "{count} offline visit synced",
+  "@offlineVisitSynced": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "offlineVisitsSynced": "{count} offline visits synced",
+  "@offlineVisitsSynced": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "harvestReminderScheduled": "{count} harvest reminder scheduled",
+  "@harvestReminderScheduled": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "harvestRemindersScheduled": "{count} harvest reminders scheduled",
+  "@harvestRemindersScheduled": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardFarm": "Onboard farm",
+  "onboardNewFarm": "Onboard a new farm",
+  "farmerName": "Farmer name",
+  "farmerPhone": "Phone number",
+  "farmName": "Farm name",
+  "village": "Village",
+  "district": "District",
+  "state": "State",
+  "pincode": "PIN code",
+  "drawBoundary": "Draw boundary",
+  "editBoundary": "Edit boundary",
+  "boundarySaved": "Boundary saved",
+  "submitFarm": "Submit farm",
+  "farmSubmitted": "Farm submitted successfully",
+  "selectLocationOnMap": "Select location on map",
+  "tapToAddPoint": "Tap the map to add points",
+  "clearPoints": "Clear points",
+  "undoPoint": "Undo",
+  "confirmBoundary": "Confirm boundary",
+  "checkInTitle": "Check in",
+  "checkInSubtitle": "Confirm you are at the farm",
+  "youAreHere": "You are here",
+  "tooFarFromFarm": "You seem far from this farm",
+  "confirmCheckIn": "Confirm check-in",
+  "checkedIn": "Checked in",
+  "interactions": "Interactions",
+  "addInteraction": "Add interaction",
+  "noInteractions": "No interactions yet",
+  "interactionNotes": "Notes",
+  "saveInteraction": "Save interaction",
+  "farmInvitations": "Farm invitations",
+  "noInvitations": "No invitations",
+  "accept": "Accept",
+  "decline": "Decline",
+  "passwordResetRequests": "Password reset requests",
+  "noPendingResets": "No pending requests",
+  "approve": "Approve",
+  "reject": "Reject",
+  "approved": "Approved",
+  "rejected": "Rejected",
+  "indiaMap": "India map",
+  "fullscreenMap": "Fullscreen map",
+  "zoomIn": "Zoom in",
+  "zoomOut": "Zoom out",
+  "welcomeSplash": "Shine Gold",
+  "welcomeTagline": "Organic Agro Invention",
+  "getStarted": "Get started",
+  "formRequired": "Please fill required fields",
+  "photo": "Photo",
+  "takePhoto": "Take photo",
+  "chooseFromGallery": "Choose from gallery",
+  "removePhoto": "Remove photo",
+  "recordAudio": "Record audio",
+  "stopRecording": "Stop recording",
+  "playAudio": "Play",
+  "notes": "Notes",
+  "remarks": "Remarks",
+  "date": "Date",
+  "time": "Time",
+  "today": "Today",
+  "yesterday": "Yesterday",
+  "thisWeek": "This week",
+  "thisMonth": "This month",
+  "name": "Name",
+  "phone": "Phone",
+  "email": "Email",
+  "role": "Role",
+  "active": "Active",
+  "inactive": "Inactive",
+  "details": "Details",
+  "overview": "Overview",
+  "history": "History",
+  "actions": "Actions",
+  "permissionDenied": "Permission denied",
+  "locationPermissionNeeded": "Location permission is needed",
+  "openSettings": "Open settings",
+  "offline": "Offline",
+  "online": "Online",
+  "syncNow": "Sync now",
+  "pendingSync": "Pending sync",
+  "acresLabel": "{value} acres",
+  "@acresLabel": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "kmAway": "{km} km away",
+  "@kmAway": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "seeAll": "See all",
+  "emptyStateHint": "Pull to refresh or try again later",
+  "adminProfile": "Admin profile",
+  "executiveProfile": "Executive profile",
+  "account": "Account",
+  "security": "Security",
+  "notifications": "Notifications",
+  "homeLocation": "Home location",
+  "changePassword": "Change password",
+  "passwordsDoNotMatch": "Passwords do not match",
+  "passwordTooShort": "Password must be at least 6 characters",
+  "selectLanguage": "Select language",
+  "languageUpdated": "Language updated",
+  "withinRadiusEmptyClosest": "No farms within {radius} km. Closest farm is {km} km away.",
+  "@withinRadiusEmptyClosest": {
+    "placeholders": {
+      "radius": {
+        "type": "String"
+      },
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "nearbyFarmsWithinKm": "Farms within 5 km while travelling",
+  "tapPhotoToUpdate": "Tap your photo above to update it",
+  "contactDetails": "Contact Details",
+  "employeeIdLabel": "Employee ID",
+  "adminApprovesPassword": "Admin approves — then you choose the new password",
+  "resetApprovedSetPassword": "Your reset was approved. Set a new password below.",
+  "waitingAdminApproval": "Waiting for super admin approval. Tap refresh after they approve.",
+  "requestResetSteps": "1. Request a password reset\n2. Super admin approves (no temporary password)\n3. Set your new password here",
+  "sending": "Sending…",
+  "requestAlreadyPending": "Request already pending",
+  "requestPasswordReset": "Request password reset",
+  "enterNewPassword": "Enter a new password",
+  "confirmYourPassword": "Confirm your new password",
+  "requestSentToAdmin": "Request sent to admin. After they approve, you can set your new password here.",
+  "adminMustApprove": "Admin must approve your reset request first.",
+  "updateHomeLocation": "Update home location",
+  "pinReady": "Pin ready — tap Save",
+  "addressNotFound": "Couldn't find that address. Add city or PIN and try again.",
+  "gettingCurrentLocation": "Getting current location…",
+  "couldNotGetLocation": "Could not get current location. Enable GPS and try again.",
+  "currentLocationReady": "Current location ready — tap Save",
+  "locateBeforeSaving": "Locate or fetch current location before saving",
+  "pinLabel": "Pin · {lat}, {lng}",
+  "@pinLabel": {
+    "placeholders": {
+      "lat": {
+        "type": "String"
+      },
+      "lng": {
+        "type": "String"
+      }
+    }
+  },
+  "weUseGps": "We'll use your phone GPS and fill the address automatically.",
+  "syncHarvestReminders": "Sync harvest reminders",
+  "syncing": "Syncing…",
+  "couldNotSyncReminders": "Could not sync harvest reminders. Check network and try again.",
+  "noUpcomingHarvests": "No upcoming harvests in the next 90 days.",
+  "harvestRemindersScheduledTest": "{count} harvest reminders scheduled. Test notification sent.",
+  "@harvestRemindersScheduledTest": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "oneHarvestReminderTest": "1 harvest reminder scheduled. Test notification sent.",
+  "welcomeFieldIntelligence": "Field intelligence for a greener harvest",
+  "checkingSession": "Checking your session…",
+  "tapToContinue": "Tap anywhere to continue",
+  "stillConnecting": "Still connecting — first load can take a moment…",
+  "sessionExpired": "Your session has expired",
+  "pleaseSignInAgain": "Please log in again to continue.",
+  "logInAgain": "Log In Again",
+  "forgotYourPassword": "Forgot your password? Enter your employee ID — we will show the right next step.",
+  "requestAdminApproval": "Request admin approval to reset your password.",
+  "requestWithAdmin": "Your request is with the super admin.",
+  "adminApprovedChoose": "Admin approved your reset. Choose a new password.",
+  "continueButton": "Continue",
+  "change": "Change",
+  "statusPendingApproval": "Status: Pending approval",
+  "adminNotApprovedYet": "Super admin has not approved yet. Tap refresh after they approve.",
+  "statusApproved": "Status: Approved",
+  "setNewPasswordNoLogin": "You can set a new password now. No login or temporary password needed.",
+  "requestPasswordResetButton": "Request password reset",
+  "refreshStatusButton": "Refresh status",
+  "passwordUpdatedSignIn": "Password updated. Sign in with your new password.",
+  "enterYourEmployeeId": "Enter your employee ID.",
+  "shineGoldOverview": "Shine Gold overview",
+  "operations": "Operations",
+  "registeredFarms": "REGISTERED FARMS",
+  "activeFarmsInNetwork": "Active farms in the network",
+  "fieldExecutives": "FIELD EXECUTIVES",
+  "teamMembersOnGround": "Team members on ground",
+  "visitsLogged": "VISITS LOGGED",
+  "completedAndOngoingVisits": "Completed & ongoing visits",
+  "combinedFarmAcreage": "Combined farm acreage",
+  "farmersOnboardedLabel": "FARMERS ONBOARDED",
+  "newFarmersThisSeason": "New farmers this season",
+  "fieldTeam": "Field Team",
+  "xMembers": "{count} members",
+  "@xMembers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "xVisits": "{count} visits",
+  "@xVisits": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "createFarm": "Create Farm",
+  "xFarmsTotal": "{count} farms total",
+  "@xFarmsTotal": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "searchFarmsEllipsis": "Search farms...",
+  "addExecutive": "Add Executive",
+  "addressPinLocateInfo": "Address + PIN must Locate successfully so home GPS is stored.",
+  "createExecutive": "Create Executive",
+  "fullName": "Full Name",
+  "fullNameRequired": "Full name is required",
+  "mobileNumber": "Mobile Number",
+  "tenDigitMobile": "10-digit mobile",
+  "mobileNumberRequired": "Mobile number is required",
+  "enterValidMobileNumber": "Enter a valid 10-digit mobile number",
+  "startTypingToSearch": "Start typing to search address",
+  "addressRequired": "Address is required",
+  "enterFullerAddress": "Enter a fuller address (street / area / city)",
+  "includeLocalityCity": "Include locality and city",
+  "pinCode": "PIN code",
+  "autoFilledFromSuggestion": "Auto-filled from suggestion when possible",
+  "pinCodeRequired": "PIN code is required",
+  "enterValid6DigitPin": "Enter a valid 6-digit PIN",
+  "enterValidIndianPin": "Enter a valid Indian PIN code",
+  "homeGpsPinRequired": "Home GPS pin (required)",
+  "tapLocateAfterAddress": "Tap Locate after entering address + PIN. Create stays blocked until the pin is verified.",
+  "locateAndVerifyAddress": "Locate & verify address",
+  "reVerifyAddress": "Re-verify address",
+  "verified": "Verified",
+  "atLeast6Characters": "At least 6 characters",
+  "passwordRequired": "Password is required",
+  "passwordMustBe6Chars": "Password must be at least 6 characters",
+  "executiveCreated": "Executive created successfully",
+  "executiveCreatedWithId": "Executive created — ID: {id}",
+  "@executiveCreatedWithId": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "xOfYExecutives": "{filtered} of {total} executives",
+  "@xOfYExecutives": {
+    "placeholders": {
+      "filtered": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "searchByNameIdMobile": "Search by name, ID, or mobile...",
+  "noExecutives": "No executives",
+  "noMatches": "No matches",
+  "addFirstExecutive": "Add your first field executive",
+  "tryDifferentSearch": "Try a different search term",
+  "addressCouldNotVerify": "Address could not be verified on the map. Improve address/PIN, tap Locate, then create again.",
+  "couldNotVerifyAddress": "Couldn't verify this address. Add clearer area/city + correct PIN, then try again.",
+  "locateBeforeCreating": "Locate & verify address before creating",
+  "enterAddressFirst": "Enter an address first",
+  "enterPinFirst": "Enter the 6-digit PIN code first",
+  "pinMustBe6Digits": "PIN code must be a 6-digit number",
+  "fieldExecutiveId": "Field Executive · {id}",
+  "@fieldExecutiveId": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "assignedFarms": "Assigned Farms",
+  "xFarms": "{count} farms",
+  "@xFarms": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noFarmsAssigned": "No farms assigned yet",
+  "visitHistory": "Visit History",
+  "xRecords": "{count} records",
+  "@xRecords": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "searchVisitsByFarm": "Search visits by farm name...",
+  "all": "All",
+  "ongoing": "Ongoing",
+  "completed": "Completed",
+  "executiveHasNoVisits": "This executive has no visit records",
+  "tryDifferentFarmName": "Try a different farm name",
+  "unblockExecutive": "Unblock executive",
+  "blockExecutive": "Block executive",
+  "total": "Total",
+  "onboardingCoverage": "Onboarding coverage",
+  "oneFarmOnboarded": "1 farm onboarded · {acres} acres",
+  "@oneFarmOnboarded": {
+    "placeholders": {
+      "acres": {
+        "type": "String"
+      }
+    }
+  },
+  "xFarmsOnboarded": "{count} farms onboarded · {acres} acres",
+  "@xFarmsOnboarded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "acres": {
+        "type": "String"
+      }
+    }
+  },
+  "xMinOnSite": "{minutes} min on site",
+  "@xMinOnSite": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "male": "Male",
+  "female": "Female",
+  "other": "Other",
+  "notSet": "Not set",
+  "lastVisitDate": "Last visit: {date}",
+  "@lastVisitDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "notVisitedYet": "Not visited yet",
+  "xScheduled": "{count} scheduled",
+  "@xScheduled": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "searchHarvestsByCrop": "Search harvests by farm or crop...",
+  "harvestsOnDate": "Harvests on {day}/{month}/{year}",
+  "@harvestsOnDate": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      },
+      "month": {
+        "type": "int"
+      },
+      "year": {
+        "type": "int"
+      }
+    }
+  },
+  "noHarvests": "No harvests",
+  "nothingScheduledDate": "Nothing scheduled for this date",
+  "xOfYFarmers": "{filtered} of {total} farmers",
+  "@xOfYFarmers": {
+    "placeholders": {
+      "filtered": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "searchFarmersFarms": "Search farmers, farms, or location...",
+  "noFarmers": "No farmers",
+  "onboardedFarmersAppear": "Onboarded farmers will appear here",
+  "gender": "Gender",
+  "age": "Age",
+  "xYears": "{age} years",
+  "@xYears": {
+    "placeholders": {
+      "age": {
+        "type": "int"
+      }
+    }
+  },
+  "linkedFarms": "Linked Farms",
+  "noFarmLinked": "No farm linked to this farmer yet.",
+  "cropLabel": "Crop: {crop}",
+  "@cropLabel": {
+    "placeholders": {
+      "crop": {
+        "type": "String"
+      }
+    }
+  },
+  "cropNotSet": "Crop not set",
+  "oneFarm": "1 farm",
+  "farmsNearYouLabel": "Farms Near You",
+  "withinKmUpdates3min": "Within {km} km · updates every 3 min",
+  "@withinKmUpdates3min": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "refreshNow": "Refresh now",
+  "locationActive": "Location active",
+  "usingYourHomeLocation": "Using your home location",
+  "gettingLocation": "Getting location…",
+  "waitingForGpsFix": "Waiting for GPS fix",
+  "locationNeeded": "Location needed",
+  "live": "Live",
+  "updatedTime": "Updated {time}",
+  "@updatedTime": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "latLngLabel": "Lat {lat}, Lng {lng}",
+  "@latLngLabel": {
+    "placeholders": {
+      "lat": {
+        "type": "String"
+      },
+      "lng": {
+        "type": "String"
+      }
+    }
+  },
+  "noFarmsWithinKmLocation": "No farms within {km} km of your current location.",
+  "@noFarmsWithinKmLocation": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "noFarmsClosestAway": "No farms within {km} km. Closest farm is {closest} km away.",
+  "@noFarmsClosestAway": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      },
+      "closest": {
+        "type": "String"
+      }
+    }
+  },
+  "viewAllXNearbyFarms": "View all {count} nearby farms",
+  "@viewAllXNearbyFarms": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "openFullMapList": "Open full map list",
+  "noFarmsNearbyTitle": "No farms nearby",
+  "noFarmsFoundNearPosition": "No farms found near your current position yet.",
+  "closestFarmOutsideRadius": "Closest farm is {km} km away (outside the {radius} km radius).",
+  "@closestFarmOutsideRadius": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      },
+      "radius": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewPasswordResetRequests": "Review executive password-reset requests. Approve so they can set a new password themselves.",
+  "pending": "Pending",
+  "allRequests": "All",
+  "couldNotLoadRequests": "Could not load requests",
+  "noPendingRequests": "No pending requests",
+  "noResetRequestsYet": "No reset requests yet",
+  "requestsAppearHere": "Requests from the forgot-password screen will appear here.",
+  "approvedPendingShow": "Approved and pending requests will show in this list.",
+  "approvePasswordResetQuestion": "Approve password reset?",
+  "allowUserSetPassword": "Allow {name} ({id}) to set a new password from their profile. You will not set a temporary password.",
+  "@allowUserSetPassword": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "approvedUserCanSet": "Approved — {id} can now set a new password",
+  "@approvedUserCanSet": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "requestedDate": "Requested {date}",
+  "@requestedDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "superAdminId": "Super Admin · {id}",
+  "@superAdminId": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "tapPhotoToUpdateIt": "Tap your photo above to update it",
+  "editMobileNumber": "Edit Mobile Number",
+  "updateContactNumber": "Update your contact number",
+  "saveMobileNumber": "Save Mobile Number",
+  "enterMobileNumber": "Enter your mobile number",
+  "enterValidMobile": "Enter a valid mobile number",
+  "mobileNumberUpdated": "Mobile number updated",
+  "editOfficeAddress": "Edit Office Address",
+  "updateAdminAddress": "Update your administrator address",
+  "saveAddress": "Save Address",
+  "officeAddress": "Office Address",
+  "enterYourAddress": "Enter your address",
+  "officeAddressUpdated": "Office address updated",
+  "chooseNewPassword": "Choose a new password for your admin account",
+  "passwordMustBe6CharsLong": "Password must be at least 6 characters",
+  "confirmNewPasswordPrompt": "Confirm your new password",
+  "passwordsDoNotMatchError": "Passwords do not match",
+  "passwordChangedSuccessfully": "Password changed successfully",
+  "superAdministrator": "Super Administrator",
+  "managingShineGold": "Managing Shine Gold operations",
+  "goodMorning": "Good morning",
+  "goodAfternoon": "Good afternoon",
+  "goodEvening": "Good evening",
+  "recordConversations": "Record conversations with farmers you want to onboard",
+  "farmsYouOnboarded": "Farms you onboarded",
+  "noFarmsOnboardedYet": "No farms onboarded yet",
+  "farmsFromOnboardTab": "Farms you add from the Onboard tab will show here",
+  "moreOnboardedFarms": "+{count} more onboarded farms",
+  "@moreOnboardedFarms": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noPriorityFarms": "No priority farms",
+  "pendingVisitsToday": "Pending visits for today will show up here",
+  "farmsForToday": "Farms for today",
+  "tapToViewDetails": "Tap to view details",
+  "harvest": "Harvest",
+  "assignedFarmsCount": "{count} assigned farms",
+  "@assignedFarmsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "nearbyUnassignedFarms": "Nearby unassigned farms",
+  "filters": "Filters",
+  "clearAll": "Clear all",
+  "apply": "Apply",
+  "nearbyFirst": "Nearby first",
+  "farthestFirst": "Farthest first",
+  "nameAZ": "Name A-Z",
+  "searchFarmFarmerMobile": "Search farm, farmer, mobile...",
+  "tryAdjustingFilters": "Try adjusting your search or filters",
+  "clearFilters": "Clear Filters",
+  "nearbyFarmsTitle": "Nearby Farms",
+  "unassignedFarmsWithinKm": "{count} unassigned farms within 70 km",
+  "@unassignedFarmsWithinKm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noNearbyInvitations": "No nearby invitations",
+  "unassignedFarmsDescription": "Unassigned farms within 70 km of your home location will appear here. Set your home location in Profile if needed.",
+  "farmerPrefix": "Farmer: {name}",
+  "@farmerPrefix": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "kmAwayLabel": "{km} km away",
+  "@kmAwayLabel": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "acceptAssignment": "Accept Assignment",
+  "farmAddedToYourFarms": "{farmName} added to your farms",
+  "@farmAddedToYourFarms": {
+    "placeholders": {
+      "farmName": {
+        "type": "String"
+      }
+    }
+  },
+  "farmSummary": "Farm Summary",
+  "harvestInformation": "Harvest Information",
+  "setHarvestDate": "SET HARVEST DATE",
+  "type": "Type",
+  "harvestStatusLabel": "Harvest Status",
+  "updateHarvestDate": "Update harvest date",
+  "updating": "Updating…",
+  "harvestDateHistory": "Harvest date history",
+  "byLabel": "By",
+  "mapLabel": "Map",
+  "farmPhotosLabel": "Farm Photos",
+  "noVisitsRecordedYet": "No visits recorded yet",
+  "continueVisit": "Continue Visit",
+  "updateHarvestDateTitle": "Update harvest date",
+  "currentHarvestDate": "Current: {date}",
+  "@currentHarvestDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "currentNotSet": "Current: Not set",
+  "tapToPickNewDate": "Tap to pick a new date",
+  "reasonOptional": "Reason (optional)",
+  "whyHarvestDateChanging": "Why is the harvest date changing?",
+  "saveHarvestDate": "Save harvest date",
+  "harvestDateUpdated": "Harvest date updated",
+  "pickDifferentDateToSave": "Pick a different date to save a change",
+  "farmNotFound": "Farm not found.",
+  "noMobileNumber": "No mobile number",
+  "aadharPrefix": "Aadhar: {number}",
+  "@aadharPrefix": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "assignExecutives": "Assign executives",
+  "executivesLabel": "Executives",
+  "executiveLabel": "Executive",
+  "farmVisit": "Farm Visit",
+  "startLabel": "Start",
+  "reportLabel": "Report",
+  "mediaLabel": "Media",
+  "offlineAnswersStayOnDevice": "Offline — answers & media stay on this device until sync",
+  "startVisitButton": "Start Visit",
+  "checkinRecordsTimeLocation": "Check-in records your time and location. You will then complete the field visit report.",
+  "continueToMedia": "Continue to Media",
+  "photosAndVoice": "Photos & Voice",
+  "optionalPhotosVoice": "Optional — up to 5 geotagged photos and a voice note (max 2:30)",
+  "reviewAndSubmit": "Review & Submit",
+  "reviewVisit": "Review Visit",
+  "reportFields": "Report fields",
+  "requiredFieldsCount": "{answered} / {required} required",
+  "@requiredFieldsCount": {
+    "placeholders": {
+      "answered": {
+        "type": "int"
+      },
+      "required": {
+        "type": "int"
+      }
+    }
+  },
+  "photosAttachedCount": "{count} attached",
+  "@photosAttachedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "voiceNote": "Voice note",
+  "marked": "Marked",
+  "skipped": "Skipped",
+  "submitVisit": "Submit Visit",
+  "requiredFieldNeedsAnswer": "1 required field still needs your answer",
+  "requiredFieldsNeedAnswers": "{count} required fields still need your answers",
+  "@requiredFieldsNeedAnswers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "requiredFieldNeedAnswerBelow": "1 required field needs your answer below",
+  "requiredFieldsNeedAnswersBelow": "{count} required fields need your answers below",
+  "@requiredFieldsNeedAnswersBelow": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "voiceNoteMarked": "Voice note marked",
+  "voiceNoteAutoSaved": "Voice note auto-saved at the 2:30 limit",
+  "offlineModeSyncLater": "Offline mode — visit will sync when internet returns",
+  "noInternetFarmNotCached": "No internet and this farm is not cached yet. Open the farm once while online, then try again.",
+  "noInternetNoFormCached": "No internet and no saved visit form yet. Complete one online visit first so the form can be cached.",
+  "couldNotCancelVisit": "Could not cancel visit: {error}",
+  "@couldNotCancelVisit": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "microphonePermissionRequired": "Microphone permission is required to record",
+  "couldNotStartRecording": "Could not start recording: {error}",
+  "@couldNotStartRecording": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "couldNotStopRecording": "Could not stop recording: {error}",
+  "@couldNotStopRecording": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "voiceSavedLocallyWillUpload": "Voice saved locally — will upload when online",
+  "voiceUploadFailed": "Voice upload failed: {error}",
+  "@voiceUploadFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "maximum5PhotosAllowed": "Maximum 5 photos allowed",
+  "visitSubmittedSuccessfully": "Visit submitted successfully",
+  "visitSavedOfflineSyncLater": "Visit saved offline. It will sync automatically when internet returns.",
+  "myVisitsTitle": "My Visits",
+  "visitRecordsCount": "{count} visit records",
+  "@visitRecordsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "visitsWaitingToSync": "{count} visits · {pending} waiting to sync",
+  "@visitsWaitingToSync": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "pending": {
+        "type": "int"
+      }
+    }
+  },
+  "syncingOfflineVisits": "Syncing offline visits — this can take a few minutes on a slow connection…",
+  "searchByFarmName": "Search by farm name...",
+  "allLabel": "All",
+  "ongoingLabel": "Ongoing",
+  "completedLabel": "Completed",
+  "yourFarmVisitsAppearHere": "Your farm visits will appear here",
+  "offlineVisitSyncedSingular": "1 offline visit synced",
+  "offlineVisitsSyncedPlural": "{count} offline visits synced",
+  "@offlineVisitsSyncedPlural": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "stillOfflineSyncRetryLater": "Still offline — sync will retry later",
+  "nothingWaitingToSync": "Nothing waiting to sync",
+  "savedOnDeviceTapToSync": "Saved on this device · tap to sync now",
+  "onboardFarmTitle": "Onboard farm",
+  "farmCreated": "Farm Created!",
+  "farmOnboardedExclaim": "Farm Onboarded!",
+  "farmAddedSuccessfully": "The farm has been added successfully.",
+  "viewDashboard": "View dashboard",
+  "onboardAnother": "Onboard Another",
+  "nextFarmerDetails": "Next: Farmer Details",
+  "farmNameInput": "Farm Name",
+  "editFarmBoundary": "Edit farm boundary",
+  "markFarmBoundaryOnMap": "Mark farm boundary on map",
+  "yourLocationShownOnMap": "Your location shown on map · {pins} boundary pins · {acres} acres",
+  "@yourLocationShownOnMap": {
+    "placeholders": {
+      "pins": {
+        "type": "int"
+      },
+      "acres": {
+        "type": "String"
+      }
+    }
+  },
+  "yourCurrentGpsShown": "Your current GPS is shown on the map — tap the button to mark boundary pins",
+  "waitingForGpsEnableLocation": "Waiting for GPS… enable location to center the map on you",
+  "locationAddressOptional": "Location address (optional)",
+  "locationAddressHint": "Area, city, PIN — display only; map pin drives distance",
+  "cropInput": "Crop",
+  "harvestTypeInput": "Harvest Type",
+  "harvestDateInput": "Harvest Date",
+  "totalAcresInput": "Total Acres",
+  "calculatedFromBoundary": "Calculated from boundary pins",
+  "numberOfPlantsInput": "Number of Plants",
+  "totalPlantsOnFarm": "Total plants on this farm",
+  "farmPhotosSectionLabel": "Farm Photos",
+  "addPhotoLabel": "Add photo",
+  "tapPhotoToReplace": "Tap a photo to replace it, or use Remove.",
+  "optionalAddPhotos": "Optional — add up to {max} photos (camera or gallery)",
+  "@optionalAddPhotos": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "farmerNameInput": "Farmer name",
+  "mobileNumberInput": "Mobile Number",
+  "aadharNumberInput": "Aadhar Number",
+  "aadharHint": "12-digit Aadhar",
+  "genderInput": "Gender",
+  "ageInput": "Age",
+  "enterFarmName": "Enter farm name",
+  "pinFarmBoundaryMinimum3": "Pin the farm boundary on the map (minimum 3 pins)",
+  "enterCropName": "Enter crop name",
+  "enterNumberOfPlants": "Enter number of plants",
+  "enterFarmerName": "Enter farmer name",
+  "enterFarmerMobile": "Enter farmer mobile number",
+  "enterValid12DigitAadhar": "Enter a valid 12-digit Aadhar number",
+  "pleaseSelectGender": "Please select gender",
+  "enterValidFarmerAge": "Enter a valid farmer age",
+  "enterHarvestTypeOnFarmDetails": "Enter harvest type on the farm details step",
+  "farmBoundaryRequiredGoBack": "Farm boundary is required. Go back and mark the boundary.",
+  "farmCreatedSuccessfully": "Farm created successfully",
+  "maximumPhotosAllowed": "Maximum {max} photos allowed",
+  "@maximumPhotosAllowed": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "removeLabel": "Remove",
+  "youMustBeSignedInToOnboard": "You must be signed in to onboard a farm.",
+  "selectFarmBoundary": "Select Farm Boundary",
+  "recenterOnMyLocation": "Recenter on my location",
+  "showIndia": "Show India",
+  "searchVillageDistrict": "Search village, district in India...",
+  "farmBoundaryStatus": "Farm boundary — status",
+  "readyToConfirm": "Ready to confirm · {pins} pins, {acres} acres",
+  "@readyToConfirm": {
+    "placeholders": {
+      "pins": {
+        "type": "int"
+      },
+      "acres": {
+        "type": "String"
+      }
+    }
+  },
+  "tapMapToDropBoundary": "Tap the map to drop boundary corners",
+  "boundaryPinsLabel": "Boundary pins",
+  "pinsPlaced": "{pins} pins · {acres} acres",
+  "@pinsPlaced": {
+    "placeholders": {
+      "pins": {
+        "type": "int"
+      },
+      "acres": {
+        "type": "String"
+      }
+    }
+  },
+  "minPinsRequired": "{pins} of 3 minimum pins placed",
+  "@minPinsRequired": {
+    "placeholders": {
+      "pins": {
+        "type": "int"
+      }
+    }
+  },
+  "tapMapAtEachCorner": "Tap the map at each corner of the farm.",
+  "gpsLocationLabel": "GPS location",
+  "gettingFix": "Getting a fix…",
+  "noGpsFixYet": "No GPS fix yet.",
+  "fixOutsideIndia": "Fix is outside India ({lat}, {lng}).",
+  "@fixOutsideIndia": {
+    "placeholders": {
+      "lat": {
+        "type": "String"
+      },
+      "lng": {
+        "type": "String"
+      }
+    }
+  },
+  "gpsOptionalCanPinManually": "GPS is optional here — you can still pin the boundary manually. Tap Recenter to retry.",
+  "addressLookup": "Address lookup",
+  "noAddressFound": "No address found for this location.",
+  "notLookedUpYet": "Not looked up yet.",
+  "addressOptionalNeverBlocks": "Optional — you can type the address on the previous screen. This never blocks Confirm.",
+  "locationSearchLabel": "Location search",
+  "searchOptionalPinDirectly": "Search is optional — pin the boundary directly on the map.",
+  "bluePinYourGps": "Blue pin = your GPS. Tap the map to drop boundary corners around the farm.",
+  "tapMapToDropPinsIndia": "Tap the map to drop pins around your farm boundary (India only)",
+  "pinsCount": "{count} pins",
+  "@pinsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "acresDisplay": "{acres} acres",
+  "@acresDisplay": {
+    "placeholders": {
+      "acres": {
+        "type": "String"
+      }
+    }
+  },
+  "min3Pins": "Min 3 pins",
+  "undoLabel": "Undo",
+  "clearLabel": "Clear",
+  "confirmBoundaryButton": "Confirm boundary",
+  "addMorePins": "Add {count} more pin{plural}",
+  "@addMorePins": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "plural": {
+        "type": "String"
+      }
+    }
+  },
+  "turnOnLocationToOpenMap": "Turn on location to open the map at your current position.",
+  "farmBoundaryMustBeInIndia": "Farm boundary must be inside India.",
+  "couldNotGetGpsEnableLocation": "Could not get GPS. Enable location and try again.",
+  "gpsOutsideIndiaSearchVillage": "Your GPS is outside India. Open the boundary map and search the farm village.",
+  "yourGpsOutsideIndiaSearch": "Your GPS is outside India. Search for the farm village, then mark pins.",
+  "recordInteractionButton": "Record interaction",
+  "editInteractionTitle": "Edit interaction",
+  "captureProspectFarmerDetails": "Capture prospect farmer details from your conversation",
+  "phoneNumberInput": "Phone number",
+  "landLocationInput": "Land location",
+  "landLocationHint": "Village / mandal / area",
+  "acresInput": "Acres",
+  "currentCropInput": "Current crop",
+  "specifyCrop": "Specify crop",
+  "planningToTake": "Planning to take",
+  "monthSingular": "{count} month",
+  "@monthSingular": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monthPlural": "{count} months",
+  "@monthPlural": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "moLabel": "{count} mo",
+  "@moLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardingStatusLabel": "Onboarding status",
+  "farmerReadyForOnboarding": "Farmer is ready for onboarding soon",
+  "needsMoreTime": "Needs more time before deciding",
+  "stillEvaluating": "Still evaluating or undecided",
+  "notesOptionalInput": "Notes (optional)",
+  "saveChanges": "Save changes",
+  "saveInteractionButton": "Save interaction",
+  "pleaseSelectCropAndMonths": "Please select crop and planned months",
+  "enterTheCropName": "Enter the crop name",
+  "interactionUpdated": "Interaction updated",
+  "interactionSaved": "Interaction saved",
+  "enterValidPhoneNumber": "Enter a valid phone number",
+  "enterAcres": "Enter acres",
+  "selectACrop": "Select a crop",
+  "interactionsTitle": "Interactions",
+  "prospectConversationsCount": "{count} prospect conversation{plural}",
+  "@prospectConversationsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "plural": {
+        "type": "String"
+      }
+    }
+  },
+  "searchNamePhoneLocation": "Search name, phone, location",
+  "noInteractionsYetTitle": "No interactions yet",
+  "logConversationsWithFarmers": "Log conversations with farmers you are trying to bring into the plan",
+  "recordButton": "Record",
+  "planningMonthsLabel": "Planning {months} month{plural} · {date}",
+  "@planningMonthsLabel": {
+    "placeholders": {
+      "months": {
+        "type": "int"
+      },
+      "plural": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "visitReportTitle": "Visit Report",
+  "pdfLabel": "PDF",
+  "savingPdf": "Saving…",
+  "downloadPDFButton": "Download PDF",
+  "preparingPdf": "Preparing PDF…",
+  "downloadReportPdf": "Download report PDF",
+  "reportPdfReadyToShare": "Report PDF ready to share/save",
+  "fieldReportTitle": "Field Report",
+  "noStructuredReportAnswers": "No structured report answers were saved for this visit.",
+  "additionalNotesLabel": "Additional notes",
+  "voiceNoteTitle": "Voice Note",
+  "voiceNoteRecordedButNotAvailable": "Voice note was recorded but the audio file is not available.",
+  "photosCountLabel": "Photos ({count})",
+  "@photosCountLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "executiveFieldLabel": "Executive",
+  "checkInLabel": "Check-in",
+  "checkOutLabel": "Check-out",
+  "durationLabel": "Duration",
+  "fetchingPhotosAssemblingPdf": "Fetching photos and assembling your PDF — this can take a few minutes…",
+  "yourCoverage": "YOUR COVERAGE",
+  "networkOverview": "Network Overview",
+  "acrossAllFieldOperations": "Across all field operations",
+  "totalFieldVisitsLogged": "Total field visits logged",
+  "fieldActivity": "Field activity",
+  "harvestSoon": "Harvest soon",
+  "farmNetworkIndia": "Farm Network — India",
+  "pinchToZoomHint": "Pinch to zoom · drag to pan · tap a pin for farm details",
+  "viewFarmDetails": "View Farm Details",
+  "indiaFarmMap": "India farm map",
+  "fullScreenMap": "Full screen map",
+  "resetView": "Reset view",
+  "statesLabel": "States",
+  "contactAndIdentity": "Contact & Identity",
+  "verifiedAdministrator": "Verified Administrator",
+  "fullAccessFarmsTeam": "Full access to farms, team & harvest data",
+  "visitsCount": "{count} visits",
+  "@visitsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "farmsCount": "{count} farms",
+  "@farmsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recordsCount": "{count} records",
+  "@recordsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "minOnSite": "{count} min on site",
+  "@minOnSite": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardFarmTitleCase": "Onboard Farm",
+  "photosLabel": "Photos",
+  "copyReport": "Copy report",
+  "reportCopied": "Report copied",
+  "couldNotOpenDialer": "Could not open phone dialer",
+  "couldNotOpenWhatsApp": "Could not open WhatsApp",
+  "tapToRecordMax": "Tap to record (max {max})",
+  "@tapToRecordMax": {
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "acresLower": "acres"
+}

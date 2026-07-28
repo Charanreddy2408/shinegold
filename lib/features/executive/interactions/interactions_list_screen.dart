@@ -16,6 +16,7 @@ import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/shine_buttons.dart';
 import '../../../shared/widgets/shine_empty_state.dart';
 import '../../../shared/widgets/ux_components.dart';
+import '../../../shared/utils/l10n_ext.dart';
 
 class InteractionsListScreen extends ConsumerStatefulWidget {
   const InteractionsListScreen({super.key});
@@ -101,11 +102,11 @@ class _InteractionsListScreenState
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add_rounded),
-        label: const Text('Record'),
+        label: Text(context.l10n.recordButton),
       ),
       body: AppBackground(
         header: GradientHeader(
-          title: 'Interactions',
+          title: context.l10n.interactions,
           subtitle: _loading
               ? 'Loading...'
               : '${_items.length} prospect conversation${_items.length == 1 ? '' : 's'}',
@@ -122,7 +123,7 @@ class _InteractionsListScreenState
               child: TextField(
                 controller: _searchController,
                 decoration: InputDecoration(
-                  hintText: 'Search name, phone, location',
+                  hintText: context.l10n.searchNamePhoneLocation,
                   prefixIcon: const Icon(Icons.search_rounded),
                   suffixIcon: IconButton(
                     onPressed: _load,
@@ -140,7 +141,7 @@ class _InteractionsListScreenState
                 padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
                 children: [
                   _FilterChip(
-                    label: 'All',
+                    label: context.l10n.all,
                     selected: _statusFilter == null,
                     onTap: () {
                       setState(() => _statusFilter = null);
@@ -172,11 +173,10 @@ class _InteractionsListScreenState
                   : _items.isEmpty
                       ? ShineEmptyState(
                           icon: Icons.forum_outlined,
-                          title: 'No interactions yet',
-                          subtitle:
-                              'Log conversations with farmers you are trying to bring into the plan',
+                          title: context.l10n.noInteractions,
+                          subtitle: context.l10n.logConversationsWithFarmers,
                           action: ShinePrimaryButton(
-                            label: 'Record interaction',
+                            label: context.l10n.recordInteractionButton,
                             icon: Icons.add_rounded,
                             onPressed: () => _openForm(),
                           ),

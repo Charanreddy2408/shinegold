@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../shared/utils/l10n_ext.dart';
 
 /// Clean metric tile for farm summary, harvest info, etc.
 class InfoMetricTile extends StatelessWidget {
-  const InfoMetricTile({
+  InfoMetricTile({
     super.key,
     required this.icon,
     required this.label,
@@ -49,7 +50,7 @@ class InfoMetricTile extends StatelessWidget {
                         fontSize: 10,
                       ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 Text(
                   value,
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
@@ -85,16 +86,16 @@ class HarvestInfoRow extends StatelessWidget {
         Expanded(
           child: InfoMetricTile(
             icon: Icons.spa_outlined,
-            label: 'Type',
+            label: context.l10n.type,
             value: type,
             color: AppColors.secondary,
           ),
         ),
-        const SizedBox(width: 10),
+        SizedBox(width: 10),
         Expanded(
           child: InfoMetricTile(
             icon: Icons.event_rounded,
-            label: 'Date',
+            label: context.l10n.date,
             value: date,
             color: AppColors.primary,
           ),

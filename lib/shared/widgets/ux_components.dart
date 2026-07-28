@@ -13,6 +13,7 @@ import '../../data/models/enums.dart';
 import '../utils/media_url.dart';
 import '../utils/voice_audio_cache.dart';
 import 'animated_loading.dart';
+import '../../shared/utils/l10n_ext.dart';
 
 bool _audioContextReady = false;
 
@@ -152,7 +153,7 @@ class SyncStatusChip extends StatelessWidget {
 }
 
 class FriendlyErrorBanner extends StatelessWidget {
-  const FriendlyErrorBanner({
+  FriendlyErrorBanner({
     super.key,
     required this.message,
     this.onRetry,
@@ -177,7 +178,7 @@ class FriendlyErrorBanner extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(icon, color: AppColors.error, size: 22),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           Expanded(
             child: Text(
               message,
@@ -187,7 +188,7 @@ class FriendlyErrorBanner extends StatelessWidget {
             ),
           ),
           if (onRetry != null)
-            TextButton(onPressed: onRetry, child: const Text('Retry')),
+            TextButton(onPressed: onRetry, child: Text(context.l10n.retry)),
         ],
       ),
     );

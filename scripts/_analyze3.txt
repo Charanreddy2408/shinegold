@@ -1,0 +1,357 @@
+Resolving dependencies...
+Downloading packages...
+  cli_util 0.4.2 (0.5.2 available)
+  connectivity_plus 7.2.0 (7.3.1 available)
+  cross_file 0.3.5+2 (0.3.5+4 available)
+  dbus 0.7.13 (0.7.14 available)
+  dio 5.9.2 (5.11.0 available)
+  dio_web_adapter 2.1.2 (2.2.1 available)
+  flutter_cache_manager 3.4.1 (3.4.2 available)
+  flutter_lints 5.0.0 (6.0.0 available)
+  flutter_local_notifications 22.0.1 (22.2.0 available)
+  flutter_local_notifications_platform_interface 12.0.0 (12.1.0 available)
+  flutter_map 7.0.2 (8.3.1 available)
+  flutter_riverpod 2.6.1 (3.4.1 available)
+  geolocator 13.0.4 (14.0.3 available)
+  geolocator_android 4.6.2 (5.0.3 available)
+  go_router 14.8.1 (17.3.0 available)
+  google_fonts 6.3.3 (8.2.0 available)
+  hooks 2.0.2 (2.1.0 available)
+  image_picker 1.2.2 (1.2.3 available)
+  intl 0.20.2 (0.20.3 available)
+  jni 1.0.0 (1.0.2 available)
+  jni_flutter 1.0.1 (1.0.2 available)
+  latlong2 0.9.1 (0.10.1 available)
+  lints 5.1.1 (6.1.0 available)
+  matcher 0.12.19 (0.12.20 available)
+  meta 1.18.0 (1.19.0 available)
+  mgrs_dart 2.0.0 (3.0.0 available)
+  objective_c 9.4.1 (9.5.0 available)
+  package_config 2.2.0 (3.0.0 available)
+  path_provider_linux 2.2.1 (2.2.2 available)
+  permission_handler 11.4.0 (12.0.3 available)
+  permission_handler_android 12.1.0 (13.0.1 available)
+  posix 6.5.0 (6.5.2 available)
+  proj4dart 2.1.0 (3.0.0 available)
+  qr 3.0.2 (4.0.0 available)
+  record 6.2.1 (7.1.1 available)
+  record_android 1.5.2 (2.1.2 available)
+  record_ios 1.2.1 (2.1.1 available)
+  record_linux 1.3.1 (2.1.1 available)
+  record_macos 1.2.2 (2.1.1 available)
+  record_platform_interface 1.6.0 (2.1.0 available)
+  record_use 0.6.0 (1.0.0 available)
+  record_web 1.3.0 (2.1.1 available)
+  record_windows 1.0.7 (2.2.2 available)
+  riverpod 2.6.1 (3.4.1 available)
+  share_plus 10.1.4 (13.3.0 available)
+  share_plus_platform_interface 5.0.2 (7.2.0 available)
+  shared_preferences_android 2.4.26 (2.4.27 available)
+  sqflite_darwin 2.4.3 (2.4.3+1 available)
+  synchronized 3.4.1 (3.4.1+1 available)
+  test_api 0.7.11 (0.7.13 available)
+  unicode 0.3.1 (1.1.9 available)
+  uuid 4.5.3 (4.6.0 available)
+  vector_math 2.2.0 (2.4.1 available)
+  win32 5.15.0 (6.3.0 available)
+Got dependencies!
+54 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Analyzing lib...                                                
+
+   info - The import of 'l10n/app_localizations.dart' is unnecessary because all of the used elements are also provided by the import of 'shared/utils/l10n_ext.dart'. Try removing the import directive - lib\app.dart:9:8 - unnecessary_import
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\core\network\dio_client.dart:18:25 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\core\network\dio_client.dart:19:25 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\core\theme\app_typography.dart:10:38 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\data\datasources\mock\mock_auth_datasource.dart:22:14 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\data\datasources\mock\mock_auth_datasource.dart:30:14 - prefer_const_constructors
+   info - The member 'getFarms' overrides an inherited member but isn't annotated with '@override'. Try adding the '@override' annotation - lib\data\datasources\mock\mock_farm_datasource.dart:18:22 - annotate_overrides
+   info - The member 'getFarmById' overrides an inherited member but isn't annotated with '@override'. Try adding the '@override' annotation - lib\data\datasources\mock\mock_farm_datasource.dart:121:17 - annotate_overrides
+   info - The member 'onboardFarm' overrides an inherited member but isn't annotated with '@override'. Try adding the '@override' annotation - lib\data\datasources\mock\mock_farm_datasource.dart:130:16 - annotate_overrides
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\data\datasources\mock\mock_seed_data.dart:361:53 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\data\datasources\mock\mock_seed_data.dart:374:11 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\data\datasources\mock\mock_seed_data.dart:404:11 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\data\datasources\mock\mock_seed_data.dart:424:11 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\data\datasources\mock\mock_seed_data.dart:446:11 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\data\datasources\mock\mock_seed_data.dart:460:11 - prefer_const_constructors
+   info - Use the null-aware operator '?.' rather than an explicit 'null' comparison. Try using '?.' - lib\data\models\visit_form.dart:362:10 - prefer_null_aware_operators
+   info - Use interpolation to compose strings and values. Try using string interpolation to build the composite string - lib\features\auth\forgot_password_screen.dart:139:17 - prefer_interpolation_to_compose_strings
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\auth\forgot_password_screen.dart:220:17 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\auth\forgot_password_screen.dart:252:15 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\auth\forgot_password_screen.dart:252:29 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\auth\forgot_password_screen.dart:253:15 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\auth\forgot_password_screen.dart:269:15 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\auth\forgot_password_screen.dart:280:17 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\auth\forgot_password_screen.dart:303:17 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\auth\forgot_password_screen.dart:318:17 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\auth\forgot_password_screen.dart:364:25 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\auth\forgot_password_screen.dart:392:25 - prefer_const_constructors
+   info - Don't use 'BuildContext's across async gaps. Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check - lib\features\auth\login_screen.dart:75:11 - use_build_context_synchronously
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\auth\login_screen.dart:117:17 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\auth\login_screen.dart:118:17 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\auth\login_screen.dart:119:26 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\auth\login_screen.dart:121:17 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\auth\login_screen.dart:134:23 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\auth\login_screen.dart:139:23 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\auth\login_screen.dart:153:23 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\auth\login_screen.dart:196:31 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\auth\login_screen.dart:213:23 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\auth\login_screen.dart:219:23 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\auth\login_screen.dart:241:17 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\auth\session_expired_screen.dart:31:17 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\auth\session_expired_screen.dart:45:17 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\auth\session_expired_screen.dart:51:17 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\auth\session_expired_screen.dart:57:17 - prefer_const_constructors
+   info - The import of 'dart:typed_data' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/foundation.dart'. Try removing the import directive - lib\features\executive\checkin\checkin_screen.dart:3:8 - unnecessary_import
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\checkin\checkin_screen.dart:804:19 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\checkin\checkin_screen.dart:805:19 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\checkin\checkin_screen.dart:886:25 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\checkin\checkin_screen.dart:896:11 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\checkin\checkin_screen.dart:902:11 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\checkin\checkin_screen.dart:909:11 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\checkin\checkin_screen.dart:1001:27 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\checkin\checkin_screen.dart:1026:17 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\checkin\checkin_screen.dart:1082:11 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\checkin\checkin_screen.dart:1119:11 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\checkin\checkin_screen.dart:1140:11 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\checkin\checkin_screen.dart:1186:11 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\checkin\checkin_screen.dart:1216:11 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\farm_detail\farm_detail_screen.dart:138:19 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\farm_detail\farm_detail_screen.dart:147:19 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\farm_detail\farm_detail_screen.dart:165:19 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\farm_detail\farm_detail_screen.dart:175:19 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\farm_detail\farm_detail_screen.dart:180:19 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\farm_detail\farm_detail_screen.dart:245:14 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\farm_detail\farm_detail_screen.dart:444:21 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\farm_detail\farm_detail_screen.dart:454:11 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\farm_detail\farm_detail_screen.dart:460:11 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\farm_detail\farm_detail_screen.dart:502:11 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\farm_detail\farm_detail_screen.dart:528:21 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\farm_detail\farm_detail_screen.dart:540:27 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\farm_detail\farm_detail_screen.dart:555:17 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\farm_detail\farm_detail_screen.dart:568:21 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\farm_detail\farm_detail_screen.dart:579:17 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\farm_detail\farm_detail_screen.dart:591:13 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\farm_detail\farm_detail_screen.dart:598:13 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\farm_detail\farm_detail_screen.dart:628:29 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\farm_detail\farm_detail_screen.dart:640:11 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\farm_detail\farm_detail_screen.dart:652:13 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\farm_detail\farm_detail_screen.dart:698:11 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\farms\farm_invitations_screen.dart:215:19 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\farms\farm_invitations_screen.dart:223:23 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\farms\farm_invitations_screen.dart:237:11 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\farms\farms_screen.dart:146:19 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\farms\farms_screen.dart:176:19 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\farms\farms_screen.dart:185:23 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\farms\farms_screen.dart:293:11 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\home\home_screen.dart:217:37 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\home\home_screen.dart:228:43 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\home\home_screen.dart:278:36 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\home\home_screen.dart:314:36 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\interactions\interaction_form_screen.dart:190:15 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\interactions\interaction_form_screen.dart:206:15 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\interactions\interaction_form_screen.dart:217:15 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\interactions\interaction_form_screen.dart:232:15 - prefer_const_constructors
+   info - 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre. Try replacing the use of the deprecated member with the replacement - lib\features\executive\interactions\interaction_form_screen.dart:234:17 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\interactions\interaction_form_screen.dart:243:17 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\interactions\interaction_form_screen.dart:257:15 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\interactions\interaction_form_screen.dart:263:15 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\interactions\interaction_form_screen.dart:268:15 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\my_visits\my_visits_screen.dart:174:23 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\my_visits\my_visits_screen.dart:177:32 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\my_visits\my_visits_screen.dart:190:24 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\my_visits\my_visits_screen.dart:205:29 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\my_visits\my_visits_screen.dart:230:11 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\onboard_farm\farm_boundary_picker_screen.dart:517:23 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\onboard_farm\farm_boundary_picker_screen.dart:518:34 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\onboard_farm\farm_boundary_picker_screen.dart:519:32 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\onboard_farm\farm_boundary_picker_screen.dart:522:34 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\onboard_farm\farm_boundary_picker_screen.dart:621:23 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\onboard_farm\farm_boundary_picker_screen.dart:630:19 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\onboard_farm\farm_boundary_picker_screen.dart:640:23 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\onboard_farm\onboard_farm_screen.dart:417:15 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\onboard_farm\onboard_farm_screen.dart:422:15 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\onboard_farm\onboard_farm_screen.dart:425:15 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\onboard_farm\onboard_farm_screen.dart:435:17 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\onboard_farm\onboard_farm_screen.dart:458:19 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\onboard_farm\onboard_farm_screen.dart:610:9 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\onboard_farm\onboard_farm_screen.dart:618:9 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\onboard_farm\onboard_farm_screen.dart:623:9 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\onboard_farm\onboard_farm_screen.dart:628:9 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\onboard_farm\onboard_farm_screen.dart:630:9 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\onboard_farm\onboard_farm_screen.dart:648:9 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\onboard_farm\onboard_farm_screen.dart:661:9 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\onboard_farm\onboard_farm_screen.dart:757:11 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\onboard_farm\onboard_farm_screen.dart:761:23 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\onboard_farm\onboard_farm_screen.dart:763:9 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\onboard_farm\onboard_farm_screen.dart:769:9 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\onboard_farm\onboard_farm_screen.dart:780:9 - prefer_const_constructors
+   info - 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre. Try replacing the use of the deprecated member with the replacement - lib\features\executive\onboard_farm\onboard_farm_screen.dart:782:11 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\onboard_farm\onboard_farm_screen.dart:789:9 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\onboard_farm\onboard_farm_screen.dart:829:28 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\onboard_farm\onboard_farm_screen.dart:830:30 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\onboard_farm\onboard_farm_screen.dart:844:9 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\profile\executive_profile_screen.dart:128:19 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\profile\executive_profile_screen.dart:137:19 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\profile\executive_profile_screen.dart:146:23 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\profile\executive_profile_screen.dart:155:19 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\profile\executive_profile_screen.dart:161:19 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\profile\executive_profile_screen.dart:166:19 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\profile\executive_profile_screen.dart:168:19 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\profile\executive_profile_screen.dart:175:19 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\profile\executive_profile_screen.dart:180:19 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\profile\executive_profile_screen.dart:187:19 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\profile\executive_profile_screen.dart:195:19 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\profile\executive_profile_screen.dart:375:13 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\profile\executive_profile_screen.dart:384:9 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\profile\executive_profile_screen.dart:392:9 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\profile\executive_profile_screen.dart:400:9 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\profile\executive_profile_screen.dart:511:15 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\profile\executive_profile_screen.dart:522:21 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\profile\executive_profile_screen.dart:537:13 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\profile\executive_profile_screen.dart:546:11 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\profile\executive_profile_screen.dart:722:15 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\profile\executive_profile_screen.dart:733:21 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\profile\executive_profile_screen.dart:745:11 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\profile\executive_profile_screen.dart:772:11 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\profile\executive_profile_screen.dart:782:13 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\profile\executive_profile_screen.dart:789:13 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\profile\executive_profile_screen.dart:818:19 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\profile\executive_profile_screen.dart:846:19 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\profile\executive_profile_screen.dart:852:19 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\profile\executive_profile_screen.dart:1103:15 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\profile\executive_profile_screen.dart:1109:15 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\profile\executive_profile_screen.dart:1115:15 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\profile\executive_profile_screen.dart:1121:27 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\profile\executive_profile_screen.dart:1126:27 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\profile\executive_profile_screen.dart:1138:15 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\profile\executive_profile_screen.dart:1155:17 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\profile\executive_profile_screen.dart:1162:33 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\profile\executive_profile_screen.dart:1224:17 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\profile\executive_profile_screen.dart:1233:15 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\profile\executive_profile_screen.dart:1238:15 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\shell\executive_shell.dart:155:21 - prefer_const_constructors
+   info - Use 'const' literals as arguments to constructors of '@immutable' classes. Try adding 'const' before the literal - lib\features\executive\shell\executive_shell.dart:160:22 - prefer_const_literals_to_create_immutables
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\executive\shell\executive_shell.dart:161:13 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\super_admin\dashboard\admin_dashboard_screen.dart:138:19 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\super_admin\dashboard\admin_dashboard_screen.dart:139:28 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\super_admin\dashboard\admin_dashboard_screen.dart:310:13 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\super_admin\executives\admin_executive_profile_screen.dart:190:29 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\super_admin\executives\admin_executive_profile_screen.dart:196:29 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\super_admin\executives\admin_executive_profile_screen.dart:202:29 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\super_admin\executives\admin_executive_profile_screen.dart:239:36 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\super_admin\executives\admin_executive_profile_screen.dart:478:13 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\super_admin\executives\admin_executive_profile_screen.dart:499:17 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\super_admin\executives\admin_executive_profile_screen.dart:760:11 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\super_admin\executives\executives_screen.dart:584:13 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\super_admin\farmers\farmers_screen.dart:298:15 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\super_admin\farmers\farmers_screen.dart:299:26 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\super_admin\farmers\farmers_screen.dart:300:24 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\super_admin\farmers\farmers_screen.dart:301:26 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\super_admin\farmers\farmers_screen.dart:304:28 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\super_admin\farmers\farmers_screen.dart:338:17 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\super_admin\farmers\farmers_screen.dart:344:15 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\super_admin\farmers\farmers_screen.dart:351:15 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\super_admin\more\admin_more_sheet.dart:53:15 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\super_admin\more\admin_more_sheet.dart:68:19 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\super_admin\more\admin_more_sheet.dart:94:15 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\super_admin\nearby\admin_nearby_farms_section.dart:63:19 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\super_admin\nearby\admin_nearby_farms_section.dart:85:21 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\super_admin\nearby\admin_nearby_farms_section.dart:88:30 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\super_admin\nearby\admin_nearby_farms_section.dart:173:15 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\super_admin\password_reset\admin_password_reset_screen.dart:175:27 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\super_admin\password_reset\admin_password_reset_screen.dart:180:27 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\super_admin\password_reset\admin_password_reset_screen.dart:190:13 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\super_admin\password_reset\admin_password_reset_screen.dart:314:45 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\super_admin\profile\admin_profile_screen.dart:193:15 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\super_admin\profile\admin_profile_screen.dart:201:15 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\super_admin\profile\admin_profile_screen.dart:209:15 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\super_admin\profile\admin_profile_screen.dart:214:15 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\super_admin\profile\admin_profile_screen.dart:299:23 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\super_admin\profile\admin_profile_screen.dart:310:17 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\visits\presentation\visit_report_screen.dart:139:18 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\visits\presentation\visit_report_screen.dart:230:27 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\visits\presentation\visit_report_screen.dart:237:27 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\visits\presentation\visit_report_screen.dart:271:29 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\visits\presentation\visit_report_screen.dart:296:37 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\visits\presentation\visit_report_screen.dart:360:27 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\visits\presentation\widgets\dynamic_visit_form.dart:243:17 - prefer_const_constructors
+   info - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre. Try replacing the use of the deprecated member with the replacement - lib\features\visits\presentation\widgets\dynamic_visit_form.dart:284:11 - deprecated_member_use
+   info - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre. Try replacing the use of the deprecated member with the replacement - lib\features\visits\presentation\widgets\dynamic_visit_form.dart:285:11 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\welcome\welcome_screen.dart:479:37 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\welcome\welcome_screen.dart:563:35 - prefer_const_constructors
+warning - The member 'state' can only be used within 'package:state_notifier/state_notifier.dart' or a test - lib\shared\providers\auth_provider.dart:270:30 - invalid_use_of_visible_for_testing_member
+warning - The member 'state' can only be used within instance members of subclasses of 'StateNotifier' - lib\shared\providers\auth_provider.dart:270:30 - invalid_use_of_protected_member
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\services\visit_report_pdf_service.dart:51:22 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\services\visit_report_pdf_service.dart:96:28 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\services\visit_report_pdf_service.dart:155:18 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\services\visit_report_pdf_service.dart:177:24 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\utils\contact_launcher.dart:61:9 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\utils\contact_launcher.dart:61:27 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\utils\contact_launcher.dart:74:9 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\utils\contact_launcher.dart:74:27 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\utils\contact_launcher.dart:140:9 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\utils\visit_report_pdf.dart:37:26 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\utils\visit_report_pdf.dart:73:20 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\utils\visit_report_pdf.dart:76:22 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\utils\visit_report_pdf.dart:82:20 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\utils\visit_report_pdf.dart:103:20 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\utils\visit_report_pdf.dart:114:22 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\utils\visit_report_pdf.dart:169:22 - prefer_const_constructors
+   info - The import of 'dart:typed_data' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/foundation.dart'. Try removing the import directive - lib\shared\utils\voice_audio_cache.dart:2:8 - unnecessary_import
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\utils\whatsapp_launcher.dart:14:9 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\utils\whatsapp_launcher.dart:14:27 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\utils\whatsapp_launcher.dart:41:7 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\utils\whatsapp_launcher.dart:41:25 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\admin_farm_map.dart:301:17 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\admin_farm_map.dart:309:21 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\admin_farm_map.dart:315:21 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\admin_farm_map.dart:321:21 - prefer_const_constructors
+warning - The declaration '_StateClusterBadge' isn't referenced. Try removing the declaration of '_StateClusterBadge' - lib\shared\widgets\admin_farm_map.dart:776:7 - unused_element
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\admin_farm_map.dart:1154:24 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\admin_farm_map.dart:1156:26 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\admin_farm_map.dart:1345:16 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\admin_farm_map.dart:1370:13 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\admin_farm_map.dart:1370:27 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\admin_farm_map.dart:1384:23 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\admin_network_hero.dart:349:11 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\admin_ui.dart:310:27 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\admin_ui.dart:550:25 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\admin_ui.dart:560:25 - prefer_const_constructors
+   info - Constructors in '@immutable' classes should be declared as 'const'. Try adding 'const' to the constructor declaration - lib\shared\widgets\admin_ui.dart:717:3 - prefer_const_constructors_in_immutables
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\admin_ui.dart:1000:13 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\admin_ui.dart:1012:9 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\admin_ui.dart:1027:13 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\admin_ui.dart:1039:9 - prefer_const_constructors
+   info - Constructors in '@immutable' classes should be declared as 'const'. Try adding 'const' to the constructor declaration - lib\shared\widgets\app_background.dart:34:3 - prefer_const_constructors_in_immutables
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\dashboard_overview.dart:117:17 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\dashboard_overview.dart:127:21 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\dashboard_overview.dart:135:21 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\farm_boundary_map_view.dart:175:19 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\farm_card.dart:215:41 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\farm_map_preview.dart:130:20 - prefer_const_constructors
+   info - Constructors in '@immutable' classes should be declared as 'const'. Try adding 'const' to the constructor declaration - lib\shared\widgets\info_metric_tile.dart:8:3 - prefer_const_constructors_in_immutables
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\info_metric_tile.dart:53:17 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\info_metric_tile.dart:94:9 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\profile_photo_editor.dart:61:9 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\profile_photo_editor.dart:62:20 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\shine_bottom_nav.dart:20:19 - prefer_const_constructors
+   info - Use 'const' literals as arguments to constructors of '@immutable' classes. Try adding 'const' before the literal - lib\shared\widgets\shine_bottom_nav.dart:22:20 - prefer_const_literals_to_create_immutables
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\shine_bottom_nav.dart:23:11 - prefer_const_constructors
+   info - Constructors in '@immutable' classes should be declared as 'const'. Try adding 'const' to the constructor declaration - lib\shared\widgets\shine_empty_state.dart:7:3 - prefer_const_constructors_in_immutables
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\shine_empty_state.dart:31:27 - prefer_const_constructors
+   info - Constructors in '@immutable' classes should be declared as 'const'. Try adding 'const' to the constructor declaration - lib\shared\widgets\shine_empty_state.dart:130:3 - prefer_const_constructors_in_immutables
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\state_diagnostics.dart:133:15 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\state_diagnostics.dart:145:15 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\state_diagnostics.dart:199:23 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\state_diagnostics.dart:199:41 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\state_diagnostics.dart:205:13 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\state_diagnostics.dart:211:21 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\state_diagnostics.dart:215:13 - prefer_const_constructors
+   info - Constructors in '@immutable' classes should be declared as 'const'. Try adding 'const' to the constructor declaration - lib\shared\widgets\status_chip.dart:8:3 - prefer_const_constructors_in_immutables
+   info - Constructors in '@immutable' classes should be declared as 'const'. Try adding 'const' to the constructor declaration - lib\shared\widgets\ux_components.dart:156:3 - prefer_const_constructors_in_immutables
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\ux_components.dart:181:11 - prefer_const_constructors
+   info - Unnecessary braces in a string interpolation. Try removing the braces - lib\shared\widgets\ux_components.dart:617:13 - unnecessary_brace_in_string_interps
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\shared\widgets\visit_log_tile.dart:50:29 - prefer_const_constructors
+
+294 issues found. (ran in 24.2s)

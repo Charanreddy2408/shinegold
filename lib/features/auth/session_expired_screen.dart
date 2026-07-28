@@ -6,6 +6,7 @@ import '../../core/router/app_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../shared/providers/session_expired_provider.dart';
+import '../../shared/utils/l10n_ext.dart';
 import '../../shared/widgets/app_background.dart';
 import '../../shared/widgets/shine_buttons.dart';
 import '../../shared/widgets/shine_logo.dart';
@@ -27,7 +28,7 @@ class SessionExpiredScreen extends ConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const ShineLogo(size: 72),
-                const SizedBox(height: AppSpacing.xxl),
+                SizedBox(height: AppSpacing.xxl),
                 Container(
                   width: 80,
                   height: 80,
@@ -41,21 +42,21 @@ class SessionExpiredScreen extends ConsumerWidget {
                     color: AppColors.error,
                   ),
                 ),
-                const SizedBox(height: AppSpacing.xl),
+                SizedBox(height: AppSpacing.xl),
                 Text(
-                  'Your session has expired',
+                  context.l10n.sessionExpired,
                   style: Theme.of(context).textTheme.titleLarge,
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: AppSpacing.sm),
+                SizedBox(height: AppSpacing.sm),
                 Text(
-                  'Please log in again to continue.',
+                  context.l10n.pleaseSignInAgain,
                   style: Theme.of(context).textTheme.bodyMedium,
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: AppSpacing.xxl),
+                SizedBox(height: AppSpacing.xxl),
                 ShinePrimaryButton(
-                  label: 'Log In Again',
+                  label: context.l10n.logInAgain,
                   onPressed: () {
                     ref.read(sessionExpiredProvider.notifier).clear();
                     context.go(AppRoutes.login);

@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart';
 import '../../core/theme/app_colors.dart';
 import '../utils/geo_area.dart';
 import '../utils/india_map_bounds.dart';
+import '../../shared/utils/l10n_ext.dart';
 
 /// Map for farm boundary picking — shows employee GPS + optional boundary pins.
 class FarmBoundaryMapView extends StatelessWidget {
@@ -168,13 +169,13 @@ class FarmBoundaryMapView extends StatelessWidget {
                 if (showZoomControls) ...[
                   _MapRoundButton(
                     icon: Icons.add_rounded,
-                    tooltip: 'Zoom in',
+                    tooltip: context.l10n.zoomIn,
                     onTap: () => _zoomBy(1),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   _MapRoundButton(
                     icon: Icons.remove_rounded,
-                    tooltip: 'Zoom out',
+                    tooltip: context.l10n.zoomOut,
                     onTap: () => _zoomBy(-1),
                   ),
                 ],

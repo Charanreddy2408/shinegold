@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../core/theme/app_spacing.dart';
+import '../../shared/utils/l10n_ext.dart';
 
 /// Single entry point for taking or choosing a photo.
 ///
@@ -95,12 +96,12 @@ class PhotoPicker {
           children: [
             ListTile(
               leading: const Icon(Icons.photo_camera_rounded),
-              title: const Text('Take photo'),
+              title: Text(context.l10n.takePhoto),
               onTap: () => Navigator.pop(ctx, ImageSource.camera),
             ),
             ListTile(
               leading: const Icon(Icons.photo_library_rounded),
-              title: const Text('Choose from gallery'),
+              title: Text(context.l10n.chooseFromGallery),
               onTap: () => Navigator.pop(ctx, ImageSource.gallery),
             ),
           ],
@@ -126,8 +127,8 @@ class PhotoPicker {
       _showMessage(
         context,
         'Camera permission is blocked for Shine Gold.',
-        action: const SnackBarAction(
-          label: 'Settings',
+        action: SnackBarAction(
+          label: context.l10n.settings,
           onPressed: openAppSettings,
         ),
       );

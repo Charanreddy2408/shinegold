@@ -1,12 +1,16 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'l10n/app_localizations.dart';
 import 'shared/providers/app_remote_config_provider.dart';
+import 'shared/providers/locale_provider.dart';
 import 'shared/services/notification_service.dart';
+import 'shared/utils/l10n_ext.dart';
 
 class ShineGoldApp extends ConsumerStatefulWidget {
   const ShineGoldApp({super.key});
@@ -34,10 +38,20 @@ class _ShineGoldAppState extends ConsumerState<ShineGoldApp> {
 
   @override
   Widget build(BuildContext context) {
+    final locale = ref.watch(localeProvider);
+
     return MaterialApp.router(
-      title: 'Shine Gold',
+      title: context.l10n.appTitle,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.app,
+      locale: locale,
+      supportedLocales: supportedAppLocales,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       routerConfig: ref.watch(routerProvider),
       builder: (context, child) {
         // Executives run phones with the system font enlarged. Unclamped, a

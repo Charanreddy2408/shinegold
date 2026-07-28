@@ -13,6 +13,7 @@ import '../../../data/models/executive.dart';
 import '../../../data/models/farm.dart';
 import '../../../shared/providers/app_refresh_provider.dart';
 import '../../../shared/providers/repository_providers.dart';
+import '../../../shared/utils/l10n_ext.dart';
 import '../../../shared/widgets/admin_farm_map.dart';
 import '../../../shared/widgets/admin_network_hero.dart';
 import '../../../shared/widgets/animated_loading.dart';
@@ -89,8 +90,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
 
     return AppBackground(
       header: GradientHeader(
-        title: 'Dashboard',
-        subtitle: 'Shine Gold overview',
+        title: context.l10n.dashboard,
+        subtitle: context.l10n.shineGoldOverview,
         trailing: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
@@ -134,7 +135,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       },
                     ),
                   ),
-                  const SliverToBoxAdapter(
+                  SliverToBoxAdapter(
                     child: AdminNearbyFarmsSection(),
                   ),
                   SliverToBoxAdapter(
@@ -151,7 +152,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
                       child: FadeSlideIn(
                         child: Text(
-                          'Operations',
+                          context.l10n.operations,
                           style:
                               Theme.of(context).textTheme.titleMedium?.copyWith(
                                     fontWeight: FontWeight.w700,
@@ -174,43 +175,43 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                           children: [
                             AdminMetricRow(
                               icon: Icons.eco_outlined,
-                              label: 'REGISTERED FARMS',
+                              label: context.l10n.registeredFarms,
                               value: '${_stats!.totalFarms}',
-                              subtitle: 'Active farms in the network',
+                              subtitle: context.l10n.activeFarmsInNetwork,
                               color: AppColors.secondary,
                               progress: _stats!.totalFarms > 0 ? 0.72 : 0,
                             ),
                             AdminMetricRow(
                               icon: Icons.people_outline,
-                              label: 'FIELD EXECUTIVES',
+                              label: context.l10n.fieldExecutives,
                               value: '${_stats!.totalExecutives}',
-                              subtitle: 'Team members on ground',
+                              subtitle: context.l10n.teamMembersOnGround,
                               color: AppColors.primary,
                               progress: _stats!.totalExecutives > 0 ? 0.55 : 0,
                             ),
                             AdminMetricRow(
                               icon: Icons.history_rounded,
-                              label: 'VISITS LOGGED',
+                              label: context.l10n.visitsLogged,
                               value: '${_stats!.totalVisits}',
-                              subtitle: 'Completed & ongoing visits',
+                              subtitle: context.l10n.completedAndOngoingVisits,
                               color: AppColors.info,
                               progress: _stats!.totalVisits > 0 ? 0.68 : 0,
                             ),
                             AdminMetricRow(
                               icon: Icons.square_foot_rounded,
-                              label: 'TOTAL ACRES',
+                              label: context.l10n.totalAcres,
                               value: _stats!.totalAcres >= 100
                                   ? _stats!.totalAcres.toStringAsFixed(0)
                                   : _stats!.totalAcres.toStringAsFixed(1),
-                              subtitle: 'Combined farm acreage',
+                              subtitle: context.l10n.combinedFarmAcreage,
                               color: AppColors.primaryDark,
                               progress: _stats!.totalAcres > 0 ? 0.6 : 0,
                             ),
                             AdminMetricRow(
                               icon: Icons.agriculture_rounded,
-                              label: 'FARMERS ONBOARDED',
+                              label: context.l10n.farmersOnboardedLabel,
                               value: '${_stats!.farmersOnboarded}',
-                              subtitle: 'New farmers this season',
+                              subtitle: context.l10n.newFarmersThisSeason,
                               color: AppColors.secondarySoft,
                               progress:
                                   _stats!.farmersOnboarded > 0 ? 0.45 : 0,
@@ -228,7 +229,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                         children: [
                           Expanded(
                             child: Text(
-                              'Field Team',
+                              context.l10n.fieldTeam,
                               style: Theme.of(context)
                                   .textTheme
                                   .titleMedium
@@ -236,7 +237,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                             ),
                           ),
                           Text(
-                            '${_executives.length} members',
+                            context.l10n.xMembers(_executives.length),
                             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                   color: AppColors.textMuted,
                                 ),
@@ -285,6 +286,7 @@ class _TeamMemberChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
@@ -305,7 +307,7 @@ class _TeamMemberChip extends StatelessWidget {
               photoUrl: executive.profilePhotoUrl,
               radius: 22,
             ),
-            const SizedBox(height: 5),
+            SizedBox(height: 5),
             Text(
               executive.name.split(' ').first,
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
@@ -316,7 +318,7 @@ class _TeamMemberChip extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
             Text(
-              '${executive.totalVisits} visits',
+              context.l10n.xVisits(executive.totalVisits),
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     color: AppColors.textMuted,
                     fontSize: 9,

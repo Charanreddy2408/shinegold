@@ -14,6 +14,7 @@ import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/farm_card.dart';
 import '../../../shared/widgets/shine_empty_state.dart';
 import '../../../shared/widgets/ux_components.dart';
+import '../../../shared/utils/l10n_ext.dart';
 
 /// Dashboard section — farms within 5 km, auto-refreshed every 3 minutes.
 class AdminNearbyFarmsSection extends ConsumerWidget {
@@ -59,20 +60,21 @@ class AdminNearbyFarmsSection extends ConsumerWidget {
                       size: 22,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Farms Near You',
+                        Text(context.l10n.farmsNearYou,
                           style: Theme.of(context)
                               .textTheme
                               .titleSmall
                               ?.copyWith(fontWeight: FontWeight.w800),
                         ),
                         Text(
-                          'Within ${AdminNearbyConfig.radiusKm.toStringAsFixed(0)} km · updates every 3 min',
+                          context.l10n.withinKmUpdates(
+                            AdminNearbyConfig.radiusKm.toStringAsFixed(0),
+                          ),
                           style:
                               Theme.of(context).textTheme.bodySmall?.copyWith(
                                     color: AppColors.textMuted,
@@ -82,14 +84,14 @@ class AdminNearbyFarmsSection extends ConsumerWidget {
                     ),
                   ),
                   if (nearby.loading)
-                    const SizedBox(
+                    SizedBox(
                       width: 22,
                       height: 22,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   else
                     IconButton(
-                      tooltip: 'Refresh now',
+                      tooltip: context.l10n.refreshNow,
                       onPressed: () =>
                           ref.read(adminNearbyFarmsProvider.notifier).refresh(),
                       icon: const Icon(Icons.refresh_rounded, size: 22),
@@ -153,7 +155,7 @@ class AdminNearbyFarmsSection extends ConsumerWidget {
                     );
                   },
                   icon: const Icon(Icons.map_rounded, size: 18),
-                  label: Text('View all ${nearby.farms.length} nearby farms'),
+                  label: Text(context.l10n.viewAllNearbyFarms(nearby.farms.length)),
                 ),
               )
             else if (nearby.farms.isNotEmpty)
@@ -166,11 +168,11 @@ class AdminNearbyFarmsSection extends ConsumerWidget {
                     );
                   },
                   icon: const Icon(Icons.open_in_full_rounded, size: 18),
-                  label: const Text('Open full map list'),
+                  label: Text(context.l10n.openFullMapList),
                 ),
               )
             else
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
           ],
         ),
       ),
@@ -191,9 +193,11 @@ class AdminNearbyFarmsScreen extends ConsumerWidget {
       backgroundColor: AppColors.canvasDeep,
       body: AppBackground(
         header: GradientHeader(
-          title: 'Nearby Farms',
+          title: context.l10n.nearbyFarms,
           subtitle:
-              'Within ${AdminNearbyConfig.radiusKm.toStringAsFixed(0)} km radius',
+              context.l10n.withinKmRadius(
+                AdminNearbyConfig.radiusKm.toStringAsFixed(0),
+              ),
           compact: true,
           leading: IconButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -233,7 +237,7 @@ class AdminNearbyFarmsScreen extends ConsumerWidget {
                       : nearby.farms.isEmpty
                           ? ShineEmptyState(
                               icon: Icons.explore_off_rounded,
-                              title: 'No farms nearby',
+                              title: context.l10n.noFarmsNearby,
                               subtitle: nearby.closestOutsideKm == null
                                   ? 'No farms found near your current position yet.'
                                   : 'Closest farm is ${nearby.closestOutsideKm!.toStringAsFixed(1)} km away (outside the ${AdminNearbyConfig.radiusKm.toStringAsFixed(0)} km radius).',
@@ -242,7 +246,7 @@ class AdminNearbyFarmsScreen extends ConsumerWidget {
                                     .read(adminNearbyFarmsProvider.notifier)
                                     .refresh(),
                                 icon: const Icon(Icons.refresh_rounded),
-                                label: const Text('Refresh nearby'),
+                                label: Text(context.l10n.refreshNearby),
                               ),
                             )
                           : RefreshIndicator(
@@ -373,8 +377,7 @@ class _LocationStatusRow extends StatelessWidget {
               color: AppColors.info.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(20),
             ),
-            child: Text(
-              'Live',
+            child: Text(context.l10n.live,
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     color: AppColors.info,
                     fontWeight: FontWeight.w800,

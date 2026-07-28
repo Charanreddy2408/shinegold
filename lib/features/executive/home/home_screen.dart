@@ -23,6 +23,7 @@ import '../../../shared/widgets/shine_logo.dart';
 import '../../../shared/widgets/status_chip.dart';
 import '../../../shared/widgets/ux_components.dart';
 import '../../../shared/utils/acres_format.dart';
+import '../../../shared/utils/l10n_ext.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -112,11 +113,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   String _formatAcres(double acres) => formatAcres(acres);
 
-  String _greeting() {
+  String _greeting(BuildContext context) {
     final hour = DateTime.now().hour;
-    if (hour < 12) return 'Good morning';
-    if (hour < 17) return 'Good afternoon';
-    return 'Good evening';
+    if (hour < 12) return context.l10n.goodMorning;
+    if (hour < 17) return context.l10n.goodAfternoon;
+    return context.l10n.goodEvening;
   }
 
   @override
@@ -135,7 +136,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
-              _greeting(),
+              _greeting(context),
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Colors.white.withValues(alpha: 0.9),
                     fontWeight: FontWeight.w600,
@@ -213,21 +214,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                         color: AppColors.primaryDark,
                                       ),
                                     ),
-                                    const SizedBox(width: AppSpacing.md),
+                                    SizedBox(width: AppSpacing.md),
                                     Expanded(
                                       child: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          Text(
-                                            'Interactions',
+                                          Text(context.l10n.interactions,
                                             style: Theme.of(context)
                                                 .textTheme
                                                 .titleMedium,
                                           ),
-                                          const SizedBox(height: 2),
-                                          Text(
-                                            'Record conversations with farmers you want to onboard',
+                                          SizedBox(height: 2),
+                                          Text(context.l10n.recordConversations,
                                             style: Theme.of(context)
                                                 .textTheme
                                                 .bodySmall
@@ -250,8 +249,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ),
                       ),
                       SectionHeader(
-                        label: 'ONBOARDED',
-                        title: 'Farms you onboarded',
+                        label: context.l10n.onboarded,
+                        title: context.l10n.farmsYouOnboarded,
                         trailing: Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: AppSpacing.sm,
@@ -275,13 +274,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ),
                       ),
                       if (_onboardedFarms.isEmpty)
-                        const Padding(
+                        Padding(
                           padding: EdgeInsets.fromLTRB(16, 0, 16, 8),
                           child: ShineEmptyState(
                             icon: Icons.add_business_outlined,
-                            title: 'No farms onboarded yet',
-                            subtitle:
-                                'Farms you add from the Onboard tab will show here',
+                            title: context.l10n.noFarmsOnboardedYet,
+                            subtitle: context.l10n.farmsFromOnboardTab,
                           ),
                         )
                       else ...[
@@ -303,7 +301,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           Padding(
                             padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
                             child: Text(
-                              '+${_onboardedCount - 8} more onboarded farms',
+                              context.l10n.moreOnboardedFarms(_onboardedCount - 8),
                               style: Theme.of(context)
                                   .textTheme
                                   .bodySmall
@@ -312,19 +310,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           ),
                       ],
                       if (_todayFarms.isEmpty)
-                        const Padding(
+                        Padding(
                           padding: EdgeInsets.fromLTRB(16, 8, 16, 0),
                           child: ShineEmptyState(
                             icon: Icons.eco_outlined,
-                            title: 'No priority farms',
-                            subtitle:
-                                'Pending visits for today will show up here',
+                            title: context.l10n.noPriorityFarms,
+                            subtitle: context.l10n.pendingVisitsToday,
                           ),
                         )
                       else ...[
                         SectionHeader(
-                          label: 'PRIORITY',
-                          title: 'Farms for today',
+                          label: context.l10n.farmsForToday,
+                          title: context.l10n.farmsForToday,
                           trailing: Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: AppSpacing.sm,

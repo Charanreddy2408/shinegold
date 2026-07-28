@@ -22,6 +22,7 @@ import '../../../shared/widgets/shine_card.dart';
 import '../../../shared/widgets/shine_empty_state.dart';
 import '../../../shared/widgets/status_chip.dart';
 import '../../../shared/widgets/ux_components.dart';
+import '../../../shared/utils/l10n_ext.dart';
 
 class MyVisitsScreen extends ConsumerStatefulWidget {
   const MyVisitsScreen({super.key});
@@ -129,15 +130,13 @@ class _MyVisitsScreenState extends ConsumerState<MyVisitsScreen> {
         );
       } else if (result.wentOffline) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Still offline — sync will retry later'),
+          SnackBar(content: Text(context.l10n.stillOfflineSyncRetryLater),
             behavior: SnackBarBehavior.floating,
           ),
         );
       } else if (result.remaining == 0 && result.failed == 0) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Nothing waiting to sync'),
+          SnackBar(content: Text(context.l10n.nothingWaitingToSync),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -159,7 +158,7 @@ class _MyVisitsScreenState extends ConsumerState<MyVisitsScreen> {
 
     return AppBackground(
       header: GradientHeader(
-        title: 'My Visits',
+        title: context.l10n.myVisits,
         subtitle: _initialLoading
             ? 'Loading...'
             : _pending.isEmpty
@@ -169,10 +168,10 @@ class _MyVisitsScreenState extends ConsumerState<MyVisitsScreen> {
         trailing: _pending.isEmpty
             ? null
             : IconButton(
-                tooltip: 'Sync now',
+                tooltip: context.l10n.syncNow,
                 onPressed: _syncing ? null : _syncPending,
                 icon: _syncing
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 18,
                         height: 18,
                         child: CircularProgressIndicator(
@@ -187,12 +186,11 @@ class _MyVisitsScreenState extends ConsumerState<MyVisitsScreen> {
         children: [
           SoftRefreshBar(visible: _refreshing),
           if (_syncing)
-            const Padding(
+            Padding(
               padding: EdgeInsets.symmetric(horizontal: 16),
               child: SlowOperationNotice(
                 active: true,
-                message:
-                    'Syncing offline visits — this can take a few minutes on a slow connection…',
+                message: context.l10n.syncingOfflineVisits,
               ),
             ),
           Padding(
@@ -202,8 +200,8 @@ class _MyVisitsScreenState extends ConsumerState<MyVisitsScreen> {
               onChanged: (_) => _searchDebounce.run(
                 () => _load(isRefresh: _visits.isNotEmpty || _pending.isNotEmpty),
               ),
-              decoration: const InputDecoration(
-                hintText: 'Search by farm name...',
+              decoration: InputDecoration(
+                hintText: context.l10n.searchByFarmName,
                 prefixIcon: Icon(Icons.search_rounded),
               ),
             ),
@@ -211,15 +209,15 @@ class _MyVisitsScreenState extends ConsumerState<MyVisitsScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: SegmentedButton<VisitStatus?>(
-              segments: const [
-                ButtonSegment(value: null, label: Text('All')),
+              segments: [
+                ButtonSegment(value: null, label: Text(context.l10n.all)),
                 ButtonSegment(
                   value: VisitStatus.ongoing,
-                  label: Text('Ongoing'),
+                  label: Text(context.l10n.ongoing),
                 ),
                 ButtonSegment(
                   value: VisitStatus.completed,
-                  label: Text('Completed'),
+                  label: Text(context.l10n.visitCompleted),
                 ),
               ],
               selected: {_tab},
@@ -229,7 +227,7 @@ class _MyVisitsScreenState extends ConsumerState<MyVisitsScreen> {
               },
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Expanded(
             child: _initialLoading
                 ? const ListLoadingSkeleton(itemCount: 4, itemHeight: 88)
@@ -244,10 +242,10 @@ class _MyVisitsScreenState extends ConsumerState<MyVisitsScreen> {
                         ),
                       )
                     : totalCount == 0
-                        ? const ShineEmptyState(
+                        ? ShineEmptyState(
                             icon: Icons.history_rounded,
-                            title: 'No visits yet',
-                            subtitle: 'Your farm visits will appear here',
+                            title: context.l10n.noVisitsYet,
+                            subtitle: context.l10n.yourFarmVisitsAppearHere,
                           )
                         : RefreshIndicator(
                             onRefresh: () async {
@@ -451,7 +449,7 @@ class _PendingVisitCard extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              const StatusChip(status: VisitStatus.completed),
+              StatusChip(status: VisitStatus.completed),
               const SizedBox(height: 6),
               SyncStatusChip(status: syncStatus),
             ],

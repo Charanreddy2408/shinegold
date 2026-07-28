@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../data/models/enums.dart';
+import '../utils/l10n_ext.dart';
 
 /// Admin dashboard hero — gradient banner with key totals, not card-based.
 class AdminNetworkHero extends StatelessWidget {
@@ -53,7 +54,7 @@ class AdminNetworkHero extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Network Overview',
+                      context.l10n.networkOverview,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.w700,
@@ -61,7 +62,7 @@ class AdminNetworkHero extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Across all field operations',
+                      context.l10n.acrossAllFieldOperations,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: Colors.white.withValues(alpha: 0.85),
                           ),
@@ -93,7 +94,7 @@ class AdminNetworkHero extends StatelessWidget {
             ),
           ),
           Text(
-            'Total field visits logged',
+            context.l10n.totalFieldVisitsLogged,
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.85),
               fontSize: 13,
@@ -103,14 +104,14 @@ class AdminNetworkHero extends StatelessWidget {
           const SizedBox(height: 16),
           Row(
             children: [
-              _inlineStat(Icons.eco_outlined, '$totalFarms', 'Farms'),
+              _inlineStat(Icons.eco_outlined, '$totalFarms', context.l10n.navFarms),
               const SizedBox(width: 10),
-              _inlineStat(Icons.people_outline, '$totalExecutives', 'Team'),
+              _inlineStat(Icons.people_outline, '$totalExecutives', context.l10n.navTeam),
               const SizedBox(width: 10),
               _inlineStat(
                 Icons.agriculture_rounded,
                 '$farmersOnboarded',
-                'Farmers',
+                context.l10n.farmers,
               ),
             ],
           ),

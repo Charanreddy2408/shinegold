@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/admin_nearby_farms_provider.dart';
 import '../../../shared/providers/harvest_reminder_provider.dart';
+import '../../../shared/utils/l10n_ext.dart';
 import '../../../shared/widgets/shine_bottom_nav.dart';
 import '../dashboard/admin_dashboard_screen.dart';
 import '../executives/executives_screen.dart';
@@ -31,33 +32,35 @@ class _AdminShellState extends ConsumerState<AdminShell>
     const HarvestsScreen(),
   ];
 
-  static const _navItems = [
-    ShineNavItem(
-      icon: Icons.dashboard_outlined,
-      activeIcon: Icons.dashboard_rounded,
-      label: 'Dashboard',
-    ),
-    ShineNavItem(
-      icon: Icons.eco_outlined,
-      activeIcon: Icons.eco_rounded,
-      label: 'Farms',
-    ),
-    ShineNavItem(
-      icon: Icons.people_outline,
-      activeIcon: Icons.people_rounded,
-      label: 'Team',
-    ),
-    ShineNavItem(
-      icon: Icons.calendar_month_outlined,
-      activeIcon: Icons.calendar_month_rounded,
-      label: 'Harvests',
-    ),
-    ShineNavItem(
-      icon: Icons.more_horiz,
-      activeIcon: Icons.more_horiz,
-      label: 'More',
-    ),
-  ];
+  List<ShineNavItem> _buildNavItems(BuildContext context) {
+    return [
+      ShineNavItem(
+        icon: Icons.dashboard_outlined,
+        activeIcon: Icons.dashboard_rounded,
+        label: context.l10n.navDashboard,
+      ),
+      ShineNavItem(
+        icon: Icons.eco_outlined,
+        activeIcon: Icons.eco_rounded,
+        label: context.l10n.navFarms,
+      ),
+      ShineNavItem(
+        icon: Icons.people_outline,
+        activeIcon: Icons.people_rounded,
+        label: context.l10n.navTeam,
+      ),
+      ShineNavItem(
+        icon: Icons.calendar_month_outlined,
+        activeIcon: Icons.calendar_month_rounded,
+        label: context.l10n.navHarvests,
+      ),
+      ShineNavItem(
+        icon: Icons.more_horiz,
+        activeIcon: Icons.more_horiz,
+        label: context.l10n.navMore,
+      ),
+    ];
+  }
 
   @override
   void initState() {
@@ -114,7 +117,7 @@ class _AdminShellState extends ConsumerState<AdminShell>
             setState(() => _index = i);
           }
         },
-        items: _navItems,
+        items: _buildNavItems(context),
       ),
     );
   }

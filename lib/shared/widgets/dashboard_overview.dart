@@ -4,6 +4,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
 import '../utils/acres_format.dart';
+import '../../shared/utils/l10n_ext.dart';
 
 class DashboardOverviewCard extends StatelessWidget {
   const DashboardOverviewCard({
@@ -51,7 +52,7 @@ class DashboardOverviewCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'YOUR COVERAGE',
+                  context.l10n.yourCoverage,
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
                         color: Colors.white.withValues(alpha: 0.85),
                         letterSpacing: 1.2,
@@ -74,7 +75,7 @@ class DashboardOverviewCard extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.only(bottom: 6),
                       child: Text(
-                        'acres',
+                        context.l10n.acresLower,
                         style: Theme.of(context).textTheme.titleMedium?.copyWith(
                               color: Colors.white.withValues(alpha: 0.9),
                               fontWeight: FontWeight.w600,
@@ -106,36 +107,36 @@ class DashboardOverviewCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Field activity',
+                  context.l10n.fieldActivity,
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
                         fontWeight: FontWeight.w700,
                         color: AppColors.textMuted,
                         letterSpacing: 0.4,
                       ),
                 ),
-                const SizedBox(height: AppSpacing.sm),
+                SizedBox(height: AppSpacing.sm),
                 Row(
                   children: [
                     _MetricTile(
                       icon: Icons.add_business_outlined,
                       value: '$onboardedCount',
-                      label: 'Onboarded',
+                      label: context.l10n.onboarded,
                       color: AppColors.secondary,
                       background: AppColors.secondaryMuted,
                     ),
-                    const SizedBox(width: AppSpacing.sm),
+                    SizedBox(width: AppSpacing.sm),
                     _MetricTile(
                       icon: Icons.pending_actions_outlined,
                       value: '$pendingVisits',
-                      label: 'Pending',
+                      label: context.l10n.pendingApprovals,
                       color: AppColors.primaryDark,
                       background: AppColors.primarySoft,
                     ),
-                    const SizedBox(width: AppSpacing.sm),
+                    SizedBox(width: AppSpacing.sm),
                     _MetricTile(
                       icon: Icons.check_circle_outline_rounded,
                       value: '$completedVisits',
-                      label: 'Visits',
+                      label: context.l10n.navVisits,
                       color: AppColors.info,
                       background: const Color(0xFFE3F2FD),
                     ),
@@ -149,7 +150,7 @@ class DashboardOverviewCard extends StatelessWidget {
                         Expanded(
                           child: _InlineStat(
                             icon: Icons.map_outlined,
-                            label: 'Assigned farms',
+                            label: context.l10n.assignedFarms,
                             value: '$assignedFarms',
                           ),
                         ),
@@ -159,7 +160,7 @@ class DashboardOverviewCard extends StatelessWidget {
                         Expanded(
                           child: _InlineStat(
                             icon: Icons.calendar_month_outlined,
-                            label: 'Harvest soon',
+                            label: context.l10n.harvestSoon,
                             value: '$harvestSoon',
                           ),
                         ),
@@ -298,9 +299,9 @@ class OnboardedFarmsTableHeader extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Expanded(flex: 3, child: Text('Farm', style: style)),
-          Expanded(child: Text('Acres', style: style, textAlign: TextAlign.end)),
-          Expanded(flex: 2, child: Text('Crop', style: style)),
+          Expanded(flex: 3, child: Text(context.l10n.navFarms, style: style)),
+          Expanded(child: Text(context.l10n.acres, style: style, textAlign: TextAlign.end)),
+          Expanded(flex: 2, child: Text(context.l10n.cropInput, style: style)),
         ],
       ),
     );

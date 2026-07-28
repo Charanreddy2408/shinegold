@@ -15,6 +15,7 @@ import '../../../shared/widgets/status_chip.dart';
 import '../../../shared/widgets/ux_components.dart';
 import '../../../shared/utils/media_url.dart';
 import '../../../shared/utils/visit_report_pdf.dart';
+import '../../../shared/utils/l10n_ext.dart';
 
 class VisitReportScreen extends ConsumerStatefulWidget {
   const VisitReportScreen({super.key, required this.visitId});
@@ -108,13 +109,13 @@ class _VisitReportScreenState extends ConsumerState<VisitReportScreen> {
     try {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Preparing PDF…')),
+          SnackBar(content: Text(context.l10n.preparingPdf)),
         );
       }
       await VisitReportPdf.download(visit: visit, template: _template);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Report PDF ready to share/save')),
+        SnackBar(content: Text(context.l10n.reportPdfReadyToShare)),
       );
     } catch (e) {
       if (!mounted) return;
@@ -134,8 +135,7 @@ class _VisitReportScreenState extends ConsumerState<VisitReportScreen> {
     return Scaffold(
       backgroundColor: AppColors.canvasDeep,
       appBar: AppBar(
-        title: const Text(
-          'Visit Report',
+        title: Text(context.l10n.visitReportTitle,
           style: TextStyle(fontWeight: FontWeight.w700),
         ),
         flexibleSpace: Container(
@@ -175,7 +175,7 @@ class _VisitReportScreenState extends ConsumerState<VisitReportScreen> {
               backgroundColor: AppColors.primaryDark,
               foregroundColor: Colors.white,
               icon: const Icon(Icons.download_rounded),
-              label: const Text('Download PDF'),
+              label: Text(context.l10n.downloadPdf),
             )
           : null,
       body: _loading
@@ -224,27 +224,24 @@ class _VisitReportScreenState extends ConsumerState<VisitReportScreen> {
                           Center(
                             child: SlowOperationNotice(
                               active: _downloading,
-                              message:
-                                  'Fetching photos and assembling your PDF — this can take a few minutes…',
+                              message: context.l10n.fetchingPhotosAssemblingPdf,
                             ),
                           ),
-                          const SizedBox(height: AppSpacing.lg),
-                          Text(
-                            'Field Report',
+                          SizedBox(height: AppSpacing.lg),
+                          Text(context.l10n.fieldReportTitle,
                             style: Theme.of(context)
                                 .textTheme
                                 .titleMedium
                                 ?.copyWith(fontWeight: FontWeight.w800),
                           ),
-                          const SizedBox(height: AppSpacing.sm),
+                          SizedBox(height: AppSpacing.sm),
                           if (_visit!.formAnswers.isEmpty &&
                               (_visit!.textNote == null ||
                                   _visit!.textNote!.isEmpty))
                             Container(
                               padding: const EdgeInsets.all(AppSpacing.lg),
                               decoration: AppColors.cardDecoration(),
-                              child: Text(
-                                'No structured report answers were saved for this visit.',
+                              child: Text(context.l10n.noStructuredReportAnswers,
                                 style: Theme.of(context)
                                     .textTheme
                                     .bodyMedium
@@ -271,9 +268,8 @@ class _VisitReportScreenState extends ConsumerState<VisitReportScreen> {
                               ),
                           ],
                           if (_showVoiceSection) ...[
-                            const SizedBox(height: AppSpacing.lg),
-                            Text(
-                              'Voice Note',
+                            SizedBox(height: AppSpacing.lg),
+                            Text(context.l10n.voiceNoteTitle,
                               style: Theme.of(context)
                                   .textTheme
                                   .titleMedium
@@ -297,10 +293,9 @@ class _VisitReportScreenState extends ConsumerState<VisitReportScreen> {
                                       Icons.mic_off_rounded,
                                       color: AppColors.textMuted,
                                     ),
-                                    const SizedBox(width: 12),
+                                    SizedBox(width: 12),
                                     Expanded(
-                                      child: Text(
-                                        'Voice note was recorded but the audio file is not available.',
+                                      child: Text(context.l10n.voiceNoteRecordedButNotAvailable,
                                         style: Theme.of(context)
                                             .textTheme
                                             .bodyMedium
@@ -362,11 +357,11 @@ class _VisitReportScreenState extends ConsumerState<VisitReportScreen> {
                               },
                             ),
                           ],
-                          const SizedBox(height: AppSpacing.xl),
+                          SizedBox(height: AppSpacing.xl),
                           FilledButton.icon(
                             onPressed: _downloadPdf,
                             icon: const Icon(Icons.download_rounded),
-                            label: const Text('Download report PDF'),
+                            label: Text(context.l10n.downloadReportPdf),
                             style: FilledButton.styleFrom(
                               backgroundColor: AppColors.primaryDark,
                               foregroundColor: Colors.white,

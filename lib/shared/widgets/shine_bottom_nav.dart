@@ -89,7 +89,7 @@ class ShineBottomNav extends StatelessWidget {
 }
 
 class ShineNavItem {
-  const ShineNavItem({
+  ShineNavItem({
     required this.icon,
     required this.activeIcon,
     required this.label,

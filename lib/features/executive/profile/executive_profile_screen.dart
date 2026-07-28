@@ -16,9 +16,11 @@ import '../../../shared/providers/harvest_reminder_provider.dart';
 import '../../../shared/providers/location_provider.dart';
 import '../../../shared/services/notification_service.dart';
 import '../../../shared/utils/geocoding_service.dart';
+import '../../../shared/utils/l10n_ext.dart';
 import '../../../shared/widgets/address_autocomplete_field.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/animated_loading.dart';
+import '../../../shared/widgets/language_picker.dart';
 import '../../../shared/widgets/profile_photo_editor.dart';
 import '../../../shared/widgets/shine_buttons.dart';
 import '../../../shared/widgets/user_avatar.dart';
@@ -59,10 +61,10 @@ class _ExecutiveProfileScreenState extends ConsumerState<ExecutiveProfileScreen>
           );
       if (!mounted) return;
       final message = switch (count) {
-        -1 => 'Could not sync harvest reminders. Check network and try again.',
-        0 => 'No upcoming harvests in the next 90 days.',
-        1 => '1 harvest reminder scheduled. Test notification sent.',
-        _ => '$count harvest reminders scheduled. Test notification sent.',
+        -1 => context.l10n.couldNotSyncReminders,
+        0 => context.l10n.noUpcomingHarvests,
+        1 => context.l10n.oneHarvestReminderTest,
+        _ => context.l10n.harvestRemindersScheduledTest(count),
       };
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(message)),
@@ -78,7 +80,7 @@ class _ExecutiveProfileScreenState extends ConsumerState<ExecutiveProfileScreen>
       await NotificationService.instance.showTestHarvestNotification();
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Test notification sent')),
+        SnackBar(content: Text(context.l10n.testNotificationSent)),
       );
     } finally {
       if (mounted) setState(() => _testingNotification = false);
@@ -103,7 +105,7 @@ class _ExecutiveProfileScreenState extends ConsumerState<ExecutiveProfileScreen>
     return AppBackground(
       header: GradientHeader(
         title: user.name.split(' ').first,
-        subtitle: 'Field Executive',
+        subtitle: context.l10n.fieldExecutive,
         compact: true,
         trailing: UserAvatar(
           name: user.name,
@@ -123,67 +125,74 @@ class _ExecutiveProfileScreenState extends ConsumerState<ExecutiveProfileScreen>
                     employeeId: user.employeeId,
                     photoUrl: photoUrl,
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   Text(
-                    'Tap your photo above to update it',
+                    context.l10n.tapPhotoToUpdate,
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: AppColors.textMuted,
                           fontWeight: FontWeight.w600,
                         ),
                   ),
-                  const SizedBox(height: 14),
+                  SizedBox(height: 14),
                   Row(
                     children: [
                       _StatPill(
-                        label: 'Farms Visited',
+                        label: context.l10n.farmsVisited,
                         value: '${user.farmsVisitedCount}',
                         icon: Icons.check_circle_outline_rounded,
                         color: AppColors.secondary,
                       ),
-                      const SizedBox(width: 10),
+                      SizedBox(width: 10),
                       _StatPill(
-                        label: 'Onboarded',
+                        label: context.l10n.onboarded,
                         value: '${user.onboardingCount}',
                         icon: Icons.add_location_alt_rounded,
                         color: AppColors.primary,
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                   _ContactSection(
-                    mobile: user.mobile ?? 'Not set',
-                    address: user.address ?? 'Not set',
+                    mobile: user.mobile ?? context.l10n.notSetNearbyFarms.split(' ').first,
+                    address: user.address ?? context.l10n.notSetNearbyFarms.split(' ').first,
                     employeeId: user.employeeId,
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                   _HomeLocationCard(
                     user: user,
                     onUpdate: () => _openUpdateLocationSheet(user),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                   _PasswordSecurityCard(employeeId: user.employeeId),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24),
                   ShineSecondaryButton(
                     label: _testingNotification
-                        ? 'Syncing…'
-                        : 'Sync harvest reminders',
+                        ? context.l10n.syncing
+                        : context.l10n.syncHarvestReminders,
                     onPressed: _testingNotification ? null : _syncHarvestReminders,
                   ),
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10),
                   ShineSecondaryButton(
-                    label: 'Send test notification',
+                    label: context.l10n.sendTestNotification,
                     onPressed: _testingNotification ? null : _sendTestNotification,
                   ),
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10),
                   ShineSecondaryButton(
-                    label: 'Logout',
+                    label: context.l10n.changeLanguage,
+                    onPressed: () async {
+                      await showLanguagePicker(context, ref: ref);
+                    },
+                  ).animate().fadeIn(delay: 240.ms, duration: 400.ms),
+                  SizedBox(height: 10),
+                  ShineSecondaryButton(
+                    label: context.l10n.logout,
                     onPressed: () async {
                       await ref.read(authProvider.notifier).logout();
                       if (context.mounted) context.go(AppRoutes.login);
                     },
                   ).animate().fadeIn(delay: 280.ms, duration: 400.ms),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                 ],
               ),
             ),
@@ -203,8 +212,8 @@ class _ExecutiveProfileScreenState extends ConsumerState<ExecutiveProfileScreen>
     if (updated == true && mounted) {
       bumpAppRefresh(ref);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Home location updated'),
+        SnackBar(
+          content: Text(context.l10n.homeLocationUpdated),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -363,35 +372,35 @@ class _ContactSection extends StatelessWidget {
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            const SizedBox(width: 10),
+            SizedBox(width: 10),
             Text(
-              'Contact Details',
+              context.l10n.contactDetails,
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w800,
                   ),
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         _ContactTile(
           icon: Icons.phone_rounded,
-          label: 'Mobile',
+          label: context.l10n.mobile,
           value: mobile,
           color: AppColors.info,
           delay: 140.ms,
         ),
-        const SizedBox(height: 10),
+        SizedBox(height: 10),
         _ContactTile(
           icon: Icons.home_work_outlined,
-          label: 'Address',
+          label: context.l10n.address,
           value: address,
           color: AppColors.secondary,
           delay: 200.ms,
         ),
-        const SizedBox(height: 10),
+        SizedBox(height: 10),
         _ContactTile(
           icon: Icons.badge_outlined,
-          label: 'Employee ID',
+          label: context.l10n.employeeIdLabel,
           value: employeeId,
           color: AppColors.primary,
           delay: 260.ms,
@@ -499,22 +508,22 @@ class _HomeLocationCard extends StatelessWidget {
                   size: 20,
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Home location',
+                      context.l10n.homeLocation,
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.w800,
                           ),
                     ),
-                    const SizedBox(height: 2),
+                    SizedBox(height: 2),
                     Text(
                       hasPin
-                          ? 'Used to show nearby farms'
-                          : 'Not set — nearby farms need a GPS pin',
+                          ? context.l10n.usedForNearbyFarms
+                          : context.l10n.notSetNearbyFarms,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: AppColors.textMuted,
                           ),
@@ -525,7 +534,7 @@ class _HomeLocationCard extends StatelessWidget {
             ],
           ),
           if (hasPin) ...[
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             Text(
               '${user.homeLat!.toStringAsFixed(5)}, ${user.homeLng!.toStringAsFixed(5)}',
               style: Theme.of(context).textTheme.labelLarge?.copyWith(
@@ -534,9 +543,9 @@ class _HomeLocationCard extends StatelessWidget {
                   ),
             ),
           ],
-          const SizedBox(height: 14),
+          SizedBox(height: 14),
           ShineSecondaryButton(
-            label: hasPin ? 'Update location' : 'Set home location',
+            label: hasPin ? context.l10n.updateLocation : context.l10n.setHomeLocation,
             onPressed: onUpdate,
           ),
         ],
@@ -635,7 +644,7 @@ class _PasswordSecurityCardState extends ConsumerState<_PasswordSecurityCard> {
       if (!mounted) return;
       setState(() => _pending = true);
       _setStatus(
-        'Request sent to admin. After they approve, you can set your new password here.',
+        context.l10n.requestSentToAdmin,
       );
     } catch (e) {
       if (!mounted) return;
@@ -650,7 +659,7 @@ class _PasswordSecurityCardState extends ConsumerState<_PasswordSecurityCard> {
     if (!_formKey.currentState!.validate()) return;
     if (!_approved) {
       _setStatus(
-        'Admin must approve your reset request first.',
+        context.l10n.adminMustApprove,
         error: true,
       );
       return;
@@ -672,10 +681,10 @@ class _PasswordSecurityCardState extends ConsumerState<_PasswordSecurityCard> {
         _approved = false;
         _pending = false;
       });
-      _setStatus('Password updated successfully.');
+      _setStatus(context.l10n.passwordUpdated);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Password updated successfully'),
+        SnackBar(
+          content: Text(context.l10n.passwordUpdated),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -710,20 +719,20 @@ class _PasswordSecurityCardState extends ConsumerState<_PasswordSecurityCard> {
                   size: 20,
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Password',
+                      context.l10n.password,
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.w800,
                           ),
                     ),
-                    const SizedBox(height: 2),
+                    SizedBox(height: 2),
                     Text(
-                      'Admin approves — then you choose the new password',
+                      context.l10n.adminApprovesPassword,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: AppColors.textMuted,
                           ),
@@ -733,10 +742,10 @@ class _PasswordSecurityCardState extends ConsumerState<_PasswordSecurityCard> {
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: 14),
           if (_approved) ...[
             Text(
-              'Your reset was approved. Set a new password below.',
+              context.l10n.resetApprovedSetPassword,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: AppColors.textSecondary,
                     height: 1.45,
@@ -745,7 +754,7 @@ class _PasswordSecurityCardState extends ConsumerState<_PasswordSecurityCard> {
             ),
           ] else if (_pending) ...[
             Text(
-              'Waiting for super admin approval. Tap refresh after they approve.',
+              context.l10n.waitingAdminApproval,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: AppColors.textSecondary,
                     height: 1.45,
@@ -753,33 +762,31 @@ class _PasswordSecurityCardState extends ConsumerState<_PasswordSecurityCard> {
             ),
           ] else ...[
             Text(
-              '1. Request a password reset\n'
-              '2. Super admin approves (no temporary password)\n'
-              '3. Set your new password here',
+              context.l10n.requestResetSteps,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: AppColors.textSecondary,
                     height: 1.45,
                   ),
             ),
           ],
-          const SizedBox(height: 14),
+          SizedBox(height: 14),
           if (!_approved) ...[
             ShineSecondaryButton(
               label: _requesting
-                  ? 'Sending…'
+                  ? context.l10n.sending
                   : (_pending
-                      ? 'Request already pending'
-                      : 'Request password reset'),
+                      ? context.l10n.requestAlreadyPending
+                      : context.l10n.requestPasswordReset),
               onPressed: (_requesting || _pending) ? null : _requestReset,
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             ShineSecondaryButton(
-              label: _checking ? 'Refreshing…' : 'Refresh status',
+              label: _checking ? context.l10n.refreshing : context.l10n.refreshStatus,
               onPressed: _checking ? null : () => _refreshStatus(),
             ),
           ],
           if (_approved) ...[
-            const SizedBox(height: 4),
+            SizedBox(height: 4),
             Form(
               key: _formKey,
               child: Column(
@@ -788,7 +795,7 @@ class _PasswordSecurityCardState extends ConsumerState<_PasswordSecurityCard> {
                     controller: _newPassword,
                     obscureText: _obscureNew,
                     decoration: InputDecoration(
-                      labelText: 'New password',
+                      labelText: context.l10n.newPassword,
                       prefixIcon: const Icon(Icons.lock_rounded),
                       suffixIcon: IconButton(
                         icon: Icon(
@@ -801,19 +808,19 @@ class _PasswordSecurityCardState extends ConsumerState<_PasswordSecurityCard> {
                       ),
                     ),
                     validator: (v) {
-                      if (v == null || v.isEmpty) return 'Enter new password';
+                      if (v == null || v.isEmpty) return context.l10n.enterNewPassword;
                       if (v.length < 6) {
-                        return 'Password must be at least 6 characters';
+                        return context.l10n.passwordTooShort;
                       }
                       return null;
                     },
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   TextFormField(
                     controller: _confirm,
                     obscureText: _obscureConfirm,
                     decoration: InputDecoration(
-                      labelText: 'Confirm new password',
+                      labelText: context.l10n.confirmNewPassword,
                       prefixIcon: const Icon(Icons.lock_rounded),
                       suffixIcon: IconButton(
                         icon: Icon(
@@ -828,23 +835,23 @@ class _PasswordSecurityCardState extends ConsumerState<_PasswordSecurityCard> {
                     ),
                     validator: (v) {
                       if (v == null || v.isEmpty) {
-                        return 'Confirm your new password';
+                        return context.l10n.confirmYourPassword;
                       }
                       if (v != _newPassword.text) {
-                        return 'Passwords do not match';
+                        return context.l10n.passwordsDoNotMatch;
                       }
                       return null;
                     },
                   ),
-                  const SizedBox(height: 14),
+                  SizedBox(height: 14),
                   ShinePrimaryButton(
-                    label: 'Update password',
+                    label: context.l10n.updatePassword,
                     isLoading: _changing,
                     onPressed: _changing ? null : _setNewPassword,
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   ShineSecondaryButton(
-                    label: _checking ? 'Refreshing…' : 'Refresh status',
+                    label: _checking ? context.l10n.refreshing : context.l10n.refreshStatus,
                     onPressed: _checking ? null : () => _refreshStatus(),
                   ),
                 ],
@@ -1093,31 +1100,29 @@ class _UpdateLocationSheetState extends ConsumerState<_UpdateLocationSheet> {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
-              Text(
-                'Update home location',
+              SizedBox(height: 16),
+              Text(context.l10n.updateHomeLocation,
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.w800,
                     ),
               ),
-              const SizedBox(height: 6),
-              Text(
-                'Choose how to set the pin used for nearby farms.',
+              SizedBox(height: 6),
+              Text(context.l10n.chooseHomeLocation,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: AppColors.textSecondary,
                     ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               SegmentedButton<int>(
-                segments: const [
+                segments: [
                   ButtonSegment(
                     value: 0,
-                    label: Text('Enter manually'),
+                    label: Text(context.l10n.enterManually),
                     icon: Icon(Icons.edit_location_alt_outlined),
                   ),
                   ButtonSegment(
                     value: 1,
-                    label: Text('Current location'),
+                    label: Text(context.l10n.currentLocation),
                     icon: Icon(Icons.gps_fixed_rounded),
                   ),
                 ],
@@ -1130,12 +1135,12 @@ class _UpdateLocationSheetState extends ConsumerState<_UpdateLocationSheet> {
                           _status = null;
                         }),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               if (_mode == 0) ...[
                 AddressAutocompleteField(
                   controller: _address,
                   pincodeController: _pincode,
-                  label: 'Address',
+                  label: context.l10n.address,
                   hint: 'Start typing to search address',
                   onSelected: (result) {
                     setState(() {
@@ -1147,13 +1152,13 @@ class _UpdateLocationSheetState extends ConsumerState<_UpdateLocationSheet> {
                     });
                   },
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
                 TextField(
                   controller: _pincode,
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'PIN code (optional)',
-                    hintText: 'Auto-filled from suggestion when possible',
+                  decoration: InputDecoration(
+                    labelText: context.l10n.pinCodeOptional,
+                    hintText: context.l10n.pinCodeHint,
                     prefixIcon: Icon(Icons.markunread_mailbox_outlined),
                   ),
                 ),
@@ -1216,7 +1221,7 @@ class _UpdateLocationSheetState extends ConsumerState<_UpdateLocationSheet> {
                 ),
               ],
               if (_error != null) ...[
-                const SizedBox(height: 10),
+                SizedBox(height: 10),
                 Text(
                   _error!,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -1225,14 +1230,14 @@ class _UpdateLocationSheetState extends ConsumerState<_UpdateLocationSheet> {
                       ),
                 ),
               ],
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               ShinePrimaryButton(
                 label: _busy ? 'Saving…' : 'Save location',
                 onPressed: _busy ? null : _save,
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               ShineSecondaryButton(
-                label: 'Cancel',
+                label: context.l10n.cancel,
                 onPressed: _busy ? null : () => Navigator.pop(context, false),
               ),
             ],

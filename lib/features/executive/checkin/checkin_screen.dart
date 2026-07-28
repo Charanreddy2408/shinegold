@@ -31,6 +31,7 @@ import '../../../shared/widgets/shine_buttons.dart';
 import '../../../shared/widgets/ux_components.dart';
 import '../../visits/presentation/widgets/dynamic_visit_form.dart';
 import '../../visits/presentation/widgets/visit_form_prefill_card.dart';
+import '../../../shared/utils/l10n_ext.dart';
 
 class CheckinScreen extends ConsumerStatefulWidget {
   const CheckinScreen({super.key, required this.farmId});
@@ -129,7 +130,7 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Could not cancel visit: ${formatApiError(e)}',
+              context.l10n.couldNotCancelVisit(formatApiError(e)),
             ),
             behavior: SnackBarBehavior.floating,
           ),
@@ -301,9 +302,7 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
         _goToStep(1);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Offline mode — visit will sync when internet returns',
+            SnackBar(content: Text(context.l10n.offlineModeSyncLater,
               ),
               behavior: SnackBarBehavior.floating,
             ),
@@ -425,8 +424,7 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
       if (!hasPermission) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Microphone permission is required to record'),
+          SnackBar(content: Text(context.l10n.microphonePermissionRequired),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -478,8 +476,7 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
       });
       if (autoStopped && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Voice note auto-saved at the 2:30 limit'),
+          SnackBar(content: Text(context.l10n.voiceNoteAutoSaved),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -544,8 +541,7 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
       if (isNetworkError(e)) {
         // Keep local path for offline enqueue on submit.
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Voice saved locally — will upload when online'),
+          SnackBar(content: Text(context.l10n.voiceSavedLocallyWillUpload),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -564,8 +560,7 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
     _clearApiError();
     if (_photos.length >= 5) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Maximum 5 photos allowed'),
+        SnackBar(content: Text(context.l10n.maximum5PhotosAllowed),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -664,7 +659,7 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
       unawaited(ref.read(authProvider.notifier).refreshUser());
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Visit submitted successfully'),
+          content: Text(context.l10n.visitSubmittedSuccessfully),
           backgroundColor: AppColors.secondary,
           behavior: SnackBarBehavior.floating,
         ),
@@ -719,8 +714,7 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text(
-          'Visit saved offline. It will sync automatically when internet returns.',
+        content: Text(context.l10n.visitSavedOfflineSyncLater,
         ),
         backgroundColor: AppColors.info,
         behavior: SnackBarBehavior.floating,
@@ -808,10 +802,9 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
               child: Row(
                 children: [
                   Icon(Icons.cloud_off_rounded, size: 18, color: AppColors.info),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   Expanded(
-                    child: Text(
-                      'Offline — answers & media stay on this device until sync',
+                    child: Text(context.l10n.offlineAnswersStayOnDevice,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: AppColors.primaryDark,
                             fontWeight: FontWeight.w600,
@@ -900,24 +893,22 @@ class _StartStep extends StatelessWidget {
               color: AppColors.secondary,
             ),
           ),
-          const SizedBox(height: AppSpacing.xl),
-          Text(
-            'Start Visit',
+          SizedBox(height: AppSpacing.xl),
+          Text(context.l10n.startVisitButton,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.w800,
                 ),
           ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            'Check-in records your time and location. You will then complete the field visit report.',
+          SizedBox(height: AppSpacing.sm),
+          Text(context.l10n.checkinRecordsTimeLocation,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.textSecondary,
                 ),
           ),
-          const SizedBox(height: AppSpacing.xxxl),
+          SizedBox(height: AppSpacing.xxxl),
           ShinePrimaryButton(
-            label: 'Start Visit',
+            label: context.l10n.startVisitButton,
             isLoading: loading,
             icon: Icons.play_arrow_rounded,
             onPressed: loading ? null : onStart,
@@ -1032,7 +1023,7 @@ class _FormStepState extends State<_FormStep> {
                     ),
                   ),
                 VisitFormPrefillCard(prefill: widget.formContext!.prefill),
-                const SizedBox(height: AppSpacing.lg),
+                SizedBox(height: AppSpacing.lg),
                 DynamicVisitForm(
                   template: widget.formContext!.template,
                   answers: widget.answers,
@@ -1046,7 +1037,7 @@ class _FormStepState extends State<_FormStep> {
         Padding(
           padding: const EdgeInsets.all(AppSpacing.lg),
           child: ShinePrimaryButton(
-            label: 'Continue to Media',
+            label: context.l10n.continueToMedia,
             onPressed: widget.onNext,
           ),
         ),
@@ -1083,15 +1074,13 @@ class _MediaStep extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Photos & Voice',
+          Text(context.l10n.photosAndVoice,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w800,
                 ),
           ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            'Optional — up to 5 geotagged photos and a voice note (max 2:30)',
+          SizedBox(height: AppSpacing.xs),
+          Text(context.l10n.optionalPhotosVoice,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.textSecondary,
                 ),
@@ -1127,7 +1116,7 @@ class _MediaStep extends StatelessWidget {
               },
             ),
           ),
-          const SizedBox(height: AppSpacing.md),
+          SizedBox(height: AppSpacing.md),
           Center(
             child: VoiceRecorderButton(
               isRecording: isRecording,
@@ -1140,8 +1129,7 @@ class _MediaStep extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: Center(
-                child: Text(
-                  'Voice note marked',
+                child: Text(context.l10n.voiceNoteMarked,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppColors.secondary,
                         fontWeight: FontWeight.w600,
@@ -1149,8 +1137,8 @@ class _MediaStep extends StatelessWidget {
                 ),
               ),
             ),
-          const SizedBox(height: AppSpacing.lg),
-          ShinePrimaryButton(label: 'Review & Submit', onPressed: onNext),
+          SizedBox(height: AppSpacing.lg),
+          ShinePrimaryButton(label: context.l10n.reviewAndSubmit, onPressed: onNext),
         ],
       ),
     );
@@ -1190,13 +1178,12 @@ class _SubmitStep extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            'Review Visit',
+          Text(context.l10n.reviewVisit,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w800,
                 ),
           ),
-          const SizedBox(height: AppSpacing.lg),
+          SizedBox(height: AppSpacing.lg),
           Expanded(
             child: Container(
               padding: const EdgeInsets.all(AppSpacing.lg),
@@ -1206,29 +1193,29 @@ class _SubmitStep extends StatelessWidget {
                 children: [
                   _ReviewRow(
                     icon: Icons.assignment_outlined,
-                    label: 'Report fields',
+                    label: context.l10n.reportFields,
                     value: '$answeredRequired / $requiredCount required',
                     highlight: answeredRequired == requiredCount,
                   ),
                   const Divider(height: 24),
                   _ReviewRow(
                     icon: Icons.photo_outlined,
-                    label: 'Photos',
+                    label: context.l10n.photosLabel,
                     value: '${photos.length} attached',
                   ),
                   const Divider(height: 24),
                   _ReviewRow(
                     icon: Icons.mic_none_rounded,
-                    label: 'Voice note',
+                    label: context.l10n.voiceNote,
                     value: hasVoice ? 'Marked' : 'Skipped',
                   ),
                 ],
               ),
             ),
           ),
-          const SizedBox(height: AppSpacing.lg),
+          SizedBox(height: AppSpacing.lg),
           ShinePrimaryButton(
-            label: 'Submit Visit',
+            label: context.l10n.submitVisit,
             isLoading: loading,
             icon: Icons.check_rounded,
             onPressed: loading ? null : onSubmit,

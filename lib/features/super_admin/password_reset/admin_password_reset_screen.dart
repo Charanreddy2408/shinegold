@@ -11,6 +11,7 @@ import '../../../shared/widgets/animated_loading.dart';
 import '../../../shared/widgets/app_background.dart';
 import '../../../shared/widgets/shine_buttons.dart';
 import '../../../shared/widgets/shine_empty_state.dart';
+import '../../../shared/utils/l10n_ext.dart';
 
 class AdminPasswordResetScreen extends ConsumerStatefulWidget {
   const AdminPasswordResetScreen({super.key});
@@ -63,7 +64,7 @@ class _AdminPasswordResetScreenState
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Approve password reset?'),
+        title: Text(context.l10n.approvePasswordResetQuestion),
         content: Text(
           'Allow ${request.userName} (${request.employeeId}) to set a new '
           'password from their profile. You will not set a temporary password.',
@@ -71,11 +72,11 @@ class _AdminPasswordResetScreenState
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Approve'),
+            child: Text(context.l10n.approve),
           ),
         ],
       ),
@@ -138,10 +139,10 @@ class _AdminPasswordResetScreenState
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text('Password Resets'),
+        title: Text(context.l10n.passwordResets),
         actions: [
           IconButton(
-            tooltip: 'Refresh',
+            tooltip: context.l10n.refresh,
             onPressed: _loading ? null : _load,
             icon: const Icon(Icons.refresh_rounded),
           ),
@@ -155,8 +156,7 @@ class _AdminPasswordResetScreenState
               child: Row(
                 children: [
                   Expanded(
-                    child: Text(
-                      'Review executive password-reset requests. Approve so they can set a new password themselves.',
+                    child: Text(context.l10n.reviewPasswordResetRequests,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: AppColors.textMuted,
                           ),
@@ -168,15 +168,15 @@ class _AdminPasswordResetScreenState
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: SegmentedButton<bool>(
-                segments: const [
+                segments: [
                   ButtonSegment(
                     value: true,
-                    label: Text('Pending'),
+                    label: Text(context.l10n.pendingApprovals),
                     icon: Icon(Icons.pending_actions_rounded, size: 18),
                   ),
                   ButtonSegment(
                     value: false,
-                    label: Text('All'),
+                    label: Text(context.l10n.all),
                     icon: Icon(Icons.history_rounded, size: 18),
                   ),
                 ],
@@ -187,17 +187,17 @@ class _AdminPasswordResetScreenState
                 },
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             Expanded(
               child: _loading
                   ? const ListLoadingSkeleton(itemCount: 5, itemHeight: 120)
                   : _error != null
                       ? ShineEmptyState(
                           icon: Icons.error_outline_rounded,
-                          title: 'Could not load requests',
+                          title: context.l10n.couldNotLoadRequests,
                           subtitle: _error!,
                           action: ShineSecondaryButton(
-                            label: 'Retry',
+                            label: context.l10n.retry,
                             onPressed: _load,
                           ),
                         )
@@ -311,9 +311,9 @@ class _AdminPasswordResetScreenState
                                                 ),
                                           ),
                                           if (request.isPending) ...[
-                                            const SizedBox(height: 14),
+                                            SizedBox(height: 14),
                                             ShinePrimaryButton(
-                                              label: 'Approve',
+                                              label: context.l10n.approve,
                                               icon: Icons.check_circle_outline,
                                               onPressed: () =>
                                                   _approve(request),

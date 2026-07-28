@@ -10,6 +10,7 @@ import '../utils/india_map_projection.dart';
 import '../utils/india_states_map_data.dart';
 import 'india_political_map_painter.dart';
 import 'status_chip.dart';
+import '../../shared/utils/l10n_ext.dart';
 
 /// Dashboard-style India choropleth map with farm markers.
 class AdminIndiaFarmMap extends StatefulWidget {
@@ -257,7 +258,7 @@ class _AdminIndiaFarmMapState extends State<AdminIndiaFarmMap>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Farm Network — India',
+                            context.l10n.farmNetworkIndia,
                             style: Theme.of(context)
                                 .textTheme
                                 .titleSmall
@@ -282,7 +283,7 @@ class _AdminIndiaFarmMapState extends State<AdminIndiaFarmMap>
                         backgroundColor: AppColors.primaryDark,
                         foregroundColor: Colors.white,
                       ),
-                      tooltip: 'Full screen map',
+                      tooltip: context.l10n.fullScreenMap,
                     ),
                     if (_selectedState != null ||
                         _selectedFarm != null ||
@@ -293,33 +294,33 @@ class _AdminIndiaFarmMapState extends State<AdminIndiaFarmMap>
                         style: IconButton.styleFrom(
                           backgroundColor: AppColors.canvasDeep,
                         ),
-                        tooltip: 'Reset view',
+                        tooltip: context.l10n.resetView,
                       ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 Row(
                   children: [
                     _StatPill(
-                      label: 'Farms',
+                      label: context.l10n.navFarms,
                       value: '${widget.farms.length}',
                       color: AppColors.primary,
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8),
                     _StatPill(
-                      label: 'States',
+                      label: context.l10n.statesLabel,
                       value: '$activeStates',
                       color: AppColors.secondary,
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8),
                     _StatPill(
-                      label: 'Pending',
+                      label: context.l10n.pendingApprovals,
                       value: '${_count(FarmVisitStatus.pending)}',
                       color: AppColors.error,
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8),
                     _StatPill(
-                      label: 'Done',
+                      label: context.l10n.done,
                       value: '${_count(FarmVisitStatus.visited)}',
                       color: AppColors.success,
                     ),
@@ -715,7 +716,7 @@ class _MapLegendBar extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Pinch to zoom · drag to pan · tap a pin for farm details',
+            context.l10n.pinchToZoomHint,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
                   fontWeight: FontWeight.w700,
                   color: AppColors.textMuted,
@@ -1150,8 +1151,8 @@ class _FarmInfoPanel extends StatelessWidget {
                   backgroundColor: AppColors.primary,
                   foregroundColor: AppColors.canvasDeep,
                 ),
-                child: const Text(
-                  'View Farm Details',
+                child: Text(
+                  context.l10n.viewFarmDetails,
                   style: TextStyle(fontWeight: FontWeight.w700),
                 ),
               ),
@@ -1341,22 +1342,22 @@ class _IndiaFarmMapFullscreenPageState extends State<IndiaFarmMapFullscreenPage>
     return Scaffold(
       backgroundColor: AppColors.canvasDeep,
       appBar: AppBar(
-        title: const Text('India farm map'),
+        title: Text(context.l10n.indiaFarmMap),
         backgroundColor: AppColors.primaryDark,
         foregroundColor: Colors.white,
         actions: [
           IconButton(
-            tooltip: 'Zoom out',
+            tooltip: context.l10n.zoomOut,
             onPressed: () => _zoomBy(0.8),
             icon: const Icon(Icons.remove_circle_outline),
           ),
           IconButton(
-            tooltip: 'Zoom in',
+            tooltip: context.l10n.zoomIn,
             onPressed: () => _zoomBy(1.25),
             icon: const Icon(Icons.add_circle_outline),
           ),
           IconButton(
-            tooltip: 'Reset',
+            tooltip: context.l10n.resetView,
             onPressed: () {
               _transform.value = Matrix4.identity();
               setState(() => _selectedFarm = null);
@@ -1366,7 +1367,7 @@ class _IndiaFarmMapFullscreenPageState extends State<IndiaFarmMapFullscreenPage>
         ],
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : Column(
               children: [
                 Padding(
@@ -1377,15 +1378,15 @@ class _IndiaFarmMapFullscreenPageState extends State<IndiaFarmMapFullscreenPage>
                         child: OutlinedButton.icon(
                           onPressed: () => _zoomBy(0.8),
                           icon: const Icon(Icons.remove_rounded),
-                          label: const Text('Zoom out'),
+                          label: Text(context.l10n.zoomOut),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8),
                       Expanded(
                         child: OutlinedButton.icon(
                           onPressed: () => _zoomBy(1.25),
                           icon: const Icon(Icons.add_rounded),
-                          label: const Text('Zoom in'),
+                          label: Text(context.l10n.zoomIn),
                         ),
                       ),
                     ],

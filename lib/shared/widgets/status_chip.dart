@@ -5,7 +5,7 @@ import '../../core/theme/app_spacing.dart';
 import '../../data/models/enums.dart';
 
 class StatusChip extends StatelessWidget {
-  const StatusChip({
+  StatusChip({
     super.key,
     required this.status,
   });

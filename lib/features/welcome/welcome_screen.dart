@@ -10,6 +10,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../data/models/enums.dart';
 import '../../shared/providers/auth_provider.dart';
+import '../../shared/utils/l10n_ext.dart';
 import '../../shared/widgets/animated_loading.dart';
 import '../../shared/widgets/shine_logo.dart';
 
@@ -475,9 +476,8 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
                                             fontWeight: FontWeight.w800,
                                           ),
                                     ),
-                                    const SizedBox(height: AppSpacing.sm),
-                                    Text(
-                                      'Field intelligence for a greener harvest',
+                                    SizedBox(height: AppSpacing.sm),
+                                    Text(context.l10n.welcomeFieldIntelligence,
                                       textAlign: TextAlign.center,
                                       style: Theme.of(context)
                                           .textTheme
@@ -560,13 +560,13 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
                                       ],
                                     ),
                                   ),
-                                  const SizedBox(height: AppSpacing.md),
+                                  SizedBox(height: AppSpacing.md),
                                   Opacity(
                                     opacity: 0.5 + pulse * 0.5,
                                     child: Text(
                                       _checkingSession
-                                          ? 'Checking your session…'
-                                          : 'Tap anywhere to continue',
+                                          ? context.l10n.checkingSession
+                                          : context.l10n.tapToContinue,
                                       style: Theme.of(context)
                                           .textTheme
                                           .labelSmall
@@ -580,7 +580,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
                                   SlowOperationNotice(
                                     active: _checkingSession,
                                     message:
-                                        'Still connecting — first load can take a moment…',
+                                        context.l10n.stillConnecting,
                                   ),
                                 ],
                               ),

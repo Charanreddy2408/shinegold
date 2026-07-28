@@ -9,7 +9,10 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../data/models/enums.dart';
 import '../../shared/providers/auth_provider.dart';
+import '../../shared/providers/locale_provider.dart';
+import '../../shared/utils/l10n_ext.dart';
 import '../../shared/widgets/app_background.dart';
+import '../../shared/widgets/language_picker.dart';
 import '../../shared/widgets/shine_buttons.dart';
 import '../../shared/widgets/shine_logo.dart';
 
@@ -65,6 +68,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             _passwordController.text,
           );
       if (!mounted) return;
+      
+      // Show language picker after first login if not done yet
+      if (!(await LocaleNotifier.isLanguagePromptDone())) {
+        await showLanguagePicker(
+          context,
+          ref: ref,
+          markPromptDone: true,
+          barrierDismissible: false,
+        );
+      }
+      
+      if (!mounted) return;
       final role = ref.read(userRoleProvider);
       context.go(
         role == UserRole.superAdmin ? AppRoutes.admin : AppRoutes.executive,
@@ -74,7 +89,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       final message = userFacingErrorMessage(e);
       setState(() {
         _errorMessage = message.contains('Invalid employee ID')
-            ? 'Invalid employee ID or password. Please check your credentials and try again.'
+            ? context.l10n.invalidCredentials
             : message;
       });
     } finally {
@@ -86,9 +101,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: AppBackground(
-        header: const GradientHeader(
-          title: 'Welcome back',
-          subtitle: 'Sign in to Shine Gold',
+        header: GradientHeader(
+          title: context.l10n.welcomeBack,
+          subtitle: context.l10n.signInToShineGold,
           compact: true,
           brandLogoSize: 36,
         ),
@@ -99,11 +114,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: AppSpacing.sm),
+                SizedBox(height: AppSpacing.sm),
                 Center(
-                  child: const ShineLogo(size: 88),
+                  child: ShineLogo(size: 88),
                 ),
-                const SizedBox(height: AppSpacing.xxl),
+                SizedBox(height: AppSpacing.xxl),
                 Container(
                   padding: const EdgeInsets.all(AppSpacing.xl),
                   decoration: AppColors.cardDecoration(
@@ -113,35 +128,35 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Sign in',
+                        context.l10n.signIn,
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
-                      const SizedBox(height: AppSpacing.xs),
+                      SizedBox(height: AppSpacing.xs),
                       Text(
-                        'Use your employee credentials',
+                        context.l10n.useEmployeeCredentials,
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
-                      const SizedBox(height: AppSpacing.xl),
+                      SizedBox(height: AppSpacing.xl),
                       TextFormField(
                         controller: _employeeIdController,
                         onChanged: (_) => _clearError(),
-                        decoration: const InputDecoration(
-                          labelText: 'Employee ID',
-                          hintText: 'EXEC001',
-                          prefixIcon: Icon(Icons.badge_outlined),
+                        decoration: InputDecoration(
+                          labelText: context.l10n.employeeId,
+                          hintText: context.l10n.employeeIdHint,
+                          prefixIcon: const Icon(Icons.badge_outlined),
                         ),
                         textInputAction: TextInputAction.next,
                         validator: (v) => v == null || v.trim().isEmpty
-                            ? 'Enter employee ID'
+                            ? context.l10n.enterEmployeeId
                             : null,
                       ),
-                      const SizedBox(height: AppSpacing.lg),
+                      SizedBox(height: AppSpacing.lg),
                       TextFormField(
                         controller: _passwordController,
                         onChanged: (_) => _clearError(),
                         obscureText: _obscure,
                         decoration: InputDecoration(
-                          labelText: 'Password',
+                          labelText: context.l10n.password,
                           prefixIcon: const Icon(Icons.lock_outline),
                           suffixIcon: IconButton(
                             icon: Icon(
@@ -155,7 +170,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                         onFieldSubmitted: (_) => _login(),
                         validator: (v) =>
-                            v == null || v.isEmpty ? 'Enter password' : null,
+                            v == null || v.isEmpty ? context.l10n.enterPassword : null,
                       ),
                       if (_errorMessage != null) ...[
                         const SizedBox(height: AppSpacing.lg),
@@ -178,7 +193,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 color: AppColors.error,
                                 size: 20,
                               ),
-                              const SizedBox(width: AppSpacing.sm),
+                              SizedBox(width: AppSpacing.sm),
                               Expanded(
                                 child: Text(
                                   _errorMessage!,
@@ -195,13 +210,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                         ),
                       ],
-                      const SizedBox(height: AppSpacing.xl),
+                      SizedBox(height: AppSpacing.xl),
                       ShinePrimaryButton(
-                        label: 'Sign in',
+                        label: context.l10n.signIn,
                         isLoading: _loading,
                         onPressed: _loading ? null : _login,
                       ),
-                      const SizedBox(height: AppSpacing.md),
+                      SizedBox(height: AppSpacing.md),
                       Align(
                         alignment: Alignment.center,
                         child: TextButton(
@@ -209,7 +224,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ? null
                               : () => context.push(AppRoutes.forgotPassword),
                           child: Text(
-                            'Forgot password?',
+                            context.l10n.forgotPassword,
                             style: Theme.of(context)
                                 .textTheme
                                 .bodyMedium
@@ -223,7 +238,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: AppSpacing.lg),
+                SizedBox(height: AppSpacing.lg),
                 if (AppConfig.showDemoCredentials)
                   Container(
                     padding: const EdgeInsets.all(AppSpacing.lg),
@@ -232,7 +247,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
                     ),
                     child: Text(
-                      'Demo: EXEC001 or ADMIN001 · ChangeMe123!',
+                      context.l10n.demoCredentials,
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: AppColors.primaryDark,
