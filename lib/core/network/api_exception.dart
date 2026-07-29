@@ -45,7 +45,7 @@ String userFacingErrorMessage(Object error) {
     if (nested is ApiException) return nested.message;
 
     if (error.response?.statusCode == 401) {
-      return 'Session expired. Please sign in again.';
+      return 'Please log in again to continue.';
     }
 
     if (error.type == DioExceptionType.connectionError ||
@@ -79,13 +79,13 @@ String formatApiError(Object error) {
   if (error is DioException && error.error is ApiException) {
     final api = error.error as ApiException;
     if (api.isUnauthorized) {
-      return 'Session expired. Please sign in again.';
+      return 'Please log in again to continue.';
     }
     return api.message;
   }
   if (error is ApiException) {
     if (error.isUnauthorized) {
-      return 'Session expired. Please sign in again.';
+      return 'Please log in again to continue.';
     }
     return error.message;
   }

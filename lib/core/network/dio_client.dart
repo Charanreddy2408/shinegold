@@ -49,11 +49,15 @@ class DioClient {
           final status = error.response?.statusCode;
           final path = error.requestOptions.path;
           final refresh = onRefreshToken;
+          // A 401 from an unauthenticated endpoint (wrong password on login,
+          // an expired reset link) is an answer, not a dead session — it must
+          // reach the calling screen instead of logging the user out.
+          final isPublicAuthCall = _isPublicAuthPath(path) ||
+              error.requestOptions.extra['_skipAuth'] == true;
 
           if (status == 401 &&
               refresh != null &&
-              !path.contains('/auth/login') &&
-              !path.contains('/auth/refresh') &&
+              !isPublicAuthCall &&
               error.requestOptions.extra['_authRetried'] != true &&
               !_refreshing) {
             _refreshing = true;
@@ -75,6 +79,7 @@ class DioClient {
           }
 
           if (status == 401 &&
+              !isPublicAuthCall &&
               onAuthFailure != null &&
               !_authFailureHandled) {
             _authFailureHandled = true;
@@ -118,6 +123,16 @@ class DioClient {
       _dio.options.headers['Authorization'] = 'Bearer $token';
     }
   }
+}
+
+/// Endpoints callable without a session; their 401s mean "bad credentials",
+/// not "your session died".
+bool _isPublicAuthPath(String path) {
+  return path.contains('/auth/login') ||
+      path.contains('/auth/refresh') ||
+      path.contains('/auth/forgot-password') ||
+      path.contains('/auth/set-password-after-reset') ||
+      path.contains('/auth/password-reset-requests/status');
 }
 
 final dioClientProvider = Provider<DioClient>((ref) => DioClient());

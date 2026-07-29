@@ -448,18 +448,6 @@ abstract class AppLocalizations {
   /// **'Demo: EXEC001 or ADMIN001 · ChangeMe123!'**
   String get demoCredentials;
 
-  /// No description provided for @sessionExpiredTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Session expired'**
-  String get sessionExpiredTitle;
-
-  /// No description provided for @sessionExpiredBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Please sign in again to continue.'**
-  String get sessionExpiredBody;
-
   /// No description provided for @forgotPasswordTitle.
   ///
   /// In en, this message translates to:
@@ -1833,24 +1821,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Still connecting — first load can take a moment…'**
   String get stillConnecting;
-
-  /// No description provided for @sessionExpired.
-  ///
-  /// In en, this message translates to:
-  /// **'Your session has expired'**
-  String get sessionExpired;
-
-  /// No description provided for @pleaseSignInAgain.
-  ///
-  /// In en, this message translates to:
-  /// **'Please log in again to continue.'**
-  String get pleaseSignInAgain;
-
-  /// No description provided for @logInAgain.
-  ///
-  /// In en, this message translates to:
-  /// **'Log In Again'**
-  String get logInAgain;
 
   /// No description provided for @forgotYourPassword.
   ///

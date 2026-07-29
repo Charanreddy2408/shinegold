@@ -185,12 +185,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get demoCredentials => 'Demo: EXEC001 or ADMIN001 · ChangeMe123!';
 
   @override
-  String get sessionExpiredTitle => 'Session expired';
-
-  @override
-  String get sessionExpiredBody => 'Please sign in again to continue.';
-
-  @override
   String get forgotPasswordTitle => 'Forgot password';
 
   @override
@@ -925,15 +919,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get stillConnecting =>
       'Still connecting — first load can take a moment…';
-
-  @override
-  String get sessionExpired => 'Your session has expired';
-
-  @override
-  String get pleaseSignInAgain => 'Please log in again to continue.';
-
-  @override
-  String get logInAgain => 'Log In Again';
 
   @override
   String get forgotYourPassword =>

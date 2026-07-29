@@ -1,8 +1,10 @@
 import 'dart:convert';
 
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../core/network/api_exception.dart';
 import '../../core/network/dio_client.dart';
 import '../../data/models/enums.dart';
 import '../../data/models/password_reset_request.dart';
@@ -10,10 +12,21 @@ import '../../data/models/user.dart';
 import '../../data/repositories/auth_repository.dart';
 import '../services/notification_service.dart';
 import 'repository_providers.dart';
-import 'session_expired_provider.dart';
 
 const _sessionKey = 'auth_session';
 const _lastEmployeeIdKey = 'last_employee_id';
+
+/// True only for a real 401 — everything else (offline, timeout, 5xx) must
+/// leave the stored session alone.
+bool _isUnauthorized(Object error) {
+  if (error is ApiException) return error.isUnauthorized;
+  if (error is DioException) {
+    final nested = error.error;
+    if (nested is ApiException) return nested.isUnauthorized;
+    return error.response?.statusCode == 401;
+  }
+  return false;
+}
 
 class AuthNotifier extends StateNotifier<AsyncValue<AuthSession?>> {
   AuthNotifier(this._repository, this._dio)
@@ -43,8 +56,12 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthSession?>> {
       }
 
       _dio.updateToken(session.token);
+      // Trust the stored session straight away: this is an app, not a website,
+      // so a cold start resumes where the user left off instead of waiting on
+      // (or being logged out by) a /users/me round trip.
+      state = AsyncValue.data(session);
 
-      // Validate stored credentials; stale tokens cause blank screens after splash.
+      // Refresh the cached user in the background where possible.
       try {
         final user = await _repository.getMe();
         final valid = AuthSession(
@@ -55,17 +72,22 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthSession?>> {
         await _persistSession(valid);
         state = AsyncValue.data(valid);
         return;
-      } catch (_) {
-        final refresh = session.refreshToken;
-        if (refresh != null && refresh.isNotEmpty) {
-          try {
-            final refreshed = await _repository.refreshSession(refresh);
-            await _persistSession(refreshed);
-            state = AsyncValue.data(refreshed);
-            return;
-          } catch (_) {
-            // Fall through to clear session.
-          }
+      } catch (e) {
+        // Offline / server hiccup: keep the session and carry on.
+        if (!_isUnauthorized(e)) return;
+      }
+
+      // A real 401 that survived the interceptor's refresh — try once more
+      // with the stored refresh token before giving up on the session.
+      final refresh = session.refreshToken;
+      if (refresh != null && refresh.isNotEmpty) {
+        try {
+          final refreshed = await _repository.refreshSession(refresh);
+          await _persistSession(refreshed);
+          state = AsyncValue.data(refreshed);
+          return;
+        } catch (e) {
+          if (!_isUnauthorized(e)) return;
         }
       }
 
@@ -91,6 +113,21 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthSession?>> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_sessionKey, jsonEncode(session.toJson()));
     _dio.updateToken(session.token);
+  }
+
+  /// Refresh token straight from disk — the notifier's own state is still
+  /// `loading` during startup, so the interceptor can't read it from there.
+  static Future<String?> loadStoredRefreshToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    final json = prefs.getString(_sessionKey);
+    if (json == null) return null;
+    try {
+      final map = jsonDecode(json) as Map<String, dynamic>;
+      final token = map['refreshToken'] ?? map['refresh_token'];
+      return token is String && token.isNotEmpty ? token : null;
+    } catch (_) {
+      return null;
+    }
   }
 
   static Future<String?> loadLastEmployeeId() async {
@@ -267,8 +304,8 @@ final authProvider =
     dio,
   );
   dio.onRefreshToken = () async {
-    final session = notifier.state.valueOrNull;
-    final refresh = session?.refreshToken;
+    final refresh = notifier.state.valueOrNull?.refreshToken ??
+        await AuthNotifier.loadStoredRefreshToken();
     if (refresh == null || refresh.isEmpty) return null;
     try {
       final updated =
@@ -280,7 +317,8 @@ final authProvider =
     }
   };
   dio.onAuthFailure = () async {
-    ref.read(sessionExpiredProvider.notifier).markExpired();
+    // Nothing left to refresh — drop the session and let the router land the
+    // user on the login screen. No interstitial.
     await notifier.clearSession();
   };
   return notifier;

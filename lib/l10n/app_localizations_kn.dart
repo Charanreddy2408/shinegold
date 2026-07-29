@@ -184,12 +184,6 @@ class AppLocalizationsKn extends AppLocalizations {
   String get demoCredentials => 'ಡೆಮೋ: EXEC001 ಅಥವಾ ADMIN001 · ChangeMe123!';
 
   @override
-  String get sessionExpiredTitle => 'ಸೆಷನ್ ಅವಧಿ ಮುಗಿದಿದೆ';
-
-  @override
-  String get sessionExpiredBody => 'ಮುಂದುವರಿಸಲು ಮತ್ತೆ ಸೈನ್ ಇನ್ ಮಾಡಿ.';
-
-  @override
   String get forgotPasswordTitle => 'ಪಾಸ್‌ವರ್ಡ್ ಮರೆತಿದೆ';
 
   @override
@@ -927,15 +921,6 @@ class AppLocalizationsKn extends AppLocalizations {
   @override
   String get stillConnecting =>
       'ಇನ್ನೂ ಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ — ಮೊದಲ ಲೋಡ್‌ಗೆ ಸ್ವಲ್ಪ ಸಮಯ ತೆಗೆದುಕೊಳ್ಳಬಹುದು…';
-
-  @override
-  String get sessionExpired => 'ನಿಮ್ಮ ಸೆಷನ್ ಅವಧಿ ಮುಗಿದಿದೆ';
-
-  @override
-  String get pleaseSignInAgain => 'ಮುಂದುವರಿಸಲು ದಯವಿಟ್ಟು ಮತ್ತೆ ಲಾಗ್ ಇನ್ ಮಾಡಿ.';
-
-  @override
-  String get logInAgain => 'ಮತ್ತೆ ಲಾಗ್ ಇನ್';
 
   @override
   String get forgotYourPassword =>

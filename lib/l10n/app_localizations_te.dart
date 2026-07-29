@@ -184,12 +184,6 @@ class AppLocalizationsTe extends AppLocalizations {
   String get demoCredentials => 'డెమో: EXEC001 లేదా ADMIN001 · ChangeMe123!';
 
   @override
-  String get sessionExpiredTitle => 'సెషన్ ముగిసింది';
-
-  @override
-  String get sessionExpiredBody => 'కొనసాగించడానికి మళ్లీ సైన్ ఇన్ చేయండి.';
-
-  @override
   String get forgotPasswordTitle => 'పాస్‌వర్డ్ మర్చిపోయాను';
 
   @override
@@ -926,15 +920,6 @@ class AppLocalizationsTe extends AppLocalizations {
   @override
   String get stillConnecting =>
       'ఇంకా కనెక్ట్ అవుతోంది — మొదటి లోడ్‌కు కొంత సమయం పట్టవచ్చు…';
-
-  @override
-  String get sessionExpired => 'మీ సెషన్ ముగిసింది';
-
-  @override
-  String get pleaseSignInAgain => 'కొనసాగించడానికి మళ్లీ లాగ్ ఇన్ చేయండి.';
-
-  @override
-  String get logInAgain => 'మళ్లీ లాగ్ ఇన్';
 
   @override
   String get forgotYourPassword =>
