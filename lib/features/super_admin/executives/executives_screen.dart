@@ -76,6 +76,9 @@ class _ExecutivesScreenState extends ConsumerState<ExecutivesScreen> {
 
   Future<void> _showAddSheet() async {
     ScaffoldMessenger.of(context).clearSnackBars();
+    // Captured up front: the submit callback runs after awaits, where reaching
+    // back through context would be unsafe.
+    final l10n = context.l10n;
 
     final name = TextEditingController();
     final mobile = TextEditingController();
@@ -90,7 +93,7 @@ class _ExecutivesScreenState extends ConsumerState<ExecutivesScreen> {
       title: context.l10n.addExecutive,
       subtitle: context.l10n.addressPinLocateInfo,
       icon: Icons.person_add_alt_1_rounded,
-      submitLabel: 'Create Executive',
+      submitLabel: context.l10n.createExecutive,
       fields: [
         AdminFormField(
           controller: name,
@@ -98,7 +101,7 @@ class _ExecutivesScreenState extends ConsumerState<ExecutivesScreen> {
           icon: Icons.person_outline_rounded,
           validator: (v) {
             if (v == null || v.trim().isEmpty) {
-              return 'Full name is required';
+              return context.l10n.fullNameRequired;
             }
             return null;
           },
@@ -108,14 +111,14 @@ class _ExecutivesScreenState extends ConsumerState<ExecutivesScreen> {
           label: context.l10n.mobileNumber,
           icon: Icons.phone_rounded,
           keyboardType: TextInputType.phone,
-          hint: '10-digit mobile',
+          hint: context.l10n.tenDigitMobile,
           validator: (v) {
             if (v == null || v.trim().isEmpty) {
-              return 'Mobile number is required';
+              return context.l10n.mobileNumberRequired;
             }
             final digits = v.replaceAll(RegExp(r'\D'), '');
             if (digits.length < 10) {
-              return 'Enter a valid 10-digit mobile number';
+              return context.l10n.enterValidMobileNumber;
             }
             return null;
           },
@@ -124,19 +127,19 @@ class _ExecutivesScreenState extends ConsumerState<ExecutivesScreen> {
           controller: address,
           pincodeController: pincode,
           label: context.l10n.address,
-          hint: 'Start typing to search address',
+          hint: context.l10n.startTypingToSearch,
           validator: (v) {
             final addressText = v?.trim() ?? '';
-            if (addressText.isEmpty) return 'Address is required';
+            if (addressText.isEmpty) return context.l10n.addressRequired;
             if (addressText.length < 8) {
-              return 'Enter a fuller address (street / area / city)';
+              return context.l10n.enterFullerAddress;
             }
             final words = addressText
                 .split(RegExp(r'[\s,]+'))
                 .where((w) => w.trim().length > 1)
                 .toList();
             if (words.length < 2) {
-              return 'Include locality and city';
+              return context.l10n.includeLocalityCity;
             }
             return null;
           },
@@ -153,16 +156,16 @@ class _ExecutivesScreenState extends ConsumerState<ExecutivesScreen> {
           label: context.l10n.pincode,
           icon: Icons.markunread_mailbox_outlined,
           keyboardType: TextInputType.number,
-          hint: 'Auto-filled from suggestion when possible',
+          hint: context.l10n.autoFilledFromSuggestion,
           validator: (v) {
             final pin = v?.trim() ?? '';
-            if (pin.isEmpty) return 'PIN code is required';
+            if (pin.isEmpty) return context.l10n.pinCodeRequired;
             if (pin.length != 6 || int.tryParse(pin) == null) {
-              return 'Enter a valid 6-digit PIN';
+              return context.l10n.enterValid6DigitPin;
             }
             final first = int.parse(pin[0]);
             if (first < 1 || first > 8) {
-              return 'Enter a valid Indian PIN code';
+              return context.l10n.enterValidIndianPin;
             }
             return null;
           },
@@ -179,13 +182,13 @@ class _ExecutivesScreenState extends ConsumerState<ExecutivesScreen> {
           label: context.l10n.password,
           icon: Icons.lock_outline_rounded,
           obscureText: true,
-          hint: 'At least 6 characters',
+          hint: context.l10n.atLeast6Characters,
           validator: (v) {
             if (v == null || v.trim().isEmpty) {
-              return 'Password is required';
+              return context.l10n.passwordRequired;
             }
             if (v.length < 6) {
-              return 'Password must be at least 6 characters';
+              return context.l10n.passwordMustBe6Chars;
             }
             return null;
           },
@@ -211,10 +214,7 @@ class _ExecutivesScreenState extends ConsumerState<ExecutivesScreen> {
           );
         }
         if (!homeLocation.isSet) {
-          throw Exception(
-            'Address could not be verified on the map. '
-            'Improve address/PIN, tap Locate, then create again.',
-          );
+          throw Exception(l10n.addressCouldNotVerify);
         }
 
         final fullAddress = '$addressText, $pinText';
@@ -239,8 +239,8 @@ class _ExecutivesScreenState extends ConsumerState<ExecutivesScreen> {
       await _load();
       if (!mounted) return;
       final idNote = assignedEmployeeId == null || assignedEmployeeId!.isEmpty
-          ? 'Executive created successfully'
-          : 'Executive created — ID: $assignedEmployeeId';
+          ? l10n.executiveCreated
+          : l10n.executiveCreatedWithId(assignedEmployeeId!);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(idNote)),
       );
@@ -262,8 +262,8 @@ class _ExecutivesScreenState extends ConsumerState<ExecutivesScreen> {
       header: GradientHeader(
         title: context.l10n.navTeam,
         subtitle: _loading
-            ? 'Loading...'
-            : '${filtered.length} of ${_executives.length} executives',
+            ? context.l10n.loading
+            : context.l10n.xOfYExecutives(filtered.length, _executives.length),
         compact: true,
         trailing: IconButton.filled(
           onPressed: _showAddSheet,
@@ -281,7 +281,7 @@ class _ExecutivesScreenState extends ConsumerState<ExecutivesScreen> {
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
               child: ShineSearchBar(
                 controller: _searchController,
-                hint: 'Search by name, ID, or mobile...',
+                hint: context.l10n.searchByNameIdMobile,
                 onChanged: (_) => setState(() {}),
               ),
             ),
@@ -302,11 +302,11 @@ class _ExecutivesScreenState extends ConsumerState<ExecutivesScreen> {
                     ? ShineEmptyState(
                         icon: Icons.search_off_rounded,
                         title: _searchController.text.isEmpty
-                            ? 'No executives'
-                            : 'No matches',
+                            ? context.l10n.noExecutives
+                            : context.l10n.noMatches,
                         subtitle: _searchController.text.isEmpty
-                            ? 'Add your first field executive'
-                            : 'Try a different search term',
+                            ? context.l10n.addFirstExecutive
+                            : context.l10n.tryDifferentSearch,
                       )
                     : RefreshIndicator(
                         onRefresh: _load,
@@ -513,16 +513,16 @@ class _ExecutiveHomeLocationFieldState
     final addressText = widget.address.text.trim();
     final pinText = widget.pincode.text.trim();
     if (addressText.isEmpty) {
-      setState(() => _error = 'Enter an address first');
+      setState(() => _error = context.l10n.enterAddressFirst);
       return;
     }
     if (widget.requiredPin && pinText.isEmpty) {
-      setState(() => _error = 'Enter the 6-digit PIN code first');
+      setState(() => _error = context.l10n.enterPinFirst);
       return;
     }
     if (pinText.isNotEmpty &&
         (pinText.length != 6 || int.tryParse(pinText) == null)) {
-      setState(() => _error = 'PIN code must be a 6-digit number');
+      setState(() => _error = context.l10n.pinMustBe6Digits);
       return;
     }
     setState(() {
@@ -538,8 +538,7 @@ class _ExecutiveHomeLocationFieldState
       if (!mounted) return;
       if (!widget.draft.isSet) {
         setState(() {
-          _error =
-              'Couldn’t verify this address. Add clearer area/city + correct PIN, then try again.';
+          _error = context.l10n.couldNotVerifyAddress;
           _locating = false;
         });
         return;
@@ -561,7 +560,7 @@ class _ExecutiveHomeLocationFieldState
       initialValue: draft.isSet,
       validator: (_) {
         if (!widget.draft.isSet) {
-          return 'Locate & verify address before creating';
+          return context.l10n.locateBeforeCreating;
         }
         return null;
       },
@@ -598,7 +597,9 @@ class _ExecutiveHomeLocationFieldState
                     )
                   : const Icon(Icons.my_location_rounded),
               label: Text(
-                draft.isSet ? 'Re-verify address' : 'Locate & verify address',
+                draft.isSet
+                    ? context.l10n.reVerifyAddress
+                    : context.l10n.locateAndVerifyAddress,
               ),
             ),
             if (draft.isSet) ...[
@@ -616,7 +617,9 @@ class _ExecutiveHomeLocationFieldState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Verified · ${draft.lat!.toStringAsFixed(5)}, ${draft.lng!.toStringAsFixed(5)}',
+                      '${context.l10n.verified} · '
+                      '${draft.lat!.toStringAsFixed(5)}, '
+                      '${draft.lng!.toStringAsFixed(5)}',
                       style: Theme.of(context).textTheme.labelLarge?.copyWith(
                             fontWeight: FontWeight.w700,
                             color: AppColors.secondary,

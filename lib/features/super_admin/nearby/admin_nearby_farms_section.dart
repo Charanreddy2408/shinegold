@@ -126,8 +126,13 @@ class AdminNearbyFarmsSection extends ConsumerWidget {
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                 child: Text(
                   nearby.closestOutsideKm == null
-                      ? 'No farms within ${AdminNearbyConfig.radiusKm.toStringAsFixed(0)} km of your current location.'
-                      : 'No farms within ${AdminNearbyConfig.radiusKm.toStringAsFixed(0)} km. Closest farm is ${nearby.closestOutsideKm!.toStringAsFixed(1)} km away.',
+                      ? context.l10n.noFarmsWithinKmLocation(
+                          AdminNearbyConfig.radiusKm.toStringAsFixed(0),
+                        )
+                      : context.l10n.noFarmsClosestAway(
+                          AdminNearbyConfig.radiusKm.toStringAsFixed(0),
+                          nearby.closestOutsideKm!.toStringAsFixed(1),
+                        ),
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: AppColors.textSecondary,
                       ),
@@ -239,8 +244,13 @@ class AdminNearbyFarmsScreen extends ConsumerWidget {
                               icon: Icons.explore_off_rounded,
                               title: context.l10n.noFarmsNearby,
                               subtitle: nearby.closestOutsideKm == null
-                                  ? 'No farms found near your current position yet.'
-                                  : 'Closest farm is ${nearby.closestOutsideKm!.toStringAsFixed(1)} km away (outside the ${AdminNearbyConfig.radiusKm.toStringAsFixed(0)} km radius).',
+                                  ? context.l10n.noFarmsFoundNearPosition
+                                  : context.l10n.closestFarmOutsideRadius(
+                                      nearby.closestOutsideKm!
+                                          .toStringAsFixed(1),
+                                      AdminNearbyConfig.radiusKm
+                                          .toStringAsFixed(0),
+                                    ),
                               action: FilledButton.icon(
                                 onPressed: () => ref
                                     .read(adminNearbyFarmsProvider.notifier)
@@ -310,14 +320,14 @@ class _LocationStatusRow extends StatelessWidget {
                 ? AppColors.info
                 : AppColors.warning;
     final statusLabel = hasFix
-        ? 'Location active'
+        ? context.l10n.locationActive
         : usingHomeLocation
-            ? 'Using your home location'
+            ? context.l10n.usingYourHomeLocation
             : waiting
-                ? 'Getting location…'
+                ? context.l10n.gettingLocation
                 : location.permissionGranted
-                    ? 'Waiting for GPS fix'
-                    : 'Location needed';
+                    ? context.l10n.waitingForGpsFix
+                    : context.l10n.locationNeeded;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -353,8 +363,10 @@ class _LocationStatusRow extends StatelessWidget {
                 ),
                 if (expanded && location.position != null)
                   Text(
-                    'Lat ${location.position!.latitude.toStringAsFixed(4)}, '
-                    'Lng ${location.position!.longitude.toStringAsFixed(4)}',
+                    context.l10n.latLngLabel(
+                      location.position!.latitude.toStringAsFixed(4),
+                      location.position!.longitude.toStringAsFixed(4),
+                    ),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: AppColors.textMuted,
                           fontSize: 11,
@@ -362,7 +374,9 @@ class _LocationStatusRow extends StatelessWidget {
                   ),
                 if (lastRefresh != null)
                   Text(
-                    'Updated ${timeFormat.format(lastRefresh!.toLocal())}',
+                    context.l10n.updatedTime(
+                      timeFormat.format(lastRefresh!.toLocal()),
+                    ),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: AppColors.textMuted,
                           fontSize: 11,

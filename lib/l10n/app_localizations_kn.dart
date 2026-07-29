@@ -1698,6 +1698,19 @@ class AppLocalizationsKn extends AppLocalizations {
   String get assignExecutives => 'ಎಕ್ಸಿಕ್ಯೂಟಿವ್‌ಗಳನ್ನು ನಿಯೋಜಿಸಿ';
 
   @override
+  String get saveAssignment => 'ನಿಯೋಜನೆಯನ್ನು ಉಳಿಸಿ';
+
+  @override
+  String approvedCanSetPassword(String id) {
+    return 'ಅನುಮೋದಿಸಲಾಗಿದೆ — $id ಈಗ ಹೊಸ ಪಾಸ್‌ವರ್ಡ್ ಹೊಂದಿಸಬಹುದು';
+  }
+
+  @override
+  String whatsappGreeting(String name) {
+    return 'ನಮಸ್ಕಾರ $name, ಇದು ಶೈನ್ ಗೋಲ್ಡ್.';
+  }
+
+  @override
   String get executivesLabel => 'ಎಕ್ಸಿಕ್ಯೂಟಿವ್‌ಗಳು';
 
   @override

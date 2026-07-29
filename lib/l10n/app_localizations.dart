@@ -3172,6 +3172,24 @@ abstract class AppLocalizations {
   /// **'Assign executives'**
   String get assignExecutives;
 
+  /// No description provided for @saveAssignment.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Assignment'**
+  String get saveAssignment;
+
+  /// No description provided for @approvedCanSetPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved — {id} can now set a new password'**
+  String approvedCanSetPassword(String id);
+
+  /// No description provided for @whatsappGreeting.
+  ///
+  /// In en, this message translates to:
+  /// **'Hello {name}, this is Shine Gold.'**
+  String whatsappGreeting(String name);
+
   /// No description provided for @executivesLabel.
   ///
   /// In en, this message translates to:

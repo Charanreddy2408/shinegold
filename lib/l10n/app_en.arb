@@ -916,6 +916,23 @@
     }
   },
   "assignExecutives": "Assign executives",
+  "saveAssignment": "Save Assignment",
+  "approvedCanSetPassword": "Approved — {id} can now set a new password",
+  "@approvedCanSetPassword": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "whatsappGreeting": "Hello {name}, this is Shine Gold.",
+  "@whatsappGreeting": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "executivesLabel": "Executives",
   "executiveLabel": "Executive",
   "farmVisit": "Farm Visit",

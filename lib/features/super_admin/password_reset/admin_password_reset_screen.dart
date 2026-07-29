@@ -66,8 +66,10 @@ class _AdminPasswordResetScreenState
       builder: (ctx) => AlertDialog(
         title: Text(context.l10n.approvePasswordResetQuestion),
         content: Text(
-          'Allow ${request.userName} (${request.employeeId}) to set a new '
-          'password from their profile. You will not set a temporary password.',
+          context.l10n.allowUserSetPassword(
+            request.userName,
+            request.employeeId,
+          ),
         ),
         actions: [
           TextButton(
@@ -91,7 +93,7 @@ class _AdminPasswordResetScreenState
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Approved — ${request.employeeId} can now set a new password',
+            context.l10n.approvedCanSetPassword(request.employeeId),
           ),
           behavior: SnackBarBehavior.floating,
         ),
@@ -108,14 +110,14 @@ class _AdminPasswordResetScreenState
     }
   }
 
-  String _statusLabel(String status) {
+  String _statusLabel(BuildContext context, String status) {
     switch (status) {
       case 'approved':
-        return 'Approved';
+        return context.l10n.approved;
       case 'rejected':
-        return 'Rejected';
+        return context.l10n.rejected;
       default:
-        return 'Pending';
+        return context.l10n.pending;
     }
   }
 
@@ -205,11 +207,11 @@ class _AdminPasswordResetScreenState
                           ? ShineEmptyState(
                               icon: Icons.verified_user_outlined,
                               title: _pendingOnly
-                                  ? 'No pending requests'
-                                  : 'No reset requests yet',
+                                  ? context.l10n.noPendingRequests
+                                  : context.l10n.noResetRequestsYet,
                               subtitle: _pendingOnly
-                                  ? 'Requests from the forgot-password screen will appear here.'
-                                  : 'Approved and pending requests will show in this list.',
+                                  ? context.l10n.requestsAppearHere
+                                  : context.l10n.approvedPendingShow,
                             )
                           : RefreshIndicator(
                               onRefresh: _load,
@@ -284,7 +286,10 @@ class _AdminPasswordResetScreenState
                                                   ),
                                                 ),
                                                 child: Text(
-                                                  _statusLabel(request.status),
+                                                  _statusLabel(
+                                                    context,
+                                                    request.status,
+                                                  ),
                                                   style: Theme.of(context)
                                                       .textTheme
                                                       .labelSmall
@@ -301,7 +306,11 @@ class _AdminPasswordResetScreenState
                                           ),
                                           const SizedBox(height: 10),
                                           Text(
-                                            'Requested ${dateFormat.format(request.requestedAt.toLocal())}',
+                                            context.l10n.requestedDate(
+                                              dateFormat.format(
+                                                request.requestedAt.toLocal(),
+                                              ),
+                                            ),
                                             style: Theme.of(context)
                                                 .textTheme
                                                 .bodySmall

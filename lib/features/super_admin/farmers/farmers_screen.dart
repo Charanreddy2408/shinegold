@@ -92,8 +92,8 @@ class _FarmersScreenState extends ConsumerState<FarmersScreen> {
         header: GradientHeader(
           title: context.l10n.farmers,
           subtitle: _loading
-              ? 'Loading...'
-              : '${filtered.length} of ${_farmers.length} farmers',
+              ? context.l10n.loading
+              : context.l10n.xOfYFarmers(filtered.length, _farmers.length),
           compact: true,
           leading: IconButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -107,7 +107,7 @@ class _FarmersScreenState extends ConsumerState<FarmersScreen> {
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
                 child: ShineSearchBar(
                   controller: _searchController,
-                  hint: 'Search farmers, farms, or location...',
+                  hint: context.l10n.searchFarmersFarms,
                 ),
               ),
             Expanded(
@@ -127,11 +127,11 @@ class _FarmersScreenState extends ConsumerState<FarmersScreen> {
                           ? ShineEmptyState(
                               icon: Icons.search_off_rounded,
                               title: _searchController.text.isEmpty
-                                  ? 'No farmers'
-                                  : 'No matches',
+                                  ? context.l10n.noFarmers
+                                  : context.l10n.noMatches,
                               subtitle: _searchController.text.isEmpty
-                                  ? 'Onboarded farmers will appear here'
-                                  : 'Try a different search term',
+                                  ? context.l10n.onboardedFarmersAppear
+                                  : context.l10n.tryDifferentSearch,
                             )
                           : RefreshIndicator(
                               onRefresh: _load,
@@ -208,14 +208,14 @@ class _FarmerExpansionTileState extends ConsumerState<_FarmerExpansionTile> {
     }
   }
 
-  String _genderLabel(Gender? gender) {
+  String _genderLabel(BuildContext context, Gender? gender) {
     switch (gender) {
       case Gender.male:
-        return 'Male';
+        return context.l10n.male;
       case Gender.female:
-        return 'Female';
+        return context.l10n.female;
       case Gender.other:
-        return 'Other';
+        return context.l10n.other;
       case null:
         return '—';
     }
@@ -319,7 +319,7 @@ class _FarmerExpansionTileState extends ConsumerState<_FarmerExpansionTile> {
               _DetailRow(
                 icon: Icons.person_outline_rounded,
                 label: context.l10n.gender,
-                value: _genderLabel(farmer.gender),
+                value: _genderLabel(context, farmer.gender),
               ),
               if (farmer.age != null)
                 _DetailRow(
@@ -398,8 +398,8 @@ class _FarmerExpansionTileState extends ConsumerState<_FarmerExpansionTile> {
                                     const SizedBox(height: 4),
                                     Text(
                                       farm.crop.isNotEmpty
-                                          ? 'Crop: ${farm.crop}'
-                                          : 'Crop not set',
+                                          ? context.l10n.cropLabel(farm.crop)
+                                          : context.l10n.cropNotSet,
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodySmall

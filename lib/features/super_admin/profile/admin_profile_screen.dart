@@ -30,7 +30,7 @@ class AdminProfileScreen extends ConsumerWidget {
         title: context.l10n.editMobileNumber,
         subtitle: context.l10n.updateContactNumber,
         icon: Icons.phone_rounded,
-        submitLabel: 'Save Mobile Number',
+        submitLabel: context.l10n.saveMobileNumber,
         fields: [
           AdminFormField(
             controller: mobile,
@@ -40,8 +40,8 @@ class AdminProfileScreen extends ConsumerWidget {
             textInputAction: TextInputAction.done,
             validator: (value) {
               final digits = value?.replaceAll(RegExp(r'\D'), '') ?? '';
-              if (digits.isEmpty) return 'Enter your mobile number';
-              if (digits.length < 10) return 'Enter a valid mobile number';
+              if (digits.isEmpty) return context.l10n.enterMobileNumber;
+              if (digits.length < 10) return context.l10n.enterValidMobile;
               return null;
             },
           ),
@@ -72,7 +72,7 @@ class AdminProfileScreen extends ConsumerWidget {
         title: context.l10n.editOfficeAddress,
         subtitle: context.l10n.updateAdminAddress,
         icon: Icons.location_on_rounded,
-        submitLabel: 'Save Address',
+        submitLabel: context.l10n.saveAddress,
         fields: [
           AdminFormField(
             controller: address,
@@ -81,7 +81,7 @@ class AdminProfileScreen extends ConsumerWidget {
             textInputAction: TextInputAction.done,
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
-                return 'Enter your address';
+                return context.l10n.enterYourAddress;
               }
               return null;
             },
@@ -111,10 +111,10 @@ class AdminProfileScreen extends ConsumerWidget {
 
       final changed = await showAdminFormSheet<bool>(
         context: context,
-        title: 'Change Password',
+        title: context.l10n.changePassword,
         subtitle: context.l10n.chooseNewPassword,
         icon: Icons.lock_reset_rounded,
-        submitLabel: 'Change Password',
+        submitLabel: context.l10n.changePassword,
         fields: [
           AdminFormField(
             controller: newPassword,
@@ -123,9 +123,11 @@ class AdminProfileScreen extends ConsumerWidget {
             obscureText: true,
             textInputAction: TextInputAction.next,
             validator: (value) {
-              if (value == null || value.isEmpty) return 'Enter a new password';
+              if (value == null || value.isEmpty) {
+                return context.l10n.enterNewPassword;
+              }
               if (value.length < 6) {
-                return 'Password must be at least 6 characters';
+                return context.l10n.passwordMustBe6CharsLong;
               }
               return null;
             },
@@ -138,9 +140,11 @@ class AdminProfileScreen extends ConsumerWidget {
             textInputAction: TextInputAction.done,
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Confirm your new password';
+                return context.l10n.confirmNewPasswordPrompt;
               }
-              if (value != newPassword.text) return 'Passwords do not match';
+              if (value != newPassword.text) {
+                return context.l10n.passwordsDoNotMatchError;
+              }
               return null;
             },
           ),
@@ -169,7 +173,7 @@ class AdminProfileScreen extends ConsumerWidget {
       body: AppBackground(
         header: GradientHeader(
           title: user.name.split(' ').first,
-          subtitle: 'Super Admin · ${user.employeeId}',
+          subtitle: context.l10n.superAdminId(user.employeeId),
           compact: true,
           leading: IconButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -209,7 +213,7 @@ class AdminProfileScreen extends ConsumerWidget {
               ),
               SizedBox(height: 24),
               ShineSecondaryButton(
-                label: 'Change Password',
+                label: context.l10n.changePassword,
                 onPressed: changePassword,
               ).animate().fadeIn(delay: 280.ms, duration: 400.ms),
               SizedBox(height: 10),

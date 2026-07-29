@@ -1694,6 +1694,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get assignExecutives => 'Assign executives';
 
   @override
+  String get saveAssignment => 'Save Assignment';
+
+  @override
+  String approvedCanSetPassword(String id) {
+    return 'Approved — $id can now set a new password';
+  }
+
+  @override
+  String whatsappGreeting(String name) {
+    return 'Hello $name, this is Shine Gold.';
+  }
+
+  @override
   String get executivesLabel => 'Executives';
 
   @override

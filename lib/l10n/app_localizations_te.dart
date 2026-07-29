@@ -1700,6 +1700,19 @@ class AppLocalizationsTe extends AppLocalizations {
   String get assignExecutives => 'ఎగ్జిక్యూటివ్‌లను కేటాయించండి';
 
   @override
+  String get saveAssignment => 'కేటాయింపును సేవ్ చేయండి';
+
+  @override
+  String approvedCanSetPassword(String id) {
+    return 'ఆమోదించబడింది — $id ఇప్పుడు కొత్త పాస్‌వర్డ్ సెట్ చేసుకోవచ్చు';
+  }
+
+  @override
+  String whatsappGreeting(String name) {
+    return 'నమస్కారం $name గారు, ఇది షైన్ గోల్డ్.';
+  }
+
+  @override
   String get executivesLabel => 'ఎగ్జిక్యూటివ్‌లు';
 
   @override

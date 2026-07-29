@@ -158,8 +158,8 @@ class _HarvestsScreenState extends ConsumerState<HarvestsScreen> {
       header: GradientHeader(
         title: context.l10n.navHarvests,
         subtitle: _initialLoading
-            ? 'Loading...'
-            : '${_harvests.length} scheduled',
+            ? context.l10n.loading
+            : context.l10n.xScheduled(_harvests.length),
         compact: true,
       ),
       child: _initialLoading
@@ -275,7 +275,7 @@ class _HarvestsScreenState extends ConsumerState<HarvestsScreen> {
                       padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
                       child: ShineSearchBar(
                         controller: _searchController,
-                        hint: 'Search harvests by farm or crop...',
+                        hint: context.l10n.searchHarvestsByCrop,
                       ),
                     ),
                     Padding(
@@ -292,7 +292,11 @@ class _HarvestsScreenState extends ConsumerState<HarvestsScreen> {
                           ),
                           const SizedBox(width: 10),
                           Text(
-                            'Harvests on ${selected.day}/${selected.month}/${selected.year}',
+                            context.l10n.harvestsOnDate(
+                              selected.day,
+                              selected.month,
+                              selected.year,
+                            ),
                             style:
                                 Theme.of(context).textTheme.titleSmall?.copyWith(
                                       fontWeight: FontWeight.w700,
@@ -306,11 +310,11 @@ class _HarvestsScreenState extends ConsumerState<HarvestsScreen> {
                           ? ShineEmptyState(
                               icon: Icons.search_off_rounded,
                               title: _searchQuery.isEmpty
-                                  ? 'No harvests'
-                                  : 'No matches',
+                                  ? context.l10n.noHarvests
+                                  : context.l10n.noMatches,
                               subtitle: _searchQuery.isEmpty
-                                  ? 'Nothing scheduled for this date'
-                                  : 'Try a different search term',
+                                  ? context.l10n.nothingScheduledDate
+                                  : context.l10n.tryDifferentSearch,
                             )
                           : ListView.builder(
                               padding:

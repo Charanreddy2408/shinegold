@@ -6,6 +6,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../data/models/executive.dart';
 import '../../../data/models/farm.dart';
 import '../../../shared/providers/repository_providers.dart';
+import '../../../shared/utils/l10n_ext.dart';
 import '../../../shared/widgets/animated_loading.dart';
 import '../../../shared/widgets/shine_buttons.dart';
 
@@ -101,7 +102,7 @@ class _AdminFarmAssignSheetState extends ConsumerState<_AdminFarmAssignSheet> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            'Assign Executives',
+            context.l10n.assignExecutives,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w800,
                 ),
@@ -156,7 +157,7 @@ class _AdminFarmAssignSheetState extends ConsumerState<_AdminFarmAssignSheet> {
             ),
           const SizedBox(height: 16),
           ShinePrimaryButton(
-            label: 'Save Assignment',
+            label: context.l10n.saveAssignment,
             isLoading: _saving,
             onPressed: _saving ? null : _save,
           ),

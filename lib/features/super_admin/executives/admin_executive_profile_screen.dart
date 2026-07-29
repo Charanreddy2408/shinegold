@@ -129,7 +129,7 @@ class _AdminExecutiveProfileScreenState
       body: AppBackground(
         header: GradientHeader(
           title: _executive.name.split(' ').first,
-          subtitle: 'Field Executive · ${_executive.employeeId}',
+          subtitle: context.l10n.fieldExecutiveId(_executive.employeeId),
           compact: true,
           leading: IconButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -292,7 +292,7 @@ class _AdminExecutiveProfileScreenState
                         padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
                         child: ShineSearchBar(
                           controller: _searchController,
-                          hint: 'Search visits by farm name...',
+                          hint: context.l10n.searchVisitsByFarm,
                         ),
                       ),
                     ),
@@ -343,11 +343,11 @@ class _AdminExecutiveProfileScreenState
                         child: ShineEmptyState(
                           icon: Icons.search_off_rounded,
                           title: _searchController.text.isEmpty
-                              ? 'No visits yet'
-                              : 'No matches',
+                              ? context.l10n.noVisitsYet
+                              : context.l10n.noMatches,
                           subtitle: _searchController.text.isEmpty
-                              ? 'This executive has no visit records'
-                              : 'Try a different farm name',
+                              ? context.l10n.executiveHasNoVisits
+                              : context.l10n.tryDifferentFarmName,
                         ),
                       )
                     else
@@ -502,8 +502,9 @@ class _ProfileHeader extends StatelessWidget {
                     onPressed: () => ContactLauncher.whatsappOrSnack(
                       context,
                       executive.mobile,
-                      message:
-                          'Hello ${executive.name.split(' ').first}, this is Shine Gold.',
+                      message: context.l10n.whatsappGreeting(
+                        executive.name.split(' ').first,
+                      ),
                     ),
                     icon: const Icon(Icons.chat_rounded, size: 20),
                     label: Text(context.l10n.whatsapp),
@@ -524,7 +525,11 @@ class _ProfileHeader extends StatelessWidget {
               isBlocked ? Icons.lock_open_rounded : Icons.block_rounded,
               size: 20,
             ),
-            label: Text(isBlocked ? 'Unblock executive' : 'Block executive'),
+            label: Text(
+              isBlocked
+                  ? context.l10n.unblockExecutive
+                  : context.l10n.blockExecutive,
+            ),
             style: OutlinedButton.styleFrom(
               foregroundColor:
                   isBlocked ? AppColors.secondary : AppColors.error,
@@ -801,8 +806,8 @@ class _AssignedFarmTile extends StatelessWidget {
     final dateFormat = DateFormat('dd MMM yyyy');
     final subtitle = farm.nextVisitAvailabilityLabel ??
         (farm.lastVisited != null
-            ? 'Last visit: ${dateFormat.format(farm.lastVisited!)}'
-            : 'Not visited yet');
+            ? context.l10n.lastVisitDate(dateFormat.format(farm.lastVisited!))
+            : context.l10n.notVisitedYet);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
