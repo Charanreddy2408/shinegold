@@ -22,6 +22,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'You can change this anytime from the menu.';
 
   @override
+  String get chooseLanguageScreenSubtitle =>
+      'Pick the language you want to use in the app.';
+
+  @override
+  String get changeLanguageLaterHint =>
+      'You can change this later from your profile.';
+
+  @override
   String get continueLabel => 'Continue';
 
   @override

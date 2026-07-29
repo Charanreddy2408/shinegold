@@ -21,6 +21,14 @@ class AppLocalizationsTe extends AppLocalizations {
   String get chooseLanguageSubtitle => 'మెను నుండి ఎప్పుడైనా మార్చవచ్చు.';
 
   @override
+  String get chooseLanguageScreenSubtitle =>
+      'యాప్‌లో మీరు ఉపయోగించాలనుకునే భాషను ఎంచుకోండి.';
+
+  @override
+  String get changeLanguageLaterHint =>
+      'దీన్ని తర్వాత మీ ప్రొఫైల్ నుండి మార్చవచ్చు.';
+
+  @override
   String get continueLabel => 'కొనసాగించండి';
 
   @override

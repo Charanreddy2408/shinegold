@@ -14,12 +14,14 @@ import '../../features/executive/interactions/interactions_list_screen.dart';
 import '../../features/executive/onboard_farm/farm_boundary_picker_screen.dart';
 import '../../features/executive/onboard_farm/onboard_farm_screen.dart';
 import '../../features/executive/shell/executive_shell.dart';
+import '../../features/language/language_selection_screen.dart';
 import '../../features/super_admin/shell/admin_shell.dart';
 import '../../features/visits/presentation/visit_report_screen.dart';
 import '../../features/welcome/welcome_screen.dart';
 import '../../data/models/interaction.dart';
 import '../../shared/models/farm_boundary.dart';
 import '../../shared/providers/auth_provider.dart';
+import '../../shared/providers/locale_provider.dart';
 
 final rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -29,6 +31,7 @@ class AppRoutes {
   static const welcome = '/';
   static const login = '/login';
   static const forgotPassword = '/forgot-password';
+  static const languageSetup = '/language';
   static const executive = '/executive';
   static const boundaryPicker = '/executive/boundary-picker';
   static const admin = '/admin';
@@ -79,7 +82,8 @@ String? _resolveRedirect(
         loc.startsWith('/admin') ||
         loc.startsWith('/farm') ||
         loc.startsWith('/checkin') ||
-        loc.startsWith('/visit')) {
+        loc.startsWith('/visit') ||
+        loc == AppRoutes.languageSetup) {
       return AppRoutes.login;
     }
     return null;
@@ -88,11 +92,21 @@ String? _resolveRedirect(
   // Let welcome animation play on every cold start; it navigates itself.
   if (isWelcome) return null;
 
-  if (isAuthRoute) {
-    return session.user.role == UserRole.superAdmin
-        ? AppRoutes.admin
-        : AppRoutes.executive;
+  // First sign-in (or the first after a deliberate logout): the language
+  // screen comes before anything else. `null` means the flag hasn't been read
+  // yet — the login flow re-checks it asynchronously, so don't guess here.
+  final languagePromptDone = LocaleNotifier.languagePromptDoneCached;
+  final homeForRole = session.user.role == UserRole.superAdmin
+      ? AppRoutes.admin
+      : AppRoutes.executive;
+
+  if (loc == AppRoutes.languageSetup) {
+    return languagePromptDone == true ? homeForRole : null;
   }
+
+  if (languagePromptDone == false) return AppRoutes.languageSetup;
+
+  if (isAuthRoute) return homeForRole;
 
   if (loc.startsWith('/executive') &&
       session.user.role == UserRole.superAdmin) {
@@ -135,6 +149,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.forgotPassword,
         builder: (_, __) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.languageSetup,
+        builder: (_, __) => const LanguageSelectionScreen(),
       ),
       GoRoute(
         path: AppRoutes.executive,

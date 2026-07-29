@@ -4,6 +4,8 @@
   "language": "Language",
   "chooseLanguage": "Choose language",
   "chooseLanguageSubtitle": "You can change this anytime from the menu.",
+  "chooseLanguageScreenSubtitle": "Pick the language you want to use in the app.",
+  "changeLanguageLaterHint": "You can change this later from your profile.",
   "continueLabel": "Continue",
   "changeLanguage": "Change language",
   "changeLanguageSubtitle": "English, Telugu, or Kannada",

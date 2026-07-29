@@ -24,14 +24,31 @@ class LocaleNotifier extends StateNotifier<Locale> {
     await prefs.setString(_kLocaleCode, locale.languageCode);
   }
 
+  /// Last known value of the prompt flag, so the go_router redirect (which is
+  /// synchronous) can gate on it. `null` until the first read.
+  static bool? _promptDoneCache;
+
+  static bool? get languagePromptDoneCached => _promptDoneCache;
+
   static Future<bool> isLanguagePromptDone() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_kLanguagePromptDone) ?? false;
+    final done = prefs.getBool(_kLanguagePromptDone) ?? false;
+    _promptDoneCache = done;
+    return done;
   }
 
   static Future<void> markLanguagePromptDone() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_kLanguagePromptDone, true);
+    _promptDoneCache = true;
+  }
+
+  /// Cleared on a deliberate logout so the next sign-in asks for the language
+  /// again. The chosen locale itself is kept — only the prompt is re-armed.
+  static Future<void> resetLanguagePrompt() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_kLanguagePromptDone);
+    _promptDoneCache = false;
   }
 }
 

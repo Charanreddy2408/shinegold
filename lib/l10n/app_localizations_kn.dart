@@ -21,6 +21,14 @@ class AppLocalizationsKn extends AppLocalizations {
   String get chooseLanguageSubtitle => 'ಮೆನುವಿನಿಂದ ಯಾವಾಗ ಬೇಕಾದರೂ ಬದಲಾಯಿಸಬಹುದು.';
 
   @override
+  String get chooseLanguageScreenSubtitle =>
+      'ಆ್ಯಪ್‌ನಲ್ಲಿ ನೀವು ಬಳಸಲು ಬಯಸುವ ಭಾಷೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ.';
+
+  @override
+  String get changeLanguageLaterHint =>
+      'ಇದನ್ನು ನಂತರ ನಿಮ್ಮ ಪ್ರೊಫೈಲ್‌ನಿಂದ ಬದಲಾಯಿಸಬಹುದು.';
+
+  @override
   String get continueLabel => 'ಮುಂದುವರಿಸಿ';
 
   @override

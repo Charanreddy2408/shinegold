@@ -124,6 +124,18 @@ abstract class AppLocalizations {
   /// **'You can change this anytime from the menu.'**
   String get chooseLanguageSubtitle;
 
+  /// No description provided for @chooseLanguageScreenSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick the language you want to use in the app.'**
+  String get chooseLanguageScreenSubtitle;
+
+  /// No description provided for @changeLanguageLaterHint.
+  ///
+  /// In en, this message translates to:
+  /// **'You can change this later from your profile.'**
+  String get changeLanguageLaterHint;
+
   /// No description provided for @continueLabel.
   ///
   /// In en, this message translates to:

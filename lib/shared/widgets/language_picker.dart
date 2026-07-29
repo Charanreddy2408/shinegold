@@ -4,11 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../l10n/app_localizations.dart';
 import '../providers/locale_provider.dart';
 
-/// Post-login and menu language picker for English / Telugu / Kannada.
+/// In-app language picker for English / Telugu / Kannada, reached from the
+/// admin menu and both profile screens. The first-run choice lives in
+/// [LanguageSelectionScreen] instead.
 Future<void> showLanguagePicker(
   BuildContext context, {
   required WidgetRef ref,
-  bool markPromptDone = false,
   bool barrierDismissible = true,
 }) async {
   final l10n = AppLocalizations.of(context);
@@ -32,44 +33,24 @@ Future<void> showLanguagePicker(
             _LanguageOption(
               label: l10n.english,
               selected: current.languageCode == 'en',
-              onTap: () => _select(
-                dialogContext,
-                ref,
-                const Locale('en'),
-                markPromptDone: markPromptDone,
-              ),
+              onTap: () => _select(dialogContext, ref, const Locale('en')),
             ),
             _LanguageOption(
               label: l10n.telugu,
               selected: current.languageCode == 'te',
-              onTap: () => _select(
-                dialogContext,
-                ref,
-                const Locale('te'),
-                markPromptDone: markPromptDone,
-              ),
+              onTap: () => _select(dialogContext, ref, const Locale('te')),
             ),
             _LanguageOption(
               label: l10n.kannada,
               selected: current.languageCode == 'kn',
-              onTap: () => _select(
-                dialogContext,
-                ref,
-                const Locale('kn'),
-                markPromptDone: markPromptDone,
-              ),
+              onTap: () => _select(dialogContext, ref, const Locale('kn')),
             ),
           ],
         ),
         actions: [
           if (barrierDismissible)
             TextButton(
-              onPressed: () async {
-                if (markPromptDone) {
-                  await LocaleNotifier.markLanguagePromptDone();
-                }
-                if (dialogContext.mounted) Navigator.pop(dialogContext);
-              },
+              onPressed: () => Navigator.pop(dialogContext),
               child: Text(l10n.continueLabel),
             ),
         ],
@@ -81,13 +62,9 @@ Future<void> showLanguagePicker(
 Future<void> _select(
   BuildContext context,
   WidgetRef ref,
-  Locale locale, {
-  required bool markPromptDone,
-}) async {
+  Locale locale,
+) async {
   await ref.read(localeProvider.notifier).setLocale(locale);
-  if (markPromptDone) {
-    await LocaleNotifier.markLanguagePromptDone();
-  }
   if (context.mounted) Navigator.pop(context);
 }
 

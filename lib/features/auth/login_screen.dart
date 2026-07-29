@@ -12,7 +12,6 @@ import '../../shared/providers/auth_provider.dart';
 import '../../shared/providers/locale_provider.dart';
 import '../../shared/utils/l10n_ext.dart';
 import '../../shared/widgets/app_background.dart';
-import '../../shared/widgets/language_picker.dart';
 import '../../shared/widgets/shine_buttons.dart';
 import '../../shared/widgets/shine_logo.dart';
 
@@ -68,18 +67,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             _passwordController.text,
           );
       if (!mounted) return;
-      
-      // Show language picker after first login if not done yet
-      if (!(await LocaleNotifier.isLanguagePromptDone())) {
-        await showLanguagePicker(
-          context,
-          ref: ref,
-          markPromptDone: true,
-          barrierDismissible: false,
-        );
-      }
-      
+
+      // First sign-in after install or a deliberate logout lands on the
+      // language screen; everyone else goes straight to their home.
+      final languagePromptDone = await LocaleNotifier.isLanguagePromptDone();
       if (!mounted) return;
+
+      if (!languagePromptDone) {
+        context.go(AppRoutes.languageSetup);
+        return;
+      }
+
       final role = ref.read(userRoleProvider);
       context.go(
         role == UserRole.superAdmin ? AppRoutes.admin : AppRoutes.executive,

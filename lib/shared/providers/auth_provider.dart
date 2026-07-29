@@ -11,6 +11,7 @@ import '../../data/models/password_reset_request.dart';
 import '../../data/models/user.dart';
 import '../../data/repositories/auth_repository.dart';
 import '../services/notification_service.dart';
+import 'locale_provider.dart';
 import 'repository_providers.dart';
 
 const _sessionKey = 'auth_session';
@@ -165,6 +166,9 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthSession?>> {
   Future<void> logout() async {
     final refreshToken = state.valueOrNull?.refreshToken;
     await _repository.logout(refreshToken: refreshToken);
+    // Deliberate logout (not a dropped session): re-arm the first-run language
+    // screen so the next sign-in starts with the language choice again.
+    await LocaleNotifier.resetLanguagePrompt();
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_sessionKey);
     _dio.updateToken(null);

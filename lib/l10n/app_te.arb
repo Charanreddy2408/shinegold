@@ -4,6 +4,8 @@
   "language": "భాష",
   "chooseLanguage": "భాషను ఎంచుకోండి",
   "chooseLanguageSubtitle": "మెను నుండి ఎప్పుడైనా మార్చవచ్చు.",
+  "chooseLanguageScreenSubtitle": "యాప్‌లో మీరు ఉపయోగించాలనుకునే భాషను ఎంచుకోండి.",
+  "changeLanguageLaterHint": "దీన్ని తర్వాత మీ ప్రొఫైల్ నుండి మార్చవచ్చు.",
   "continueLabel": "కొనసాగించండి",
   "changeLanguage": "భాష మార్చండి",
   "changeLanguageSubtitle": "ఇంగ్లీష్, తెలుగు లేదా కన్నడ",

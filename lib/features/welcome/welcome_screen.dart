@@ -10,6 +10,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../data/models/enums.dart';
 import '../../shared/providers/auth_provider.dart';
+import '../../shared/providers/locale_provider.dart';
 import '../../shared/utils/l10n_ext.dart';
 import '../../shared/widgets/animated_loading.dart';
 import '../../shared/widgets/shine_logo.dart';
@@ -193,15 +194,25 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
     }
 
     final session = auth.valueOrNull;
-    if (session != null) {
-      context.go(
-        session.user.role == UserRole.superAdmin
-            ? AppRoutes.admin
-            : AppRoutes.executive,
-      );
-    } else {
+    if (session == null) {
       context.go(AppRoutes.login);
+      return;
     }
+
+    // A live session skips the language screen — unless the user never
+    // finished it (app closed part-way through the first sign-in).
+    if (!(await LocaleNotifier.isLanguagePromptDone())) {
+      if (!mounted) return;
+      context.go(AppRoutes.languageSetup);
+      return;
+    }
+    if (!mounted) return;
+
+    context.go(
+      session.user.role == UserRole.superAdmin
+          ? AppRoutes.admin
+          : AppRoutes.executive,
+    );
   }
 
   @override

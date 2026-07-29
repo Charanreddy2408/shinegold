@@ -36,8 +36,14 @@ class AdminMoreSheet extends ConsumerWidget {
           ),
         ],
       ),
+      // The tile list is taller than a small phone at the app's 1.3x text
+      // scale. Unbounded it overflowed and clipped the last tiles (language,
+      // logout) off-screen, where they could not be tapped at all.
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.sizeOf(context).height * 0.9,
+      ),
       child: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -151,8 +157,12 @@ class AdminMoreSheet extends ConsumerWidget {
                 color: AppColors.info,
                 delay: 150.ms,
                 onTap: () async {
+                  // Anchor the dialog to the root navigator, not this sheet:
+                  // the sheet's context is on its way out once popped.
+                  final rootContext =
+                      Navigator.of(context, rootNavigator: true).context;
                   Navigator.pop(context);
-                  await showLanguagePicker(context, ref: ref);
+                  await showLanguagePicker(rootContext, ref: ref);
                 },
               ),
               AdminMenuTile(

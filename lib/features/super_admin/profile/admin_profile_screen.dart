@@ -8,6 +8,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/auth_provider.dart';
 import '../../../shared/widgets/admin_ui.dart';
 import '../../../shared/widgets/app_background.dart';
+import '../../../shared/widgets/language_picker.dart';
 import '../../../shared/widgets/profile_photo_editor.dart';
 import '../../../shared/widgets/shine_buttons.dart';
 import '../../../shared/widgets/user_avatar.dart';
@@ -211,6 +212,13 @@ class AdminProfileScreen extends ConsumerWidget {
                 label: 'Change Password',
                 onPressed: changePassword,
               ).animate().fadeIn(delay: 280.ms, duration: 400.ms),
+              SizedBox(height: 10),
+              ShineSecondaryButton(
+                label: context.l10n.changeLanguage,
+                onPressed: () async {
+                  await showLanguagePicker(context, ref: ref);
+                },
+              ).animate().fadeIn(delay: 300.ms, duration: 400.ms),
               SizedBox(height: 10),
               ShineSecondaryButton(
                 label: context.l10n.logout,
