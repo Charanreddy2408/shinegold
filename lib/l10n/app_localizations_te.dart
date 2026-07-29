@@ -2472,4 +2472,305 @@ class AppLocalizationsTe extends AppLocalizations {
 
   @override
   String get acresLower => 'ఎకరాలు';
+
+  @override
+  String get cropCotton => 'పత్తి';
+
+  @override
+  String get cropPaddy => 'వరి';
+
+  @override
+  String get cropWheat => 'గోధుమ';
+
+  @override
+  String get cropMaize => 'మొక్కజొన్న';
+
+  @override
+  String get cropGroundnut => 'వేరుశనగ';
+
+  @override
+  String get cropSugarcane => 'చెరకు';
+
+  @override
+  String get cropChilli => 'మిర్చి';
+
+  @override
+  String get cropTurmeric => 'పసుపు';
+
+  @override
+  String get cropVegetables => 'కూరగాయలు';
+
+  @override
+  String get cropMillets => 'చిరుధాన్యాలు';
+
+  @override
+  String get harvestedLabel => 'కోత పూర్తయింది';
+
+  @override
+  String get blockedLabel => 'బ్లాక్ చేయబడింది';
+
+  @override
+  String get cancelledLabel => 'రద్దు చేయబడింది';
+
+  @override
+  String get checkingLabel => 'తనిఖీ చేస్తోంది';
+
+  @override
+  String get degradedLabel => 'పాక్షికంగా పనిచేస్తోంది';
+
+  @override
+  String get failedLabel => 'విఫలమైంది';
+
+  @override
+  String get allChecksPassed => 'అన్ని తనిఖీలు విజయవంతమయ్యాయి';
+
+  @override
+  String get visitCompletedEvent => 'సందర్శన పూర్తయింది';
+
+  @override
+  String get voiceNoteAdded => 'వాయిస్ నోట్ జోడించబడింది';
+
+  @override
+  String get visitedBy => 'సందర్శించినవారు';
+
+  @override
+  String get viewFullReport => 'పూర్తి నివేదిక చూడండి';
+
+  @override
+  String get visitReportNotFound => 'సందర్శన నివేదిక కనబడలేదు.';
+
+  @override
+  String onboardedBy(String name) {
+    return '$name చేర్చారు';
+  }
+
+  @override
+  String assignedLabel(String names) {
+    return 'కేటాయించినవి: $names';
+  }
+
+  @override
+  String harvestDateType(String date, String type) {
+    return 'కోత $date · $type';
+  }
+
+  @override
+  String harvestDateOnly(String date) {
+    return 'కోత $date';
+  }
+
+  @override
+  String farmerLabel(String name) {
+    return 'రైతు: $name';
+  }
+
+  @override
+  String aadharLabel(String number) {
+    return 'ఆధార్: $number';
+  }
+
+  @override
+  String get findingAddress => 'చిరునామా వెతుకుతోంది…';
+
+  @override
+  String get suggestionSelected => 'సూచన ఎంపికైంది — సేవ్ నొక్కండి';
+
+  @override
+  String get weWillUsePhoneGps =>
+      'మీ ఫోన్ GPS ఉపయోగించి చిరునామా ఆటోమేటిక్‌గా నింపుతాము.';
+
+  @override
+  String pinCoordinates(String lat, String lng) {
+    return 'పిన్ · $lat, $lng';
+  }
+
+  @override
+  String get noGpsFixReturned => 'GPS స్థానం అందలేదు.';
+
+  @override
+  String gpsLookupFailed(String error) {
+    return 'GPS శోధన విఫలమైంది: $error';
+  }
+
+  @override
+  String get couldNotGetGpsPinByHand =>
+      'GPS అందలేదు — మీరు సరిహద్దును చేతితో గుర్తించవచ్చు. వివరాలకు స్టేటస్ బార్ నొక్కండి.';
+
+  @override
+  String searchFailedError(String error) {
+    return 'శోధన విఫలమైంది: $error';
+  }
+
+  @override
+  String get locationSearchFailed =>
+      'స్థాన శోధన విఫలమైంది — మీరు మ్యాప్‌లో గుర్తించవచ్చు.';
+
+  @override
+  String get pickLocationInsideIndia =>
+      'దయచేసి భారతదేశంలోని స్థానాన్ని ఎంచుకోండి.';
+
+  @override
+  String get gpsOptionalPinManually =>
+      'ఇక్కడ GPS ఐచ్ఛికం — సరిహద్దును మీరే గుర్తించవచ్చు. మళ్లీ ప్రయత్నించడానికి రీసెంటర్ నొక్కండి.';
+
+  @override
+  String get optionalTypeAddressPrevious =>
+      'ఐచ్ఛికం — మునుపటి స్క్రీన్‌లో చిరునామా టైప్ చేయవచ్చు. ఇది కన్ఫర్మ్‌ను ఆపదు.';
+
+  @override
+  String couldNotFetchAddress(String error) {
+    return 'చిరునామా పొందలేకపోయాము: $error';
+  }
+
+  @override
+  String acresCount(String acres) {
+    return '$acres ఎకరాలు';
+  }
+
+  @override
+  String get indiaOnly => 'భారతదేశం మాత్రమే';
+
+  @override
+  String get recenterOnMe => 'నా స్థానానికి మార్చు';
+
+  @override
+  String get openInGoogleMaps => 'గూగుల్ మ్యాప్స్‌లో తెరవండి';
+
+  @override
+  String get couldNotOpenGoogleMaps =>
+      'గూగుల్ మ్యాప్స్ తెరవలేకపోయాము. మ్యాప్స్ లేదా బ్రౌజర్ ఇన్‌స్టాల్ చేయండి.';
+
+  @override
+  String couldNotOpenGoogleMapsError(String error) {
+    return 'గూగుల్ మ్యాప్స్ తెరవలేకపోయాము ($error)';
+  }
+
+  @override
+  String get pinchZoomTapStates =>
+      'జూమ్ కోసం పించ్ · జరపడానికి డ్రాగ్ · రాష్ట్రాలను నొక్కండి';
+
+  @override
+  String pinchZoomFarmsCount(int count) {
+    return 'వ్యవసాయ క్షేత్రాలను జూమ్ చేయడానికి పించ్ · $count స్థానాలు';
+  }
+
+  @override
+  String pinchTwoFingers(int farms, String scale) {
+    return 'రెండు వేళ్లతో పించ్ · జరపడానికి డ్రాగ్ · $farms క్షేత్రాలు · $scale×';
+  }
+
+  @override
+  String get noMatchingPlaces =>
+      'సరిపోలే స్థలాలు కనబడలేదు. ప్రాంతం + నగరం పేర్లతో ప్రయత్నించండి.';
+
+  @override
+  String get couldNotLoadSuggestions =>
+      'చిరునామా సూచనలు లోడ్ కాలేదు. కనెక్షన్ చూసి మళ్లీ ప్రయత్నించండి.';
+
+  @override
+  String get searchAddress => 'చిరునామా వెతకండి';
+
+  @override
+  String get pleaseFixHighlightedFields =>
+      'పైన గుర్తించిన ఫీల్డ్‌లను సరిచేయండి';
+
+  @override
+  String get showPassword => 'పాస్‌వర్డ్ చూపించు';
+
+  @override
+  String get hidePassword => 'పాస్‌వర్డ్ దాచు';
+
+  @override
+  String get editMobile => 'మొబైల్ సవరించు';
+
+  @override
+  String get editAddress => 'చిరునామా సవరించు';
+
+  @override
+  String get profilePhotoUpdated => 'ప్రొఫైల్ ఫోటో నవీకరించబడింది';
+
+  @override
+  String get tapToUpdatePhoto => 'ఫోటో మార్చడానికి నొక్కండి';
+
+  @override
+  String get mayTakeAFewMinutes => 'దీనికి కొన్ని నిమిషాలు పట్టవచ్చు…';
+
+  @override
+  String get acrossOneFarm => 'మీరు చేర్చిన 1 క్షేత్రంలో';
+
+  @override
+  String acrossXFarms(int count) {
+    return 'మీరు చేర్చిన $count క్షేత్రాలలో';
+  }
+
+  @override
+  String get limitReachedSaving => 'పరిమితి చేరుకుంది — సేవ్ అవుతోంది…';
+
+  @override
+  String autoSavesAt(String time, int seconds) {
+    return '$time వద్ద ఆటో-సేవ్ · ${seconds}s మిగిలింది';
+  }
+
+  @override
+  String get offlineTapPlayToRetry =>
+      'మీరు ఆఫ్‌లైన్‌లో ఉన్నట్టున్నారు — కనెక్ట్ అయ్యాక ప్లే నొక్కండి.';
+
+  @override
+  String get youAppearOffline => 'మీరు ఆఫ్‌లైన్‌లో ఉన్నట్టున్నారు';
+
+  @override
+  String get couldNotLoadVoiceNote =>
+      'ఈ వాయిస్ నోట్ లోడ్ కాలేదు. మళ్లీ ప్రయత్నించడానికి నొక్కండి.';
+
+  @override
+  String get playingVoiceNote => 'వాయిస్ నోట్ ప్లే అవుతోంది...';
+
+  @override
+  String get recordedVoiceNote => 'రికార్డ్ చేసిన వాయిస్ నోట్';
+
+  @override
+  String get playingLabel => 'ప్లే అవుతోంది';
+
+  @override
+  String playingWithDuration(String duration) {
+    return 'ప్లే అవుతోంది · $duration';
+  }
+
+  @override
+  String durationTapToPlay(String duration) {
+    return 'నిడివి $duration · ప్లే చేయడానికి నొక్కండి';
+  }
+
+  @override
+  String get tapPlayToListen => 'వినడానికి ప్లే నొక్కండి';
+
+  @override
+  String get requestAlreadyPendingApproval =>
+      'ఒక అభ్యర్థన ఇప్పటికే అడ్మిన్ ఆమోదం కోసం వేచి ఉంది.';
+
+  @override
+  String checksNeedAttention(int count) {
+    return '$count తనిఖీలకు దృష్టి అవసరం';
+  }
+
+  @override
+  String get thisFieldIsRequired => 'ఈ ఫీల్డ్ తప్పనిసరి';
+
+  @override
+  String get selectAtLeastOneOption => 'కనీసం ఒక ఎంపిక ఎంచుకోండి';
+
+  @override
+  String get pleaseCompleteAllRows => 'దయచేసి అన్ని వరుసలను పూర్తి చేయండి';
+
+  @override
+  String get enterYourResponse => 'మీ సమాధానం రాయండి';
+
+  @override
+  String get visitDateLabel => 'సందర్శన తేదీ';
+
+  @override
+  String get farmLocationLabel => 'క్షేత్ర స్థానం';
+
+  @override
+  String get visitInformation => 'సందర్శన సమాచారం';
 }

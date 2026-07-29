@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
+import '../utils/l10n_ext.dart';
 
 class FarmMapPreview extends StatelessWidget {
   const FarmMapPreview({
@@ -69,8 +70,8 @@ class FarmMapPreview extends StatelessWidget {
         SnackBar(
           content: Text(
             lastError == null
-                ? 'Could not open Google Maps. Install Maps or a browser.'
-                : 'Could not open Google Maps ($lastError)',
+                ? context.l10n.couldNotOpenGoogleMaps
+                : context.l10n.couldNotOpenGoogleMapsError('$lastError'),
           ),
         ),
       );
@@ -127,7 +128,7 @@ class FarmMapPreview extends StatelessWidget {
           OutlinedButton.icon(
             onPressed: () => _openInGoogleMaps(context),
             icon: const Icon(Icons.map_rounded, size: 18),
-            label: Text('Open in Google Maps'),
+            label: Text(context.l10n.openInGoogleMaps),
             style: OutlinedButton.styleFrom(
               foregroundColor: AppColors.secondary,
               side: const BorderSide(color: AppColors.secondary),

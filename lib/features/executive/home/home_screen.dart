@@ -383,7 +383,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                       ? '${farm.crop} · ${farm.location}'
                                       : farm.location.isNotEmpty
                                           ? farm.location
-                                          : 'Tap to view details',
+                                          : context.l10n.tapToViewDetails,
                                   style: Theme.of(context)
                                       .textTheme
                                       .bodyMedium

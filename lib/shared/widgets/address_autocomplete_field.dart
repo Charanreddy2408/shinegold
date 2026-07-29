@@ -6,6 +6,7 @@ import '../../core/network/dio_client.dart';
 import '../../core/theme/app_colors.dart';
 import '../utils/async_ui.dart';
 import '../utils/geocoding_service.dart';
+import '../utils/l10n_ext.dart';
 
 /// Address field with live suggestions (via API Nominatim proxy).
 ///
@@ -16,8 +17,8 @@ class AddressAutocompleteField extends ConsumerStatefulWidget {
     super.key,
     required this.controller,
     this.pincodeController,
-    this.label = 'Address',
-    this.hint = 'Start typing to search address',
+    this.label,
+    this.hint,
     this.icon = Icons.home_work_outlined,
     this.validator,
     this.onSelected,
@@ -25,7 +26,7 @@ class AddressAutocompleteField extends ConsumerStatefulWidget {
 
   final TextEditingController controller;
   final TextEditingController? pincodeController;
-  final String label;
+  final String? label;
   final String? hint;
   final IconData icon;
   final String? Function(String?)? validator;
@@ -107,7 +108,7 @@ class _AddressAutocompleteFieldState
         _suggestions = results.take(8).toList();
         _searching = false;
         _searchError = results.isEmpty
-            ? 'No matching places found. Try area + city names.'
+            ? context.l10n.noMatchingPlaces
             : null;
       });
     } catch (_) {
@@ -116,7 +117,7 @@ class _AddressAutocompleteFieldState
         _suggestions = [];
         _searching = false;
         _searchError =
-            'Could not load address suggestions. Check connection and try again.';
+            context.l10n.couldNotLoadSuggestions;
       });
     }
   }
@@ -171,8 +172,8 @@ class _AddressAutocompleteFieldState
                 fontWeight: FontWeight.w600,
               ),
           decoration: InputDecoration(
-            labelText: widget.label,
-            hintText: widget.hint,
+            labelText: widget.label ?? context.l10n.address,
+            hintText: widget.hint ?? context.l10n.startTypingToSearch,
             errorMaxLines: 3,
             prefixIcon: Container(
               margin: const EdgeInsets.all(10),
@@ -195,7 +196,7 @@ class _AddressAutocompleteFieldState
                     ),
                   )
                 : IconButton(
-                    tooltip: 'Search address',
+                    tooltip: context.l10n.searchAddress,
                     icon: const Icon(
                       Icons.search_rounded,
                       color: AppColors.textMuted,

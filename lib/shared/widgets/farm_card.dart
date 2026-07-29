@@ -8,6 +8,7 @@ import '../../data/models/farm.dart';
 import 'status_chip.dart';
 import 'ux_components.dart';
 import '../utils/acres_format.dart';
+import '../utils/l10n_ext.dart';
 
 class FarmCard extends StatelessWidget {
   const FarmCard({
@@ -118,7 +119,7 @@ class FarmCard extends StatelessWidget {
                                           formatAcresShort(farm.totalAcres),
                                         if (farm.onboardedByName != null &&
                                             farm.onboardedByName!.isNotEmpty)
-                                          'Onboarded by ${farm.onboardedByName}',
+                                          context.l10n.onboardedBy(farm.onboardedByName!),
                                       ].join(' · '),
                                       style: Theme.of(context)
                                           .textTheme
@@ -136,8 +137,14 @@ class FarmCard extends StatelessWidget {
                                     const SizedBox(height: 4),
                                     Text(
                                       farm.assignedExecutives.length > 1
-                                          ? 'Assigned: ${farm.assignedExecutives.map((e) => e.name).join(', ')}'
-                                          : 'Assigned: ${farm.assignedExecutiveName}',
+                                          ? context.l10n.assignedLabel(
+                                              farm.assignedExecutives
+                                                  .map((e) => e.name)
+                                                  .join(', '),
+                                            )
+                                          : context.l10n.assignedLabel(
+                                              farm.assignedExecutiveName,
+                                            ),
                                       style: Theme.of(context)
                                           .textTheme
                                           .labelSmall
@@ -171,8 +178,13 @@ class FarmCard extends StatelessWidget {
                                           Expanded(
                                             child: Text(
                                               farm.harvestType.isNotEmpty
-                                                  ? 'Harvest ${dateFormat.format(farm.harvestDate)} · ${farm.harvestType}'
-                                                  : 'Harvest ${dateFormat.format(farm.harvestDate)}',
+                                                  ? context.l10n.harvestDateType(
+                                                      dateFormat.format(farm.harvestDate),
+                                                      farm.harvestType,
+                                                    )
+                                                  : context.l10n.harvestDateOnly(
+                                                      dateFormat.format(farm.harvestDate),
+                                                    ),
                                               style: Theme.of(context)
                                                   .textTheme
                                                   .labelSmall
@@ -233,8 +245,10 @@ class FarmCard extends StatelessWidget {
                                         child: Text(
                                           farm.nextVisitAvailabilityLabel ??
                                               (farm.lastVisited != null
-                                                  ? 'Last visit: ${dateFormat.format(farm.lastVisited!)}'
-                                                  : 'Not visited yet'),
+                                                  ? context.l10n.lastVisitDate(
+                                                      dateFormat.format(farm.lastVisited!),
+                                                    )
+                                                  : context.l10n.notVisitedYet),
                                           style: Theme.of(context)
                                               .textTheme
                                               .labelSmall

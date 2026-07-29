@@ -9,6 +9,7 @@ import '../providers/repository_providers.dart';
 import '../utils/media_url.dart';
 import 'shine_buttons.dart';
 import 'ux_components.dart';
+import '../utils/l10n_ext.dart';
 
 class VisitLogTile extends StatelessWidget {
   const VisitLogTile({
@@ -44,14 +45,15 @@ class VisitLogTile extends StatelessWidget {
         : null;
 
     final events = <_TimelineEvent>[
-      _TimelineEvent('Visit completed', dateLabel),
+      _TimelineEvent(context.l10n.visitCompletedEvent, dateLabel),
       if (photoUrls.isNotEmpty)
         _TimelineEvent('${photoUrls.length} photo(s) added', null),
-      if (voiceUrl != null) _TimelineEvent('Voice note added', null),
+      if (voiceUrl != null)
+        _TimelineEvent(context.l10n.voiceNoteAdded, null),
       if (log.report != null && log.report!.isNotEmpty)
-        _TimelineEvent('Notes', log.report),
-      _TimelineEvent('Duration', durationLabel),
-      _TimelineEvent('Visited by', log.visitedBy),
+        _TimelineEvent(context.l10n.notes, log.report),
+      _TimelineEvent(context.l10n.durationLabel, durationLabel),
+      _TimelineEvent(context.l10n.visitedBy, log.visitedBy),
     ];
 
     return Padding(
@@ -124,7 +126,7 @@ class VisitLogTile extends StatelessWidget {
             if (canViewReport) ...[
               const SizedBox(height: 16),
               ShineSecondaryButton(
-                label: 'View full report',
+                label: context.l10n.viewFullReport,
                 onPressed: onViewReport,
               ),
             ],

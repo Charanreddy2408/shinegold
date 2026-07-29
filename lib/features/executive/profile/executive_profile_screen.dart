@@ -935,19 +935,19 @@ class _UpdateLocationSheetState extends ConsumerState<_UpdateLocationSheet> {
     final addressText = _address.text.trim();
     final pinText = _pincode.text.trim();
     if (addressText.isEmpty) {
-      setState(() => _error = 'Enter an address first');
+      setState(() => _error = context.l10n.enterAddressFirst);
       return;
     }
     if (pinText.isNotEmpty &&
         (pinText.length != 6 || int.tryParse(pinText) == null)) {
-      setState(() => _error = 'PIN code must be a 6-digit number');
+      setState(() => _error = context.l10n.pinMustBe6Digits);
       return;
     }
 
     setState(() {
       _busy = true;
       _error = null;
-      _status = 'Finding address…';
+      _status = context.l10n.findingAddress;
     });
 
     try {
@@ -972,7 +972,7 @@ class _UpdateLocationSheetState extends ConsumerState<_UpdateLocationSheet> {
           _busy = false;
           _status = null;
           _error =
-              'Couldn’t find that address. Add city or PIN and try again.';
+              context.l10n.addressNotFound;
         });
         return;
       }
@@ -982,7 +982,7 @@ class _UpdateLocationSheetState extends ConsumerState<_UpdateLocationSheet> {
         _lng = best.point.longitude;
         _resolvedAddress = best.displayName;
         _busy = false;
-        _status = 'Pin ready — tap Save';
+        _status = context.l10n.pinReady;
         _error = null;
       });
     } catch (e) {
@@ -999,7 +999,7 @@ class _UpdateLocationSheetState extends ConsumerState<_UpdateLocationSheet> {
     setState(() {
       _busy = true;
       _error = null;
-      _status = 'Getting current location…';
+      _status = context.l10n.gettingCurrentLocation;
     });
 
     try {
@@ -1010,7 +1010,7 @@ class _UpdateLocationSheetState extends ConsumerState<_UpdateLocationSheet> {
         setState(() {
           _busy = false;
           _status = null;
-          _error = err ?? 'Could not get current location. Enable GPS and try again.';
+          _error = err ?? context.l10n.couldNotGetLocation;
         });
         return;
       }
@@ -1030,7 +1030,7 @@ class _UpdateLocationSheetState extends ConsumerState<_UpdateLocationSheet> {
           _address.text = label;
         }
         _busy = false;
-        _status = 'Current location ready — tap Save';
+        _status = context.l10n.currentLocationReady;
         _error = null;
       });
     } catch (e) {
@@ -1045,7 +1045,7 @@ class _UpdateLocationSheetState extends ConsumerState<_UpdateLocationSheet> {
 
   Future<void> _save() async {
     if (_lat == null || _lng == null) {
-      setState(() => _error = 'Locate or fetch current location before saving');
+      setState(() => _error = context.l10n.locateBeforeSaving);
       return;
     }
 
@@ -1141,13 +1141,13 @@ class _UpdateLocationSheetState extends ConsumerState<_UpdateLocationSheet> {
                   controller: _address,
                   pincodeController: _pincode,
                   label: context.l10n.address,
-                  hint: 'Start typing to search address',
+                  hint: context.l10n.startTypingToSearch,
                   onSelected: (result) {
                     setState(() {
                       _lat = result.point.latitude;
                       _lng = result.point.longitude;
                       _resolvedAddress = result.displayName;
-                      _status = 'Suggestion selected — tap Save';
+                      _status = context.l10n.suggestionSelected;
                       _error = null;
                     });
                   },
@@ -1164,19 +1164,23 @@ class _UpdateLocationSheetState extends ConsumerState<_UpdateLocationSheet> {
                 ),
                 const SizedBox(height: 12),
                 ShineSecondaryButton(
-                  label: _busy ? 'Locating…' : 'Locate from address',
+                  label: _busy
+                      ? context.l10n.locating
+                      : context.l10n.locateFromAddress,
                   onPressed: _busy ? null : _locateFromAddress,
                 ),
               ] else ...[
                 Text(
-                  'We’ll use your phone GPS and fill the address automatically.',
+                  context.l10n.weWillUsePhoneGps,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: AppColors.textSecondary,
                       ),
                 ),
                 const SizedBox(height: 12),
                 ShineSecondaryButton(
-                  label: _busy ? 'Fetching…' : 'Fetch current location',
+                  label: _busy
+                      ? context.l10n.fetching
+                      : context.l10n.fetchCurrentLocation,
                   onPressed: _busy ? null : _fetchCurrentLocation,
                 ),
               ],
@@ -1193,7 +1197,10 @@ class _UpdateLocationSheetState extends ConsumerState<_UpdateLocationSheet> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Pin · ${_lat!.toStringAsFixed(5)}, ${_lng!.toStringAsFixed(5)}',
+                        context.l10n.pinCoordinates(
+                          _lat!.toStringAsFixed(5),
+                          _lng!.toStringAsFixed(5),
+                        ),
                         style: Theme.of(context).textTheme.labelLarge?.copyWith(
                               fontWeight: FontWeight.w700,
                               color: AppColors.primaryDark,
@@ -1232,7 +1239,8 @@ class _UpdateLocationSheetState extends ConsumerState<_UpdateLocationSheet> {
               ],
               SizedBox(height: 16),
               ShinePrimaryButton(
-                label: _busy ? 'Saving…' : 'Save location',
+                label:
+                    _busy ? context.l10n.saving : context.l10n.saveLocation,
                 onPressed: _busy ? null : _save,
               ),
               SizedBox(height: 8),

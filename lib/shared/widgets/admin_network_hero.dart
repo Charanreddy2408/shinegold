@@ -123,7 +123,7 @@ class AdminNetworkHero extends StatelessWidget {
                 totalAcres >= 100
                     ? totalAcres.toStringAsFixed(0)
                     : totalAcres.toStringAsFixed(1),
-                'Total acres',
+                context.l10n.totalAcres,
               ),
             ],
           ),
@@ -181,10 +181,10 @@ class _FilterBar extends StatelessWidget {
   final DashboardFilter filter;
   final ValueChanged<DashboardFilter> onFilterChanged;
 
-  static const _labels = {
-    DashboardFilter.all: 'All',
-    DashboardFilter.visits: 'Visits',
-    DashboardFilter.onboarded: 'Onboarded',
+  static Map<DashboardFilter, String> _labels(BuildContext context) => {
+    DashboardFilter.all: context.l10n.all,
+    DashboardFilter.visits: context.l10n.navVisits,
+    DashboardFilter.onboarded: context.l10n.onboarded,
   };
 
   @override
@@ -226,7 +226,7 @@ class _FilterBar extends StatelessWidget {
                           : null,
                     ),
                     child: Text(
-                      _labels[value]!,
+                      _labels(context)[value]!,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(

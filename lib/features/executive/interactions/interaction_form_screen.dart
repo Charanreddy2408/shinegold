@@ -29,6 +29,35 @@ const _cropOptions = <String>[
 
 const _monthOptions = <int>[1, 2, 3, 4, 5, 6, 9, 12, 18, 24];
 
+/// Crop values are stored and sent to the API in English; only the label the
+/// executive reads is translated.
+String _cropLabel(BuildContext context, String crop) {
+  switch (crop) {
+    case 'Cotton':
+      return context.l10n.cropCotton;
+    case 'Paddy':
+      return context.l10n.cropPaddy;
+    case 'Wheat':
+      return context.l10n.cropWheat;
+    case 'Maize':
+      return context.l10n.cropMaize;
+    case 'Groundnut':
+      return context.l10n.cropGroundnut;
+    case 'Sugarcane':
+      return context.l10n.cropSugarcane;
+    case 'Chilli':
+      return context.l10n.cropChilli;
+    case 'Turmeric':
+      return context.l10n.cropTurmeric;
+    case 'Vegetables':
+      return context.l10n.cropVegetables;
+    case 'Millets':
+      return context.l10n.cropMillets;
+    default:
+      return context.l10n.other;
+  }
+}
+
 class InteractionFormScreen extends ConsumerStatefulWidget {
   const InteractionFormScreen({super.key, this.existing});
 
@@ -146,7 +175,11 @@ class _InteractionFormScreenState extends ConsumerState<InteractionFormScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(_isEdit ? 'Interaction updated' : 'Interaction saved'),
+          content: Text(
+            _isEdit
+                ? context.l10n.interactionUpdated
+                : context.l10n.interactionSaved,
+          ),
           backgroundColor: AppColors.secondary,
         ),
       );
@@ -167,7 +200,9 @@ class _InteractionFormScreenState extends ConsumerState<InteractionFormScreen> {
       backgroundColor: AppColors.canvasDeep,
       body: AppBackground(
         header: GradientHeader(
-          title: _isEdit ? 'Edit interaction' : 'Record interaction',
+          title: _isEdit
+              ? context.l10n.editInteractionTitle
+              : context.l10n.recordInteractionButton,
           subtitle: context.l10n.captureProspectFarmerDetails,
           compact: true,
           leading: IconButton(
@@ -185,7 +220,9 @@ class _InteractionFormScreenState extends ConsumerState<InteractionFormScreen> {
                 textCapitalization: TextCapitalization.words,
                 decoration: InputDecoration(labelText: context.l10n.farmerName),
                 validator: (v) =>
-                    (v == null || v.trim().isEmpty) ? 'Required' : null,
+                    (v == null || v.trim().isEmpty)
+                        ? context.l10n.requiredField
+                        : null,
               ),
               SizedBox(height: AppSpacing.md),
               TextFormField(
@@ -198,7 +235,7 @@ class _InteractionFormScreenState extends ConsumerState<InteractionFormScreen> {
                 decoration: InputDecoration(labelText: context.l10n.farmerPhone),
                 validator: (v) {
                   if (v == null || v.trim().length < 7) {
-                    return 'Enter a valid phone number';
+                    return context.l10n.enterValidPhoneNumber;
                   }
                   return null;
                 },
@@ -212,7 +249,9 @@ class _InteractionFormScreenState extends ConsumerState<InteractionFormScreen> {
                   hintText: context.l10n.landLocationHint,
                 ),
                 validator: (v) =>
-                    (v == null || v.trim().isEmpty) ? 'Required' : null,
+                    (v == null || v.trim().isEmpty)
+                        ? context.l10n.requiredField
+                        : null,
               ),
               SizedBox(height: AppSpacing.md),
               TextFormField(
@@ -225,7 +264,9 @@ class _InteractionFormScreenState extends ConsumerState<InteractionFormScreen> {
                 decoration: InputDecoration(labelText: context.l10n.acres),
                 validator: (v) {
                   final value = double.tryParse(v?.trim() ?? '');
-                  if (value == null || value <= 0) return 'Enter acres';
+                  if (value == null || value <= 0) {
+                    return context.l10n.enterAcres;
+                  }
                   return null;
                 },
               ),
@@ -234,10 +275,15 @@ class _InteractionFormScreenState extends ConsumerState<InteractionFormScreen> {
                 value: _crop,
                 decoration: InputDecoration(labelText: context.l10n.currentCropInput),
                 items: _cropOptions
-                    .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                    .map(
+                      (c) => DropdownMenuItem(
+                        value: c,
+                        child: Text(_cropLabel(context, c)),
+                      ),
+                    )
                     .toList(),
                 onChanged: (v) => setState(() => _crop = v),
-                validator: (v) => v == null ? 'Select a crop' : null,
+                validator: (v) => v == null ? context.l10n.selectACrop : null,
               ),
               if (_crop == 'Other') ...[
                 SizedBox(height: AppSpacing.md),
@@ -248,7 +294,7 @@ class _InteractionFormScreenState extends ConsumerState<InteractionFormScreen> {
                   validator: (v) {
                     if (_crop == 'Other' &&
                         (v == null || v.trim().isEmpty)) {
-                      return 'Required';
+                      return context.l10n.requiredField;
                     }
                     return null;
                   },
@@ -276,7 +322,9 @@ class _InteractionFormScreenState extends ConsumerState<InteractionFormScreen> {
               ),
               const SizedBox(height: AppSpacing.xxl),
               ShinePrimaryButton(
-                label: _isEdit ? 'Save changes' : 'Save interaction',
+                label: _isEdit
+                    ? context.l10n.saveChanges
+                    : context.l10n.saveInteraction,
                 icon: Icons.check_rounded,
                 isLoading: _saving,
                 onPressed: _saving ? null : _submit,
@@ -402,14 +450,14 @@ class _OnboardingStatusPicker extends StatelessWidget {
     }
   }
 
-  String _hint(InteractionStatus status) {
+  String _hint(BuildContext context, InteractionStatus status) {
     switch (status) {
       case InteractionStatus.readyToOnboard:
-        return 'Farmer is ready for onboarding soon';
+        return context.l10n.farmerReadyForOnboarding;
       case InteractionStatus.takingTime:
-        return 'Needs more time before deciding';
+        return context.l10n.needsMoreTime;
       case InteractionStatus.uncertain:
-        return 'Still evaluating or undecided';
+        return context.l10n.stillEvaluating;
     }
   }
 
@@ -481,7 +529,7 @@ class _OnboardingStatusPicker extends StatelessWidget {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              _hint(status),
+                              _hint(context, status),
                               style: Theme.of(context)
                                   .textTheme
                                   .bodySmall

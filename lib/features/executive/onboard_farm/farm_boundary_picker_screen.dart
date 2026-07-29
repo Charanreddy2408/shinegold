@@ -151,10 +151,10 @@ class _FarmBoundaryPickerScreenState
       if (pos != null) {
         _employeeLocation = LatLng(pos.latitude, pos.longitude);
       } else {
-        _gpsError = locationState.error ?? 'No GPS fix returned.';
+        _gpsError = locationState.error ?? context.l10n.noGpsFixReturned;
       }
     } catch (e) {
-      _gpsError = 'GPS lookup failed: $e';
+      _gpsError = context.l10n.gpsLookupFailed('$e');
     } finally {
       if (mounted) setState(() => _locating = false);
     }
@@ -162,10 +162,7 @@ class _FarmBoundaryPickerScreenState
     if (!mounted) return;
 
     if (_employeeLocation == null) {
-      _showMessage(
-        'Could not get GPS — you can still pin the boundary by hand. '
-        'Tap the status bar for details.',
-      );
+      _showMessage(context.l10n.couldNotGetGpsPinByHand);
       return;
     }
 
@@ -181,9 +178,7 @@ class _FarmBoundaryPickerScreenState
 
   void _moveToEmployee(LatLng loc) {
     if (!IndiaMapBounds.contains(loc)) {
-      _showMessage(
-        'Your GPS is outside India. Search for the farm village, then mark pins.',
-      );
+      _showMessage(context.l10n.yourGpsOutsideIndiaSearch);
       // Still show the closest view inside India so the map isn't blank.
       if (_mapReady) {
         _mapController.move(IndiaMapBounds.center, IndiaMapBounds.pickerZoom);
@@ -209,7 +204,7 @@ class _FarmBoundaryPickerScreenState
           .reverseGeocode(point)
           .timeout(const Duration(seconds: 8), onTimeout: () => null);
     } catch (e) {
-      error = 'Could not fetch address: $e';
+      error = context.l10n.couldNotFetchAddress('$e');
     }
 
     if (!mounted) return;
@@ -268,8 +263,8 @@ class _FarmBoundaryPickerScreenState
       });
     } catch (e) {
       if (!mounted) return;
-      setState(() => _searchError = 'Search failed: $e');
-      _showMessage('Location search failed — you can still pin on the map.');
+      setState(() => _searchError = context.l10n.searchFailedError('$e'));
+      _showMessage(context.l10n.locationSearchFailed);
     } finally {
       if (mounted) setState(() => _searching = false);
     }
@@ -281,7 +276,7 @@ class _FarmBoundaryPickerScreenState
 
   void _selectSearchResult(GeocodingResult result) {
     if (!IndiaMapBounds.contains(result.point)) {
-      _showMessage('Please pick a location inside India.');
+      _showMessage(context.l10n.pickLocationInsideIndia);
       return;
     }
     FocusManager.instance.primaryFocus?.unfocus();
@@ -304,7 +299,7 @@ class _FarmBoundaryPickerScreenState
 
   void _addPin(LatLng point) {
     if (!IndiaMapBounds.contains(point)) {
-      _showMessage('Farm boundary must be inside India.');
+      _showMessage(context.l10n.farmBoundaryMustBeInIndia);
       return;
     }
     FocusManager.instance.primaryFocus?.unfocus();
@@ -329,7 +324,7 @@ class _FarmBoundaryPickerScreenState
         detail: hasPins
             ? '${_pins.length} pins · ${_areaAcres.toStringAsFixed(2)} acres'
             : '${_pins.length} of 3 minimum pins placed',
-        hint: hasPins ? null : 'Tap the map at each corner of the farm.',
+        hint: hasPins ? null : context.l10n.tapMapAtEachCorner,
       ),
       DiagnosticItem(
         label: context.l10n.gpsLocationLabel,
@@ -341,19 +336,21 @@ class _FarmBoundaryPickerScreenState
                     ? DiagnosticStatus.warning
                     : DiagnosticStatus.ok,
         detail: _locating
-            ? 'Getting a fix…'
+            ? context.l10n.gettingFix
             : !_hasEmployeeLocation
-                ? (_gpsError ?? 'No GPS fix yet.')
+                ? (_gpsError ?? context.l10n.noGpsFixYet)
                 : _employeeInIndia
-                    ? 'Lat ${_employeeLocation!.latitude.toStringAsFixed(4)}, '
-                        'Lng ${_employeeLocation!.longitude.toStringAsFixed(4)}'
-                    : 'Fix is outside India '
-                        '(${_employeeLocation!.latitude.toStringAsFixed(4)}, '
-                        '${_employeeLocation!.longitude.toStringAsFixed(4)}).',
+                    ? context.l10n.latLngLabel(
+                        _employeeLocation!.latitude.toStringAsFixed(4),
+                        _employeeLocation!.longitude.toStringAsFixed(4),
+                      )
+                    : context.l10n.fixOutsideIndia(
+                        _employeeLocation!.latitude.toStringAsFixed(4),
+                        _employeeLocation!.longitude.toStringAsFixed(4),
+                      ),
         hint: _hasEmployeeLocation && _employeeInIndia
             ? null
-            : 'GPS is optional here — you can still pin the boundary manually. '
-                'Tap Recenter to retry.',
+            : context.l10n.gpsOptionalPinManually,
       ),
       DiagnosticItem(
         label: context.l10n.addressLookup,
@@ -368,19 +365,18 @@ class _FarmBoundaryPickerScreenState
             (_selectedAddress?.isNotEmpty ?? false
                 ? _selectedAddress
                 : _addressLookupRan
-                    ? 'No address found for this location.'
-                    : 'Not looked up yet.'),
+                    ? context.l10n.noAddressFound
+                    : context.l10n.notLookedUpYet),
         hint: (_selectedAddress?.isNotEmpty ?? false)
             ? null
-            : 'Optional — you can type the address on the previous screen. '
-                'This never blocks Confirm.',
+            : context.l10n.optionalTypeAddressPrevious,
       ),
       if (_searchError != null)
         DiagnosticItem(
           label: context.l10n.locationSearchLabel,
           status: DiagnosticStatus.warning,
           detail: _searchError,
-          hint: 'Search is optional — pin the boundary directly on the map.',
+          hint: context.l10n.searchOptionalPinDirectly,
         ),
     ];
   }
@@ -409,7 +405,7 @@ class _FarmBoundaryPickerScreenState
       } catch (e) {
         if (mounted) {
           _addressLookupRan = true;
-          _addressError = 'Could not fetch address: $e';
+          _addressError = context.l10n.couldNotFetchAddress('$e');
         }
         address = null;
       }
@@ -541,9 +537,11 @@ class _FarmBoundaryPickerScreenState
             child: StateDiagnosticsBar(
               title: context.l10n.farmBoundaryStatus,
               okMessage: _canConfirm
-                  ? 'Ready to confirm · ${_pins.length} pins, '
-                      '${_areaAcres.toStringAsFixed(2)} acres'
-                  : 'Tap the map to drop boundary corners',
+                  ? context.l10n.readyToConfirm(
+                      _pins.length,
+                      _areaAcres.toStringAsFixed(2),
+                    )
+                  : context.l10n.tapMapToDropBoundary,
               items: _diagnostics(),
             ),
           ),
@@ -610,20 +608,25 @@ class _FarmBoundaryPickerScreenState
                 children: [
                   Text(
                     _employeeInIndia
-                        ? 'Blue pin = your GPS. Tap the map to drop boundary corners around the farm.'
-                        : 'Tap the map to drop pins around your farm boundary (India only)',
+                        ? context.l10n.bluePinYourGps
+                        : context.l10n.tapMapToDropPinsIndia,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   const SizedBox(height: AppSpacing.md),
                   Row(
                     children: [
-                      _statChip(Icons.place_rounded, '${_pins.length} pins'),
+                      _statChip(
+                        Icons.place_rounded,
+                        context.l10n.pinsCount(_pins.length),
+                      ),
                       SizedBox(width: AppSpacing.sm),
                       _statChip(
                         Icons.square_foot_rounded,
                         _pins.length >= 3
-                            ? '${_areaAcres.toStringAsFixed(2)} acres'
-                            : 'Min 3 pins',
+                            ? context.l10n.acresCount(
+                                _areaAcres.toStringAsFixed(2),
+                              )
+                            : context.l10n.min3Pins,
                       ),
                     ],
                   ),
@@ -666,8 +669,11 @@ class _FarmBoundaryPickerScreenState
                             )
                           : Text(
                               _canConfirm
-                                  ? 'Confirm boundary'
-                                  : 'Add ${3 - _pins.length} more pin${_pins.length == 2 ? '' : 's'}',
+                                  ? context.l10n.confirmBoundaryButton
+                                  : context.l10n.addMorePins(
+                                      3 - _pins.length,
+                                      _pins.length == 2 ? '' : 's',
+                                    ),
                             ),
                     ),
                   ),

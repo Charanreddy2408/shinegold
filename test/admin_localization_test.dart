@@ -8,14 +8,21 @@ import 'package:flutter_test/flutter_test.dart';
 /// English. These guard both halves of that — no literals left in the widgets,
 /// and every locale carries a real translation for the keys they use.
 void main() {
-  final adminDir = Directory('lib/features/super_admin');
+  final uiDirs = [
+    Directory('lib/features/super_admin'),
+    Directory('lib/features/executive'),
+    Directory('lib/features/visits'),
+  ];
 
   Map<String, dynamic> arb(String locale) => jsonDecode(
         File('lib/l10n/app_$locale.arb').readAsStringSync(),
       ) as Map<String, dynamic>;
 
-  test('admin screens hold no hardcoded user-facing strings', () {
+  test('screens hold no hardcoded user-facing strings', () {
     // Literals that are protocol values, formats or lookups, not UI copy.
+    // Crop names are the values persisted and sent to the API — the labels the
+    // user reads go through _cropLabel(). 'Farm location' is the stored
+    // fallback for a farm's location field, not a rendered string.
     const allowed = {
       "'replace'",
       "'India'",
@@ -23,11 +30,33 @@ void main() {
       "'approved'",
       "'rejected'",
       "'location'",
+      "'Cotton'",
+      "'Paddy'",
+      "'Wheat'",
+      "'Maize'",
+      "'Groundnut'",
+      "'Sugarcane'",
+      "'Chilli'",
+      "'Turmeric'",
+      "'Vegetables'",
+      "'Millets'",
+      "'Other'",
+      "'Farm location'",
+      "'Polygon'",
+      "'coordinates'",
+      "'columns'",
+      "'notes'",
+      "'label'",
+      "'audio/wav'",
+      "'blob:'",
+      "'local-'",
     };
     final uiLiteral = RegExp(r"'[A-Za-z][A-Za-z0-9 ,.!?·—:()/-]{4,}'");
 
     final offenders = <String>[];
-    for (final file in adminDir.listSync(recursive: true).whereType<File>()) {
+    for (final file in uiDirs
+        .expand((d) => d.listSync(recursive: true))
+        .whereType<File>()) {
       if (!file.path.endsWith('.dart')) continue;
       final lines = file.readAsLinesSync();
       for (var i = 0; i < lines.length; i++) {

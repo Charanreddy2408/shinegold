@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../data/models/enums.dart';
+import '../utils/l10n_ext.dart';
 
 class StatusChip extends StatelessWidget {
   const StatusChip({
@@ -14,7 +15,7 @@ class StatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (label, color, bg) = _resolve(status);
+    final (label, color, bg) = _resolve(context, status);
 
     return Container(
       padding: const EdgeInsets.symmetric(
@@ -39,37 +40,77 @@ class StatusChip extends StatelessWidget {
     );
   }
 
-  (String, Color, Color) _resolve(dynamic status) {
+  (String, Color, Color) _resolve(BuildContext context, dynamic status) {
     if (status is FarmVisitStatus) {
       switch (status) {
         case FarmVisitStatus.pending:
-          return ('Pending', AppColors.primaryDark, AppColors.primarySoft);
+          return (
+            context.l10n.pending,
+            AppColors.primaryDark,
+            AppColors.primarySoft,
+          );
         case FarmVisitStatus.ongoing:
-          return ('Ongoing', AppColors.secondary, AppColors.secondaryMuted);
+          return (
+            context.l10n.ongoingLabel,
+            AppColors.secondary,
+            AppColors.secondaryMuted,
+          );
         case FarmVisitStatus.visited:
-          return ('Completed', AppColors.secondary, AppColors.secondaryMuted);
+          return (
+            context.l10n.completedLabel,
+            AppColors.secondary,
+            AppColors.secondaryMuted,
+          );
         case FarmVisitStatus.harvested:
-          return ('Harvested', AppColors.secondary, AppColors.secondaryMuted);
+          return (
+            context.l10n.harvestedLabel,
+            AppColors.secondary,
+            AppColors.secondaryMuted,
+          );
         case FarmVisitStatus.blocked:
-          return ('Blocked', AppColors.error, AppColors.errorSoft);
+          return (
+            context.l10n.blockedLabel,
+            AppColors.error,
+            AppColors.errorSoft,
+          );
       }
     }
     if (status is VisitStatus) {
       switch (status) {
         case VisitStatus.ongoing:
-          return ('Ongoing', AppColors.secondary, AppColors.secondaryMuted);
+          return (
+            context.l10n.ongoingLabel,
+            AppColors.secondary,
+            AppColors.secondaryMuted,
+          );
         case VisitStatus.completed:
-          return ('Completed', AppColors.secondary, AppColors.secondaryMuted);
+          return (
+            context.l10n.completedLabel,
+            AppColors.secondary,
+            AppColors.secondaryMuted,
+          );
         case VisitStatus.cancelled:
-          return ('Cancelled', AppColors.error, AppColors.errorSoft);
+          return (
+            context.l10n.cancelledLabel,
+            AppColors.error,
+            AppColors.errorSoft,
+          );
       }
     }
     if (status is ExecutiveStatus) {
       switch (status) {
         case ExecutiveStatus.active:
-          return ('Active', AppColors.secondary, AppColors.secondaryMuted);
+          return (
+            context.l10n.active,
+            AppColors.secondary,
+            AppColors.secondaryMuted,
+          );
         case ExecutiveStatus.blocked:
-          return ('Blocked', AppColors.error, AppColors.errorSoft);
+          return (
+            context.l10n.blockedLabel,
+            AppColors.error,
+            AppColors.errorSoft,
+          );
       }
     }
     return (

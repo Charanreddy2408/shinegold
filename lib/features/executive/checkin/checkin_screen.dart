@@ -72,7 +72,14 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
   /// Keep in sync with backend Settings.MAX_VOICE_NOTE_SECONDS.
   static const maxVoiceNoteDuration = Duration(seconds: 150);
 
-  static const _stepLabels = ['Start', 'Report', 'Media', 'Submit'];
+  static const _stepCount = 4;
+
+  List<String> _stepLabels(BuildContext context) => [
+        context.l10n.startLabel,
+        context.l10n.reportLabel,
+        context.l10n.mediaLabel,
+        context.l10n.submit,
+      ];
 
   @override
   void initState() {
@@ -205,6 +212,7 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
   bool _runFormValidation({bool showFeedback = true}) {
     if (_formContext == null) return true;
     final errors = DynamicVisitForm.validateRequired(
+      context,
       _formContext!.template,
       _answers,
     );
@@ -235,7 +243,7 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
         final farm =
             await ref.read(farmRepositoryProvider).getFarmById(widget.farmId);
         if (farm == null) {
-          setState(() => _apiErrorMessage = 'Farm not found.');
+          setState(() => _apiErrorMessage = context.l10n.farmNotFound);
           return;
         }
         farmName = farm.name;
@@ -254,8 +262,7 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
         final brief = await FarmBriefCache.instance.load(widget.farmId);
         if (brief == null) {
           setState(
-            () => _apiErrorMessage =
-                'No internet and this farm is not cached yet. Open the farm once while online, then try again.',
+            () => _apiErrorMessage = context.l10n.noInternetFarmNotCached,
           );
           return;
         }
@@ -325,8 +332,7 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
     final template = await VisitFormCache.instance.loadTemplate();
     if (template == null) {
       setState(
-        () => _apiErrorMessage =
-            'No internet and no saved visit form yet. Complete one online visit first so the form can be cached.',
+        () => _apiErrorMessage = context.l10n.noInternetNoFormCached,
       );
       return false;
     }
@@ -740,7 +746,7 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
           onPressed: _loading ? null : _handleExit,
         ),
         title: Text(
-          _farmName ?? 'Farm Visit',
+          _farmName ?? context.l10n.farmVisit,
           style: const TextStyle(fontWeight: FontWeight.w700),
         ),
         flexibleSpace: Container(
@@ -754,7 +760,7 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
             child: Row(
-              children: List.generate(_stepLabels.length, (i) {
+              children: List.generate(_stepCount, (i) {
                 final done = i < _step;
                 final active = i == _step;
                 return Expanded(
@@ -774,7 +780,7 @@ class _CheckinScreenState extends ConsumerState<CheckinScreen> {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        _stepLabels[i],
+                        _stepLabels(context)[i],
                         style: TextStyle(
                           fontSize: 10,
                           color: active
@@ -1207,7 +1213,9 @@ class _SubmitStep extends StatelessWidget {
                   _ReviewRow(
                     icon: Icons.mic_none_rounded,
                     label: context.l10n.voiceNote,
-                    value: hasVoice ? 'Marked' : 'Skipped',
+                    value: hasVoice
+                        ? context.l10n.marked
+                        : context.l10n.skipped,
                   ),
                 ],
               ),

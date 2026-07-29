@@ -111,7 +111,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
       } else if (message.toLowerCase().contains('already pending')) {
         setState(() {
           _step = _ForgotStep.waiting;
-          _statusMessage = 'A request is already pending admin approval.';
+          _statusMessage = context.l10n.requestAlreadyPendingApproval;
         });
       } else {
         setState(() => _statusMessage = message);

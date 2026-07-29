@@ -5,6 +5,7 @@ import 'package:shimmer/shimmer.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
+import '../utils/l10n_ext.dart';
 
 /// Brand shimmer wrapper used by all skeleton loaders.
 class ShineShimmer extends StatelessWidget {
@@ -241,13 +242,13 @@ class SlowOperationNotice extends StatefulWidget {
     super.key,
     required this.active,
     this.threshold = const Duration(seconds: 5),
-    this.message = 'This may take a few minutes…',
+    this.message,
     this.icon = Icons.hourglass_top_rounded,
   });
 
   final bool active;
   final Duration threshold;
-  final String message;
+  final String? message;
   final IconData icon;
 
   @override
@@ -304,7 +305,7 @@ class _SlowOperationNoticeState extends State<SlowOperationNotice> {
                   const SizedBox(width: AppSpacing.xs),
                   Flexible(
                     child: Text(
-                      widget.message,
+                      widget.message ?? context.l10n.mayTakeAFewMinutes,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: AppColors.textMuted,
                             fontWeight: FontWeight.w600,

@@ -266,8 +266,8 @@ class _AdminIndiaFarmMapState extends State<AdminIndiaFarmMap>
                           ),
                           Text(
                             _plottedFarms.isEmpty
-                                ? 'Pinch to zoom · drag to pan · tap states'
-                                : 'Pinch to zoom in on farms · ${_plottedFarms.length} locations',
+                                ? context.l10n.pinchZoomTapStates
+                                : context.l10n.pinchZoomFarmsCount(_plottedFarms.length),
                             style:
                                 Theme.of(context).textTheme.bodySmall?.copyWith(
                                       color: AppColors.textMuted,
@@ -1393,7 +1393,10 @@ class _IndiaFarmMapFullscreenPageState extends State<IndiaFarmMapFullscreenPage>
                   ),
                 ),
                 Text(
-                  'Pinch with two fingers · drag to pan · ${_plotted.length} farms · ${_scale.toStringAsFixed(1)}×',
+                  context.l10n.pinchTwoFingers(
+                    _plotted.length,
+                    _scale.toStringAsFixed(1),
+                  ),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppColors.textMuted,
                       ),

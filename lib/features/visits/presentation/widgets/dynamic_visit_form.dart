@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../data/models/visit_form.dart';
+import '../../../../shared/utils/l10n_ext.dart';
 
 typedef FormAnswersMap = Map<String, dynamic>;
 
@@ -153,6 +154,7 @@ class DynamicVisitForm extends StatelessWidget {
   }
 
   static Map<String, String> validateRequired(
+    BuildContext context,
     VisitFormTemplate template,
     FormAnswersMap answers,
   ) {
@@ -160,17 +162,17 @@ class DynamicVisitForm extends StatelessWidget {
     for (final question in template.inputQuestions.where((q) => q.isRequired)) {
       final raw = answers[question.questionKey];
       if (raw == null) {
-        errors[question.questionKey] = 'This field is required';
+        errors[question.questionKey] = context.l10n.thisFieldIsRequired;
         continue;
       }
       if (raw is String && raw.trim().isEmpty) {
-        errors[question.questionKey] = 'This field is required';
+        errors[question.questionKey] = context.l10n.thisFieldIsRequired;
       } else if (raw is List && raw.isEmpty) {
-        errors[question.questionKey] = 'Select at least one option';
+        errors[question.questionKey] = context.l10n.selectAtLeastOneOption;
       } else if (raw is Map) {
         final rows = question.config?['rows'] as List<dynamic>? ?? [];
         if (raw.length < rows.length) {
-          errors[question.questionKey] = 'Please complete all rows';
+          errors[question.questionKey] = context.l10n.pleaseCompleteAllRows;
         }
       }
     }
@@ -513,7 +515,7 @@ class _TextInputState extends State<_TextInput> {
       controller: _controller,
       onChanged: widget.onChanged,
       decoration: InputDecoration(
-        hintText: 'Enter your response',
+        hintText: context.l10n.enterYourResponse,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
         ),

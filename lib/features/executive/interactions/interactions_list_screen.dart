@@ -108,8 +108,11 @@ class _InteractionsListScreenState
         header: GradientHeader(
           title: context.l10n.interactions,
           subtitle: _loading
-              ? 'Loading...'
-              : '${_items.length} prospect conversation${_items.length == 1 ? '' : 's'}',
+              ? context.l10n.loading
+              : context.l10n.prospectConversationsCount(
+                  _items.length,
+                  _items.length == 1 ? '' : 's',
+                ),
           compact: true,
           leading: IconButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -332,7 +335,11 @@ class _InteractionCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Planning ${item.plannedMonths} month${item.plannedMonths == 1 ? '' : 's'} · $dateStr',
+                    context.l10n.planningMonthsLabel(
+                      item.plannedMonths,
+                      item.plannedMonths == 1 ? '' : 's',
+                      dateStr,
+                    ),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: AppColors.textMuted,
                         ),

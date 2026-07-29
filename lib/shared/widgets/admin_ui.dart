@@ -8,6 +8,7 @@ import 'shine_buttons.dart';
 import 'user_avatar.dart';
 import '../utils/acres_format.dart';
 import '../../shared/utils/l10n_ext.dart';
+import '../utils/l10n_ext.dart';
 
 /// Slide-up form sheet with gradient header — replaces plain AlertDialogs.
 ///
@@ -108,7 +109,7 @@ class _AdminFormSheetState extends State<_AdminFormSheet> {
 
     final form = _formKey.currentState;
     if (form == null || !form.validate()) {
-      setState(() => _error = 'Please fix the highlighted fields above');
+      setState(() => _error = context.l10n.pleaseFixHighlightedFields);
       if (_scrollController != null && _scrollController!.hasClients) {
         _scrollController!.animateTo(
           0,
@@ -401,7 +402,9 @@ class _AdminFormFieldState extends State<AdminFormField> {
         prefixIconConstraints: const BoxConstraints(minWidth: 56, minHeight: 48),
         suffixIcon: widget.obscureText
             ? IconButton(
-                tooltip: _obscured ? 'Show password' : 'Hide password',
+                tooltip: _obscured
+                ? context.l10n.showPassword
+                : context.l10n.hidePassword,
                 icon: Icon(
                   _obscured
                       ? Icons.visibility_off_outlined
@@ -680,7 +683,8 @@ class _StatusDot extends StatelessWidget {
   Widget build(BuildContext context) {
     final isBlocked = status.toString().contains('blocked');
     final color = isBlocked ? AppColors.error : AppColors.secondary;
-    final label = isBlocked ? 'Blocked' : 'Active';
+    final label =
+        isBlocked ? context.l10n.blockedLabel : context.l10n.active;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -999,7 +1003,7 @@ class AdminContactHub extends StatelessWidget {
             ),
             SizedBox(width: 10),
             Text(
-              'Contact & Identity',
+              context.l10n.contactAndIdentity,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w800,
                   ),
@@ -1019,7 +1023,7 @@ class AdminContactHub extends StatelessWidget {
                 value: mobile,
                 color: AppColors.info,
                 actionIcon: Icons.edit_rounded,
-                actionHint: 'Edit mobile',
+                actionHint: context.l10n.editMobile,
                 delay: 80.ms,
                 onTap: onEditMobile,
               ),
@@ -1043,7 +1047,7 @@ class AdminContactHub extends StatelessWidget {
           value: address,
           color: AppColors.secondary,
           actionIcon: Icons.edit_rounded,
-          actionHint: 'Edit address',
+          actionHint: context.l10n.editAddress,
           delay: 200.ms,
           fullWidth: true,
           onTap: onEditAddress,
@@ -1085,14 +1089,14 @@ class AdminContactHub extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Verified Administrator',
+                      context.l10n.verifiedAdministrator,
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.w700,
                           ),
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Full access to farms, team & harvest data',
+                      context.l10n.fullAccessFarmsTeam,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: AppColors.textSecondary,
                           ),

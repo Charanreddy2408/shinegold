@@ -481,8 +481,11 @@ class _VoiceRecorderButtonState extends State<VoiceRecorderButton>
             const SizedBox(height: 8),
             Text(
               remaining.inSeconds <= 0
-                  ? 'Limit reached — saving…'
-                  : 'Auto-saves at ${_formatClock(widget.maxDuration)} · ${remaining.inSeconds}s left',
+                  ? context.l10n.limitReachedSaving
+                  : context.l10n.autoSavesAt(
+                      _formatClock(widget.maxDuration),
+                      remaining.inSeconds,
+                    ),
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: AppColors.textSecondary,
@@ -492,7 +495,9 @@ class _VoiceRecorderButtonState extends State<VoiceRecorderButton>
           ] else ...[
             const SizedBox(height: 10),
             Text(
-              'Tap to record (max ${_formatClock(widget.maxDuration)})',
+              context.l10n.tapToRecordMax(
+                _formatClock(widget.maxDuration),
+              ),
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: AppColors.textSecondary,
@@ -713,8 +718,8 @@ class _VoiceNotePlayerState extends State<VoiceNotePlayer> {
         _loading = false;
         _playing = false;
         _error = isNetworkError(e)
-            ? 'You appear to be offline — tap play to retry once connected.'
-            : "Couldn't load this voice note. Tap to retry.";
+            ? context.l10n.offlineTapPlayToRetry
+            : context.l10n.couldNotLoadVoiceNote;
       });
     }
   }
@@ -746,7 +751,9 @@ class _VoiceNotePlayerState extends State<VoiceNotePlayer> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _playing ? 'Playing voice note...' : 'Recorded voice note',
+                  _playing
+                      ? context.l10n.playingVoiceNote
+                      : context.l10n.recordedVoiceNote,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         fontWeight: FontWeight.w700,
                       ),
@@ -755,10 +762,17 @@ class _VoiceNotePlayerState extends State<VoiceNotePlayer> {
                 Text(
                   _error ??
                       (_playing
-                          ? 'Playing${_duration != null && _duration!.inSeconds > 0 ? ' · ${_formatDuration(_duration)}' : ''}'
+                          ? (_duration != null &&
+                                  _duration!.inSeconds > 0
+                              ? context.l10n.playingWithDuration(
+                                  _formatDuration(_duration),
+                                )
+                              : context.l10n.playingLabel)
                           : _duration != null && _duration!.inSeconds > 0
-                              ? 'Duration ${_formatDuration(_duration)} · Tap to play'
-                              : 'Tap play to listen'),
+                              ? context.l10n.durationTapToPlay(
+                                  _formatDuration(_duration),
+                                )
+                              : context.l10n.tapPlayToListen),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: _error != null
                             ? AppColors.error
@@ -771,7 +785,7 @@ class _VoiceNotePlayerState extends State<VoiceNotePlayer> {
           Icon(
             _error == null
                 ? Icons.mic_rounded
-                : (_error!.startsWith('You appear to be offline')
+                : (_error!.startsWith(context.l10n.youAppearOffline)
                     ? Icons.wifi_off_rounded
                     : Icons.error_outline_rounded),
             color: _error == null ? AppColors.secondary : AppColors.error,

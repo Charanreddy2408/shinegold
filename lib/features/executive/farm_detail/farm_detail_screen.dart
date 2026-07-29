@@ -87,7 +87,7 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
           _harvestHistory = history;
           _loading = false;
           if (farm == null) {
-            _error = 'Farm not found.';
+            _error = context.l10n.farmNotFound;
           }
         });
       }
@@ -138,8 +138,10 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
                   SizedBox(height: 6),
                   Text(
                     farm.hasHarvestDate
-                        ? 'Current: ${DateFormat('dd MMM yyyy').format(farm.harvestDate)}'
-                        : 'Current: Not set',
+                        ? ctx.l10n.currentHarvestDate(
+                            DateFormat('dd MMM yyyy').format(farm.harvestDate),
+                          )
+                        : ctx.l10n.currentNotSet,
                     style: Theme.of(ctx).textTheme.bodyMedium?.copyWith(
                           color: AppColors.textSecondary,
                         ),
@@ -366,7 +368,7 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
                                   Flexible(
                                     child: Text(
                                       farm.farmer.mobile.isEmpty
-                                          ? 'No mobile number'
+                                          ? context.l10n.noMobileNumber
                                           : farm.farmer.mobile,
                                       style: Theme.of(context)
                                           .textTheme
@@ -386,7 +388,9 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
                                 farm.farmer.aadharNumber!.isNotEmpty) ...[
                               const SizedBox(height: 2),
                               Text(
-                                'Aadhar: ${farm.farmer.aadharNumber}',
+                                context.l10n.aadharLabel(
+                                  farm.farmer.aadharNumber!,
+                                ),
                                 style: Theme.of(context)
                                     .textTheme
                                     .bodySmall
@@ -490,8 +494,8 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
               InfoMetricTile(
                 icon: Icons.person_rounded,
                 label: farm.assignedExecutives.length > 1
-                    ? 'Executives'
-                    : 'Executive',
+                    ? context.l10n.executivesLabel
+                    : context.l10n.executiveLabel,
                 value: farm.assignedExecutives.length > 1
                     ? farm.assignedExecutives.map((e) => e.name).join(', ')
                     : farm.assignedExecutiveName,
@@ -541,7 +545,7 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
                           Text(
                             farm.hasHarvestDate
                                 ? dateFormat.format(farm.harvestDate)
-                                : 'Not set',
+                                : context.l10n.notSet,
                             style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                   fontWeight: FontWeight.w800,
                                   color: AppColors.primaryDark,
@@ -590,7 +594,9 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
           if (isExecutive || isAdmin) ...[
             SizedBox(height: 10),
             ShineSecondaryButton(
-              label: _updatingHarvest ? 'Updating…' : 'Update harvest date',
+              label: _updatingHarvest
+                  ? context.l10n.updating
+                  : context.l10n.updateHarvestDate,
               onPressed: _updatingHarvest ? null : _editHarvestDate,
             ),
           ],
@@ -733,8 +739,8 @@ class _FarmDetailScreenState extends ConsumerState<FarmDetailScreen> {
                     padding: const EdgeInsets.all(16),
                     child: ShinePrimaryButton(
                       label: farm.status == FarmVisitStatus.ongoing
-                          ? 'Continue Visit'
-                          : 'Start Visit',
+                          ? context.l10n.continueVisit
+                          : context.l10n.startVisitButton,
                       icon: Icons.play_arrow_rounded,
                       onPressed: () async {
                         final done = await context.push<bool>(

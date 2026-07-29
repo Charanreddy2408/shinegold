@@ -2453,4 +2453,303 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get acresLower => 'acres';
+
+  @override
+  String get cropCotton => 'Cotton';
+
+  @override
+  String get cropPaddy => 'Paddy';
+
+  @override
+  String get cropWheat => 'Wheat';
+
+  @override
+  String get cropMaize => 'Maize';
+
+  @override
+  String get cropGroundnut => 'Groundnut';
+
+  @override
+  String get cropSugarcane => 'Sugarcane';
+
+  @override
+  String get cropChilli => 'Chilli';
+
+  @override
+  String get cropTurmeric => 'Turmeric';
+
+  @override
+  String get cropVegetables => 'Vegetables';
+
+  @override
+  String get cropMillets => 'Millets';
+
+  @override
+  String get harvestedLabel => 'Harvested';
+
+  @override
+  String get blockedLabel => 'Blocked';
+
+  @override
+  String get cancelledLabel => 'Cancelled';
+
+  @override
+  String get checkingLabel => 'Checking';
+
+  @override
+  String get degradedLabel => 'Degraded';
+
+  @override
+  String get failedLabel => 'Failed';
+
+  @override
+  String get allChecksPassed => 'All checks passed';
+
+  @override
+  String get visitCompletedEvent => 'Visit completed';
+
+  @override
+  String get voiceNoteAdded => 'Voice note added';
+
+  @override
+  String get visitedBy => 'Visited by';
+
+  @override
+  String get viewFullReport => 'View full report';
+
+  @override
+  String get visitReportNotFound => 'Visit report not found.';
+
+  @override
+  String onboardedBy(String name) {
+    return 'Onboarded by $name';
+  }
+
+  @override
+  String assignedLabel(String names) {
+    return 'Assigned: $names';
+  }
+
+  @override
+  String harvestDateType(String date, String type) {
+    return 'Harvest $date · $type';
+  }
+
+  @override
+  String harvestDateOnly(String date) {
+    return 'Harvest $date';
+  }
+
+  @override
+  String farmerLabel(String name) {
+    return 'Farmer: $name';
+  }
+
+  @override
+  String aadharLabel(String number) {
+    return 'Aadhar: $number';
+  }
+
+  @override
+  String get findingAddress => 'Finding address…';
+
+  @override
+  String get suggestionSelected => 'Suggestion selected — tap Save';
+
+  @override
+  String get weWillUsePhoneGps =>
+      'We\'ll use your phone GPS and fill the address automatically.';
+
+  @override
+  String pinCoordinates(String lat, String lng) {
+    return 'Pin · $lat, $lng';
+  }
+
+  @override
+  String get noGpsFixReturned => 'No GPS fix returned.';
+
+  @override
+  String gpsLookupFailed(String error) {
+    return 'GPS lookup failed: $error';
+  }
+
+  @override
+  String get couldNotGetGpsPinByHand =>
+      'Could not get GPS — you can still pin the boundary by hand. Tap the status bar for details.';
+
+  @override
+  String searchFailedError(String error) {
+    return 'Search failed: $error';
+  }
+
+  @override
+  String get locationSearchFailed =>
+      'Location search failed — you can still pin on the map.';
+
+  @override
+  String get pickLocationInsideIndia => 'Please pick a location inside India.';
+
+  @override
+  String get gpsOptionalPinManually =>
+      'GPS is optional here — you can still pin the boundary manually. Tap Recenter to retry.';
+
+  @override
+  String get optionalTypeAddressPrevious =>
+      'Optional — you can type the address on the previous screen. This never blocks Confirm.';
+
+  @override
+  String couldNotFetchAddress(String error) {
+    return 'Could not fetch address: $error';
+  }
+
+  @override
+  String acresCount(String acres) {
+    return '$acres acres';
+  }
+
+  @override
+  String get indiaOnly => 'India only';
+
+  @override
+  String get recenterOnMe => 'Recenter on me';
+
+  @override
+  String get openInGoogleMaps => 'Open in Google Maps';
+
+  @override
+  String get couldNotOpenGoogleMaps =>
+      'Could not open Google Maps. Install Maps or a browser.';
+
+  @override
+  String couldNotOpenGoogleMapsError(String error) {
+    return 'Could not open Google Maps ($error)';
+  }
+
+  @override
+  String get pinchZoomTapStates => 'Pinch to zoom · drag to pan · tap states';
+
+  @override
+  String pinchZoomFarmsCount(int count) {
+    return 'Pinch to zoom in on farms · $count locations';
+  }
+
+  @override
+  String pinchTwoFingers(int farms, String scale) {
+    return 'Pinch with two fingers · drag to pan · $farms farms · $scale×';
+  }
+
+  @override
+  String get noMatchingPlaces =>
+      'No matching places found. Try area + city names.';
+
+  @override
+  String get couldNotLoadSuggestions =>
+      'Could not load address suggestions. Check connection and try again.';
+
+  @override
+  String get searchAddress => 'Search address';
+
+  @override
+  String get pleaseFixHighlightedFields =>
+      'Please fix the highlighted fields above';
+
+  @override
+  String get showPassword => 'Show password';
+
+  @override
+  String get hidePassword => 'Hide password';
+
+  @override
+  String get editMobile => 'Edit mobile';
+
+  @override
+  String get editAddress => 'Edit address';
+
+  @override
+  String get profilePhotoUpdated => 'Profile photo updated';
+
+  @override
+  String get tapToUpdatePhoto => 'Tap to update photo';
+
+  @override
+  String get mayTakeAFewMinutes => 'This may take a few minutes…';
+
+  @override
+  String get acrossOneFarm => 'Across 1 farm you onboarded';
+
+  @override
+  String acrossXFarms(int count) {
+    return 'Across $count farms you onboarded';
+  }
+
+  @override
+  String get limitReachedSaving => 'Limit reached — saving…';
+
+  @override
+  String autoSavesAt(String time, int seconds) {
+    return 'Auto-saves at $time · ${seconds}s left';
+  }
+
+  @override
+  String get offlineTapPlayToRetry =>
+      'You appear to be offline — tap play to retry once connected.';
+
+  @override
+  String get youAppearOffline => 'You appear to be offline';
+
+  @override
+  String get couldNotLoadVoiceNote =>
+      'Couldn\'t load this voice note. Tap to retry.';
+
+  @override
+  String get playingVoiceNote => 'Playing voice note...';
+
+  @override
+  String get recordedVoiceNote => 'Recorded voice note';
+
+  @override
+  String get playingLabel => 'Playing';
+
+  @override
+  String playingWithDuration(String duration) {
+    return 'Playing · $duration';
+  }
+
+  @override
+  String durationTapToPlay(String duration) {
+    return 'Duration $duration · Tap to play';
+  }
+
+  @override
+  String get tapPlayToListen => 'Tap play to listen';
+
+  @override
+  String get requestAlreadyPendingApproval =>
+      'A request is already pending admin approval.';
+
+  @override
+  String checksNeedAttention(int count) {
+    return '$count checks need attention';
+  }
+
+  @override
+  String get thisFieldIsRequired => 'This field is required';
+
+  @override
+  String get selectAtLeastOneOption => 'Select at least one option';
+
+  @override
+  String get pleaseCompleteAllRows => 'Please complete all rows';
+
+  @override
+  String get enterYourResponse => 'Enter your response';
+
+  @override
+  String get visitDateLabel => 'Visit date';
+
+  @override
+  String get farmLocationLabel => 'Farm location';
+
+  @override
+  String get visitInformation => 'Visit Information';
 }

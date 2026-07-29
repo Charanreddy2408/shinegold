@@ -12,6 +12,7 @@ import '../providers/auth_provider.dart';
 import '../utils/photo_picker.dart';
 import 'user_avatar.dart';
 import '../providers/repository_providers.dart';
+import '../utils/l10n_ext.dart';
 
 /// Tappable avatar with camera overlay — uploads and saves profile photo.
 class ProfilePhotoEditor extends ConsumerStatefulWidget {
@@ -59,7 +60,7 @@ class _ProfilePhotoEditorState extends ConsumerState<ProfilePhotoEditor> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Profile photo updated'),
+          content: Text(context.l10n.profilePhotoUpdated),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -165,7 +166,7 @@ class _ProfilePhotoEditorState extends ConsumerState<ProfilePhotoEditor> {
         if (widget.showLabel) ...[
           const SizedBox(height: 8),
           Text(
-            'Tap to update photo',
+            context.l10n.tapToUpdatePhoto,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
                   color: Colors.white.withValues(alpha: 0.85),
                   fontWeight: FontWeight.w600,

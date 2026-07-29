@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../data/models/visit_form.dart';
+import '../../../../shared/utils/l10n_ext.dart';
 
 class VisitFormPrefillCard extends StatelessWidget {
   const VisitFormPrefillCard({super.key, required this.prefill});
@@ -14,16 +15,16 @@ class VisitFormPrefillCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final timeFormat = DateFormat('dd MMM yyyy · hh:mm a');
     final rows = <_PrefillRow>[
-      _PrefillRow('Executive', prefill.executiveName),
-      _PrefillRow('Visit date', prefill.visitDate),
+      _PrefillRow(context.l10n.executiveLabel, prefill.executiveName),
+      _PrefillRow(context.l10n.visitDateLabel, prefill.visitDate),
       if (prefill.farmLocation != null && prefill.farmLocation!.isNotEmpty)
-        _PrefillRow('Farm location', prefill.farmLocation!),
+        _PrefillRow(context.l10n.farmLocationLabel, prefill.farmLocation!),
       if (prefill.farmerContactName != null &&
           prefill.farmerContactName!.isNotEmpty)
-        _PrefillRow('Farmer', prefill.farmerContactName!),
+        _PrefillRow(context.l10n.farmer, prefill.farmerContactName!),
       if (prefill.checkinTime != null)
         _PrefillRow(
-          'Check-in',
+          context.l10n.checkInLabel,
           timeFormat.format(prefill.checkinTime!.toLocal()),
         ),
     ];
@@ -35,7 +36,7 @@ class VisitFormPrefillCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Visit Information',
+            context.l10n.visitInformation,
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w800,
                 ),

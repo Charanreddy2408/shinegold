@@ -35,11 +35,20 @@ extension DiagnosticStatusUi on DiagnosticStatus {
         DiagnosticStatus.failed => Icons.error_rounded,
       };
 
-  String get label => switch (this) {
+  String label(BuildContext context) => switch (this) {
+        DiagnosticStatus.ok => context.l10n.ok,
+        DiagnosticStatus.pending => context.l10n.checkingLabel,
+        DiagnosticStatus.warning => context.l10n.degradedLabel,
+        DiagnosticStatus.failed => context.l10n.failedLabel,
+      };
+
+  /// Untranslated tag for the copyable diagnostics report, which goes to
+  /// support rather than to the person on screen.
+  String get reportTag => switch (this) {
         DiagnosticStatus.ok => 'OK',
-        DiagnosticStatus.pending => 'Checking',
-        DiagnosticStatus.warning => 'Degraded',
-        DiagnosticStatus.failed => 'Failed',
+        DiagnosticStatus.pending => 'CHECKING',
+        DiagnosticStatus.warning => 'DEGRADED',
+        DiagnosticStatus.failed => 'FAILED',
       };
 }
 
@@ -66,7 +75,7 @@ class DiagnosticItem {
       status == DiagnosticStatus.failed || status == DiagnosticStatus.warning;
 
   String toPlainText() {
-    final buffer = StringBuffer('[${status.label}] $label');
+    final buffer = StringBuffer('[${status.reportTag}] $label');
     if (detail != null && detail!.isNotEmpty) buffer.write('\n    $detail');
     if (hint != null && hint!.isNotEmpty) buffer.write('\n    → $hint');
     return buffer.toString();
@@ -82,12 +91,12 @@ class StateDiagnosticsBar extends StatelessWidget {
     super.key,
     required this.items,
     required this.title,
-    this.okMessage = 'All checks passed',
+    this.okMessage,
   });
 
   final List<DiagnosticItem> items;
   final String title;
-  final String okMessage;
+  final String? okMessage;
 
   DiagnosticStatus get _worst {
     if (items.any((i) => i.status == DiagnosticStatus.failed)) {
@@ -107,10 +116,11 @@ class StateDiagnosticsBar extends StatelessWidget {
     final worst = _worst;
     final problems = items.where((i) => i.isProblem).toList();
     final summary = problems.isEmpty
-        ? okMessage
+        ? (okMessage ?? context.l10n.allChecksPassed)
         : problems.length == 1
-            ? '${problems.first.label}: ${problems.first.detail ?? problems.first.status.label}'
-            : '${problems.length} checks need attention';
+            ? '${problems.first.label}: '
+                '${problems.first.detail ?? problems.first.status.label(context)}'
+            : context.l10n.checksNeedAttention(problems.length);
 
     return Material(
       color: worst.color.withValues(alpha: 0.08),
@@ -190,13 +200,13 @@ Future<void> showStateDiagnostics(
                   ),
                 ),
                 IconButton(
-                  tooltip: 'Copy report',
+                  tooltip: context.l10n.copyReport,
                   icon: const Icon(Icons.copy_rounded, size: 20),
                   onPressed: () {
                     final report = items.map((i) => i.toPlainText()).join('\n');
                     Clipboard.setData(ClipboardData(text: '$title\n\n$report'));
                     ScaffoldMessenger.of(sheetContext).showSnackBar(
-                      SnackBar(content: Text('Report copied')),
+                      SnackBar(content: Text(context.l10n.reportCopied)),
                     );
                   },
                 ),
@@ -264,7 +274,7 @@ class _DiagnosticTile extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      item.status.label.toUpperCase(),
+                      item.status.label(context).toUpperCase(),
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
                             color: color,
                             fontWeight: FontWeight.w800,

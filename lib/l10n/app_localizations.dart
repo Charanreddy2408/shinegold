@@ -4485,6 +4485,504 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'acres'**
   String get acresLower;
+
+  /// No description provided for @cropCotton.
+  ///
+  /// In en, this message translates to:
+  /// **'Cotton'**
+  String get cropCotton;
+
+  /// No description provided for @cropPaddy.
+  ///
+  /// In en, this message translates to:
+  /// **'Paddy'**
+  String get cropPaddy;
+
+  /// No description provided for @cropWheat.
+  ///
+  /// In en, this message translates to:
+  /// **'Wheat'**
+  String get cropWheat;
+
+  /// No description provided for @cropMaize.
+  ///
+  /// In en, this message translates to:
+  /// **'Maize'**
+  String get cropMaize;
+
+  /// No description provided for @cropGroundnut.
+  ///
+  /// In en, this message translates to:
+  /// **'Groundnut'**
+  String get cropGroundnut;
+
+  /// No description provided for @cropSugarcane.
+  ///
+  /// In en, this message translates to:
+  /// **'Sugarcane'**
+  String get cropSugarcane;
+
+  /// No description provided for @cropChilli.
+  ///
+  /// In en, this message translates to:
+  /// **'Chilli'**
+  String get cropChilli;
+
+  /// No description provided for @cropTurmeric.
+  ///
+  /// In en, this message translates to:
+  /// **'Turmeric'**
+  String get cropTurmeric;
+
+  /// No description provided for @cropVegetables.
+  ///
+  /// In en, this message translates to:
+  /// **'Vegetables'**
+  String get cropVegetables;
+
+  /// No description provided for @cropMillets.
+  ///
+  /// In en, this message translates to:
+  /// **'Millets'**
+  String get cropMillets;
+
+  /// No description provided for @harvestedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Harvested'**
+  String get harvestedLabel;
+
+  /// No description provided for @blockedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Blocked'**
+  String get blockedLabel;
+
+  /// No description provided for @cancelledLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get cancelledLabel;
+
+  /// No description provided for @checkingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking'**
+  String get checkingLabel;
+
+  /// No description provided for @degradedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Degraded'**
+  String get degradedLabel;
+
+  /// No description provided for @failedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed'**
+  String get failedLabel;
+
+  /// No description provided for @allChecksPassed.
+  ///
+  /// In en, this message translates to:
+  /// **'All checks passed'**
+  String get allChecksPassed;
+
+  /// No description provided for @visitCompletedEvent.
+  ///
+  /// In en, this message translates to:
+  /// **'Visit completed'**
+  String get visitCompletedEvent;
+
+  /// No description provided for @voiceNoteAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice note added'**
+  String get voiceNoteAdded;
+
+  /// No description provided for @visitedBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Visited by'**
+  String get visitedBy;
+
+  /// No description provided for @viewFullReport.
+  ///
+  /// In en, this message translates to:
+  /// **'View full report'**
+  String get viewFullReport;
+
+  /// No description provided for @visitReportNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Visit report not found.'**
+  String get visitReportNotFound;
+
+  /// No description provided for @onboardedBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Onboarded by {name}'**
+  String onboardedBy(String name);
+
+  /// No description provided for @assignedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Assigned: {names}'**
+  String assignedLabel(String names);
+
+  /// No description provided for @harvestDateType.
+  ///
+  /// In en, this message translates to:
+  /// **'Harvest {date} · {type}'**
+  String harvestDateType(String date, String type);
+
+  /// No description provided for @harvestDateOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Harvest {date}'**
+  String harvestDateOnly(String date);
+
+  /// No description provided for @farmerLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Farmer: {name}'**
+  String farmerLabel(String name);
+
+  /// No description provided for @aadharLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Aadhar: {number}'**
+  String aadharLabel(String number);
+
+  /// No description provided for @findingAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Finding address…'**
+  String get findingAddress;
+
+  /// No description provided for @suggestionSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggestion selected — tap Save'**
+  String get suggestionSelected;
+
+  /// No description provided for @weWillUsePhoneGps.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll use your phone GPS and fill the address automatically.'**
+  String get weWillUsePhoneGps;
+
+  /// No description provided for @pinCoordinates.
+  ///
+  /// In en, this message translates to:
+  /// **'Pin · {lat}, {lng}'**
+  String pinCoordinates(String lat, String lng);
+
+  /// No description provided for @noGpsFixReturned.
+  ///
+  /// In en, this message translates to:
+  /// **'No GPS fix returned.'**
+  String get noGpsFixReturned;
+
+  /// No description provided for @gpsLookupFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'GPS lookup failed: {error}'**
+  String gpsLookupFailed(String error);
+
+  /// No description provided for @couldNotGetGpsPinByHand.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not get GPS — you can still pin the boundary by hand. Tap the status bar for details.'**
+  String get couldNotGetGpsPinByHand;
+
+  /// No description provided for @searchFailedError.
+  ///
+  /// In en, this message translates to:
+  /// **'Search failed: {error}'**
+  String searchFailedError(String error);
+
+  /// No description provided for @locationSearchFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Location search failed — you can still pin on the map.'**
+  String get locationSearchFailed;
+
+  /// No description provided for @pickLocationInsideIndia.
+  ///
+  /// In en, this message translates to:
+  /// **'Please pick a location inside India.'**
+  String get pickLocationInsideIndia;
+
+  /// No description provided for @gpsOptionalPinManually.
+  ///
+  /// In en, this message translates to:
+  /// **'GPS is optional here — you can still pin the boundary manually. Tap Recenter to retry.'**
+  String get gpsOptionalPinManually;
+
+  /// No description provided for @optionalTypeAddressPrevious.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional — you can type the address on the previous screen. This never blocks Confirm.'**
+  String get optionalTypeAddressPrevious;
+
+  /// No description provided for @couldNotFetchAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not fetch address: {error}'**
+  String couldNotFetchAddress(String error);
+
+  /// No description provided for @acresCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{acres} acres'**
+  String acresCount(String acres);
+
+  /// No description provided for @indiaOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'India only'**
+  String get indiaOnly;
+
+  /// No description provided for @recenterOnMe.
+  ///
+  /// In en, this message translates to:
+  /// **'Recenter on me'**
+  String get recenterOnMe;
+
+  /// No description provided for @openInGoogleMaps.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in Google Maps'**
+  String get openInGoogleMaps;
+
+  /// No description provided for @couldNotOpenGoogleMaps.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open Google Maps. Install Maps or a browser.'**
+  String get couldNotOpenGoogleMaps;
+
+  /// No description provided for @couldNotOpenGoogleMapsError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open Google Maps ({error})'**
+  String couldNotOpenGoogleMapsError(String error);
+
+  /// No description provided for @pinchZoomTapStates.
+  ///
+  /// In en, this message translates to:
+  /// **'Pinch to zoom · drag to pan · tap states'**
+  String get pinchZoomTapStates;
+
+  /// No description provided for @pinchZoomFarmsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Pinch to zoom in on farms · {count} locations'**
+  String pinchZoomFarmsCount(int count);
+
+  /// No description provided for @pinchTwoFingers.
+  ///
+  /// In en, this message translates to:
+  /// **'Pinch with two fingers · drag to pan · {farms} farms · {scale}×'**
+  String pinchTwoFingers(int farms, String scale);
+
+  /// No description provided for @noMatchingPlaces.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching places found. Try area + city names.'**
+  String get noMatchingPlaces;
+
+  /// No description provided for @couldNotLoadSuggestions.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load address suggestions. Check connection and try again.'**
+  String get couldNotLoadSuggestions;
+
+  /// No description provided for @searchAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Search address'**
+  String get searchAddress;
+
+  /// No description provided for @pleaseFixHighlightedFields.
+  ///
+  /// In en, this message translates to:
+  /// **'Please fix the highlighted fields above'**
+  String get pleaseFixHighlightedFields;
+
+  /// No description provided for @showPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Show password'**
+  String get showPassword;
+
+  /// No description provided for @hidePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide password'**
+  String get hidePassword;
+
+  /// No description provided for @editMobile.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit mobile'**
+  String get editMobile;
+
+  /// No description provided for @editAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit address'**
+  String get editAddress;
+
+  /// No description provided for @profilePhotoUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile photo updated'**
+  String get profilePhotoUpdated;
+
+  /// No description provided for @tapToUpdatePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to update photo'**
+  String get tapToUpdatePhoto;
+
+  /// No description provided for @mayTakeAFewMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'This may take a few minutes…'**
+  String get mayTakeAFewMinutes;
+
+  /// No description provided for @acrossOneFarm.
+  ///
+  /// In en, this message translates to:
+  /// **'Across 1 farm you onboarded'**
+  String get acrossOneFarm;
+
+  /// No description provided for @acrossXFarms.
+  ///
+  /// In en, this message translates to:
+  /// **'Across {count} farms you onboarded'**
+  String acrossXFarms(int count);
+
+  /// No description provided for @limitReachedSaving.
+  ///
+  /// In en, this message translates to:
+  /// **'Limit reached — saving…'**
+  String get limitReachedSaving;
+
+  /// No description provided for @autoSavesAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-saves at {time} · {seconds}s left'**
+  String autoSavesAt(String time, int seconds);
+
+  /// No description provided for @offlineTapPlayToRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'You appear to be offline — tap play to retry once connected.'**
+  String get offlineTapPlayToRetry;
+
+  /// No description provided for @youAppearOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'You appear to be offline'**
+  String get youAppearOffline;
+
+  /// No description provided for @couldNotLoadVoiceNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load this voice note. Tap to retry.'**
+  String get couldNotLoadVoiceNote;
+
+  /// No description provided for @playingVoiceNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Playing voice note...'**
+  String get playingVoiceNote;
+
+  /// No description provided for @recordedVoiceNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Recorded voice note'**
+  String get recordedVoiceNote;
+
+  /// No description provided for @playingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Playing'**
+  String get playingLabel;
+
+  /// No description provided for @playingWithDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Playing · {duration}'**
+  String playingWithDuration(String duration);
+
+  /// No description provided for @durationTapToPlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration {duration} · Tap to play'**
+  String durationTapToPlay(String duration);
+
+  /// No description provided for @tapPlayToListen.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap play to listen'**
+  String get tapPlayToListen;
+
+  /// No description provided for @requestAlreadyPendingApproval.
+  ///
+  /// In en, this message translates to:
+  /// **'A request is already pending admin approval.'**
+  String get requestAlreadyPendingApproval;
+
+  /// No description provided for @checksNeedAttention.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} checks need attention'**
+  String checksNeedAttention(int count);
+
+  /// No description provided for @thisFieldIsRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'This field is required'**
+  String get thisFieldIsRequired;
+
+  /// No description provided for @selectAtLeastOneOption.
+  ///
+  /// In en, this message translates to:
+  /// **'Select at least one option'**
+  String get selectAtLeastOneOption;
+
+  /// No description provided for @pleaseCompleteAllRows.
+  ///
+  /// In en, this message translates to:
+  /// **'Please complete all rows'**
+  String get pleaseCompleteAllRows;
+
+  /// No description provided for @enterYourResponse.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your response'**
+  String get enterYourResponse;
+
+  /// No description provided for @visitDateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Visit date'**
+  String get visitDateLabel;
+
+  /// No description provided for @farmLocationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Farm location'**
+  String get farmLocationLabel;
+
+  /// No description provided for @visitInformation.
+  ///
+  /// In en, this message translates to:
+  /// **'Visit Information'**
+  String get visitInformation;
 }
 
 class _AppLocalizationsDelegate

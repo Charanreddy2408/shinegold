@@ -58,7 +58,7 @@ class _VisitReportScreenState extends ConsumerState<VisitReportScreen> {
         _visit = visit;
         _template = template;
         _loading = false;
-        if (visit == null) _error = 'Visit report not found.';
+        if (visit == null) _error = context.l10n.visitReportNotFound;
       });
     } catch (e) {
       if (!mounted) return;
@@ -161,7 +161,7 @@ class _VisitReportScreenState extends ConsumerState<VisitReportScreen> {
                       )
                     : const Icon(Icons.picture_as_pdf_rounded, size: 20),
                 label: Text(
-                  _downloading ? 'Saving…' : 'PDF',
+                  _downloading ? context.l10n.saving : context.l10n.pdfLabel,
                   style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
                 style: TextButton.styleFrom(foregroundColor: Colors.white),
@@ -210,8 +210,8 @@ class _VisitReportScreenState extends ConsumerState<VisitReportScreen> {
                             icon: const Icon(Icons.download_rounded),
                             label: Text(
                               _downloading
-                                  ? 'Preparing PDF…'
-                                  : 'Download report PDF',
+                                  ? context.l10n.preparingPdf
+                                  : context.l10n.downloadReportPdf,
                             ),
                             style: FilledButton.styleFrom(
                               backgroundColor: AppColors.primaryDark,
@@ -260,7 +260,8 @@ class _VisitReportScreenState extends ConsumerState<VisitReportScreen> {
                               _AnswerCard(
                                 answer: FormAnswerDisplay(
                                   questionKey: 'notes',
-                                  questionLabel: 'Additional notes',
+                                  questionLabel:
+                                      context.l10n.additionalNotesLabel,
                                   questionType: FormQuestionType.textarea,
                                   answer: _visit!.textNote,
                                 ),
@@ -311,7 +312,9 @@ class _VisitReportScreenState extends ConsumerState<VisitReportScreen> {
                           if (_visit!.photos.isNotEmpty) ...[
                             const SizedBox(height: AppSpacing.lg),
                             Text(
-                              'Photos (${_visit!.photos.length})',
+                              context.l10n.photosCountLabel(
+                                _visit!.photos.length,
+                              ),
                               style: Theme.of(context)
                                   .textTheme
                                   .titleMedium
@@ -409,17 +412,17 @@ class _SummaryCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.md),
-          _Row('Executive', visit.executiveName),
+          _Row(context.l10n.executiveLabel, visit.executiveName),
           _Row(
-            'Check-in',
+            context.l10n.checkInLabel,
             dateTimeFormat.format(visit.startedAt.toLocal()),
           ),
           if (visit.endedAt != null)
             _Row(
-              'Check-out',
+              context.l10n.checkOutLabel,
               dateTimeFormat.format(visit.endedAt!.toLocal()),
             ),
-          _Row('Duration', durationLabel),
+          _Row(context.l10n.durationLabel, durationLabel),
         ],
       ),
     );

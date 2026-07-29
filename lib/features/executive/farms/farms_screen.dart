@@ -163,7 +163,7 @@ class _FarmsScreenState extends ConsumerState<FarmsScreen> {
                     runSpacing: 8,
                     children: SortOrder.values.map((s) {
                       return FilterChip(
-                        label: Text(_sortLabel(s)),
+                        label: Text(_sortLabel(context, s)),
                         selected: _filter.sortOrder == s,
                         onSelected: (_) {
                           setModalState(() {
@@ -203,14 +203,14 @@ class _FarmsScreenState extends ConsumerState<FarmsScreen> {
     );
   }
 
-  String _sortLabel(SortOrder s) {
+  String _sortLabel(BuildContext context, SortOrder s) {
     switch (s) {
       case SortOrder.nearbyToFarthest:
-        return 'Nearby first';
+        return context.l10n.sortNearby;
       case SortOrder.farthestToNearby:
-        return 'Farthest first';
+        return context.l10n.sortFarthest;
       case SortOrder.nameAsc:
-        return 'Name A-Z';
+        return context.l10n.sortName;
     }
   }
 
@@ -235,8 +235,8 @@ class _FarmsScreenState extends ConsumerState<FarmsScreen> {
       header: GradientHeader(
         title: context.l10n.navFarms,
         subtitle: _initialLoading
-            ? 'Loading...'
-            : '${_farms.length} assigned farms',
+            ? context.l10n.loading
+            : context.l10n.assignedFarmsCount(_farms.length),
         compact: true,
         trailing: IconButton(
           tooltip: context.l10n.nearbyUnassignedFarms,
@@ -264,7 +264,7 @@ class _FarmsScreenState extends ConsumerState<FarmsScreen> {
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             child: ShineSearchBar(
               controller: _searchController,
-              hint: 'Search farm, farmer, mobile...',
+              hint: context.l10n.searchFarmFarmerMobile,
               onFilterTap: _showFilters,
             ),
           ),

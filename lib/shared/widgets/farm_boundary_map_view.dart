@@ -6,6 +6,7 @@ import '../../core/theme/app_colors.dart';
 import '../utils/geo_area.dart';
 import '../utils/india_map_bounds.dart';
 import '../../shared/utils/l10n_ext.dart';
+import '../utils/l10n_ext.dart';
 
 /// Map for farm boundary picking — shows employee GPS + optional boundary pins.
 class FarmBoundaryMapView extends StatelessWidget {
@@ -137,17 +138,17 @@ class FarmBoundaryMapView extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: AppColors.borderSubtle),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.flag_rounded,
                     size: 14,
                     color: AppColors.primaryDark,
                   ),
-                  SizedBox(width: 5),
+                  const SizedBox(width: 5),
                   Text(
-                    'India only',
+                    context.l10n.indiaOnly,
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
@@ -186,7 +187,7 @@ class FarmBoundaryMapView extends StatelessWidget {
                 if (showRecenterFab && onRecenterEmployee != null)
                   _MapRoundButton(
                     icon: Icons.my_location_rounded,
-                    tooltip: 'Recenter on me',
+                    tooltip: context.l10n.recenterOnMe,
                     iconColor: employeeLocation != null
                         ? AppColors.info
                         : AppColors.textMuted,

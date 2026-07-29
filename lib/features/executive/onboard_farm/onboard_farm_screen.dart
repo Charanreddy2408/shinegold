@@ -149,7 +149,7 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
       final loc = ref.read(locationProvider).position;
       if (loc == null) {
         _showError(
-          'Turn on location to open the map at your current position.',
+          context.l10n.turnOnLocationToOpenMap,
         );
         return;
       }
@@ -214,12 +214,12 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
     if (!mounted) return;
     final loc = _employeeLocationFromState(ref.read(locationProvider));
     if (loc == null) {
-      _showError('Could not get GPS. Enable location and try again.');
+      _showError(context.l10n.couldNotGetGpsEnableLocation);
       return;
     }
     if (!IndiaMapBounds.contains(loc)) {
       _showError(
-        'Your GPS is outside India. Open the boundary map and search the farm village.',
+        context.l10n.gpsOutsideIndiaSearchVillage,
       );
       return;
     }
@@ -230,20 +230,20 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
 
   bool _validateFarmStep() {
     if (_farmName.text.trim().isEmpty) {
-      _showError('Enter farm name');
+      _showError(context.l10n.enterFarmName);
       return false;
     }
     if (_boundary == null || _boundary!.pins.length < 3) {
-      _showError('Pin the farm boundary on the map (minimum 3 pins)');
+      _showError(context.l10n.pinFarmBoundaryMinimum3);
       return false;
     }
     if (_crop.text.trim().isEmpty) {
-      _showError('Enter crop name');
+      _showError(context.l10n.enterCropName);
       return false;
     }
     final plants = int.tryParse(_plantCount.text.trim());
     if (plants == null || plants < 1) {
-      _showError('Enter number of plants');
+      _showError(context.l10n.enterNumberOfPlants);
       return false;
     }
     return true;
@@ -251,33 +251,33 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
 
   bool _validateFarmerStep() {
     if (_farmerName.text.trim().isEmpty) {
-      _showError('Enter farmer name');
+      _showError(context.l10n.enterFarmerName);
       return false;
     }
     if (_farmerMobile.text.trim().isEmpty) {
-      _showError('Enter farmer mobile number');
+      _showError(context.l10n.enterFarmerMobile);
       return false;
     }
     final aadhar = _farmerAadhar.text.replaceAll(RegExp(r'\D'), '');
     if (aadhar.length != 12) {
-      _showError('Enter a valid 12-digit Aadhar number');
+      _showError(context.l10n.enterValid12DigitAadhar);
       return false;
     }
     if (_gender == null) {
-      _showError('Please select gender');
+      _showError(context.l10n.pleaseSelectGender);
       return false;
     }
     final age = int.tryParse(_farmerAge.text.trim());
     if (age == null || age <= 0) {
-      _showError('Enter a valid farmer age');
+      _showError(context.l10n.enterValidFarmerAge);
       return false;
     }
     if (_harvestType.text.trim().isEmpty) {
-      _showError('Enter harvest type on the farm details step');
+      _showError(context.l10n.enterHarvestTypeOnFarmDetails);
       return false;
     }
     if (_boundary == null || _boundary!.pins.length < 3) {
-      _showError('Farm boundary is required. Go back and mark the boundary.');
+      _showError(context.l10n.farmBoundaryRequiredGoBack);
       return false;
     }
     return true;
@@ -291,7 +291,7 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
 
   Future<void> _pickFarmPhoto() async {
     if (_farmPhotos.length >= _maxFarmPhotos) {
-      _showError('Maximum $_maxFarmPhotos photos allowed');
+      _showError(context.l10n.maximumPhotosAllowed(_maxFarmPhotos));
       return;
     }
 
@@ -325,7 +325,7 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
 
     final user = ref.read(currentUserProvider);
     if (user == null) {
-      _showError('You must be signed in to onboard a farm.');
+      _showError(context.l10n.youMustBeSignedInToOnboard);
       return;
     }
 
@@ -416,7 +416,9 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
                   .scale(duration: 500.ms, curve: Curves.easeOutBack),
               SizedBox(height: AppSpacing.xxl),
               Text(
-                widget.isAdminCreate ? 'Farm Created!' : 'Farm Onboarded!',
+                widget.isAdminCreate
+                    ? context.l10n.farmCreated
+                    : context.l10n.farmOnboardedExclaim,
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
               SizedBox(height: AppSpacing.md),
@@ -570,8 +572,8 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
                           ),
                     label: Text(
                       hasBoundary
-                          ? 'Edit farm boundary'
-                          : 'Mark farm boundary on map',
+                          ? context.l10n.editFarmBoundary
+                          : context.l10n.markFarmBoundaryOnMap,
                     ),
                   ),
                 ),
@@ -596,9 +598,12 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
               child: Text(
                 employeeLocation != null
                     ? hasBoundary
-                        ? 'Your location shown on map · ${_boundary!.pins.length} boundary pins · ${_boundary!.totalAcres.toStringAsFixed(2)} acres'
-                        : 'Your current GPS is shown on the map — tap the button to mark boundary pins'
-                    : 'Waiting for GPS… enable location to center the map on you',
+                        ? context.l10n.yourLocationShownOnMap(
+                            _boundary!.pins.length,
+                            _boundary!.totalAcres.toStringAsFixed(2),
+                          )
+                        : context.l10n.yourCurrentGpsShown
+                    : context.l10n.waitingForGpsEnableLocation,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: AppColors.textSecondary,
                       fontWeight: FontWeight.w600,
@@ -652,7 +657,7 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
           readOnly: hasBoundary,
           decoration: InputDecoration(
             labelText: context.l10n.totalAcresInput,
-            hintText: hasBoundary ? null : 'Calculated from boundary pins',
+            hintText: hasBoundary ? null : context.l10n.calculatedFromBoundary,
             suffixIcon: hasBoundary
                 ? const Icon(Icons.lock_outline, size: 18)
                 : null,
@@ -697,8 +702,8 @@ class _OnboardFarmScreenState extends ConsumerState<OnboardFarmScreen> {
         const SizedBox(height: AppSpacing.xs),
         Text(
           compact
-              ? 'Tap a photo to replace it, or use Remove.'
-              : 'Optional — add up to $_maxFarmPhotos photos (camera or gallery)',
+              ? context.l10n.tapPhotoToReplace
+              : context.l10n.optionalAddPhotos(_maxFarmPhotos),
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: AppColors.textSecondary,
               ),

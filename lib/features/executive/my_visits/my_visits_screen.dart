@@ -160,10 +160,13 @@ class _MyVisitsScreenState extends ConsumerState<MyVisitsScreen> {
       header: GradientHeader(
         title: context.l10n.myVisits,
         subtitle: _initialLoading
-            ? 'Loading...'
+            ? context.l10n.loading
             : _pending.isEmpty
-                ? '$totalCount visit records'
-                : '$totalCount visits · ${_pending.length} waiting to sync',
+                ? context.l10n.visitRecordsCount(totalCount)
+                : context.l10n.visitsWaitingToSync(
+                    totalCount,
+                    _pending.length,
+                  ),
         compact: true,
         trailing: _pending.isEmpty
             ? null
@@ -435,8 +438,7 @@ class _PendingVisitCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  pending.lastError ??
-                      'Saved on this device · tap to sync now',
+                  pending.lastError ?? context.l10n.savedOnDeviceTapToSync,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(

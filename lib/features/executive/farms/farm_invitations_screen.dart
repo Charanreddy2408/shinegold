@@ -98,8 +98,8 @@ class _FarmInvitationsScreenState extends ConsumerState<FarmInvitationsScreen> {
         header: GradientHeader(
           title: context.l10n.nearbyFarms,
           subtitle: _loading
-              ? 'Loading...'
-              : '${_invitations.length} unassigned farms within 70 km',
+              ? context.l10n.loading
+              : context.l10n.unassignedFarmsWithinKm(_invitations.length),
           compact: true,
           leading: IconButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -205,7 +205,7 @@ class _InvitationCard extends StatelessWidget {
                 if (invitation.farmerName != null) ...[
                   const SizedBox(height: 4),
                   Text(
-                    'Farmer: ${invitation.farmerName}',
+                    context.l10n.farmerLabel(invitation.farmerName!),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: AppColors.textSecondary,
                         ),

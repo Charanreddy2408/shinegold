@@ -5,6 +5,7 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
 import '../utils/acres_format.dart';
 import '../../shared/utils/l10n_ext.dart';
+import '../utils/l10n_ext.dart';
 
 class DashboardOverviewCard extends StatelessWidget {
   const DashboardOverviewCard({
@@ -87,8 +88,8 @@ class DashboardOverviewCard extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(
                   onboardedCount == 1
-                      ? 'Across 1 farm you onboarded'
-                      : 'Across $onboardedCount farms you onboarded',
+                      ? context.l10n.acrossOneFarm
+                      : context.l10n.acrossXFarms(onboardedCount),
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Colors.white.withValues(alpha: 0.88),
                       ),

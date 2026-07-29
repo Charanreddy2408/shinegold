@@ -5,6 +5,7 @@ import 'package:shine_gold/shared/widgets/info_metric_tile.dart';
 import 'package:shine_gold/shared/widgets/shine_buttons.dart';
 import 'package:shine_gold/shared/widgets/status_chip.dart';
 import 'package:shine_gold/shared/widgets/ux_components.dart';
+import 'package:shine_gold/l10n/app_localizations.dart';
 
 /// Renders shared widgets under the conditions that used to overflow them:
 /// a 320dp-wide phone with the system font enlarged.
@@ -26,6 +27,10 @@ Future<void> _pumpNarrow(
     MediaQuery(
       data: MediaQueryData(textScaler: TextScaler.linear(textScale)),
       child: MaterialApp(
+        // Shared widgets read AppLocalizations now, so the harness has to
+        // provide the delegates the real app does.
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: SingleChildScrollView(
             child: Padding(
