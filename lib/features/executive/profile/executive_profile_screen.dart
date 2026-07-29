@@ -181,7 +181,7 @@ class _ExecutiveProfileScreenState extends ConsumerState<ExecutiveProfileScreen>
                   ShineSecondaryButton(
                     label: context.l10n.changeLanguage,
                     onPressed: () async {
-                      await showLanguagePicker(context, ref: ref);
+                      await showLanguagePicker(context);
                     },
                   ).animate().fadeIn(delay: 240.ms, duration: 400.ms),
                   SizedBox(height: 10),

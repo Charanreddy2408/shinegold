@@ -62,6 +62,16 @@ void main() {
 
       expect(find.text('Choose language'), findsOneWidget);
       expect(find.text('తెలుగు'), findsOneWidget);
+
+      // The sheet that opened this dialog is gone by now. Picking a language
+      // still has to work, and the tick has to move onto the new choice.
+      await tester.tap(find.text('తెలుగు'));
+      await tester.pumpAndSettle();
+
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(Scaffold).first),
+      );
+      expect(container.read(localeProvider).languageCode, 'te');
     },
   );
 
@@ -124,7 +134,7 @@ void main() {
             return Scaffold(
               body: Center(
                 child: ElevatedButton(
-                  onPressed: () => showLanguagePicker(context, ref: ref),
+                  onPressed: () => showLanguagePicker(context),
                   child: const Text('open'),
                 ),
               ),

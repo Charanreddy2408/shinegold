@@ -158,11 +158,12 @@ class AdminMoreSheet extends ConsumerWidget {
                 delay: 150.ms,
                 onTap: () async {
                   // Anchor the dialog to the root navigator, not this sheet:
-                  // the sheet's context is on its way out once popped.
+                  // the sheet is on its way out once popped. The picker builds
+                  // its own ref, so nothing here has to outlive the sheet.
                   final rootContext =
                       Navigator.of(context, rootNavigator: true).context;
                   Navigator.pop(context);
-                  await showLanguagePicker(rootContext, ref: ref);
+                  await showLanguagePicker(rootContext);
                 },
               ),
               AdminMenuTile(

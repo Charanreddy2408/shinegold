@@ -220,7 +220,7 @@ class AdminProfileScreen extends ConsumerWidget {
               ShineSecondaryButton(
                 label: context.l10n.changeLanguage,
                 onPressed: () async {
-                  await showLanguagePicker(context, ref: ref);
+                  await showLanguagePicker(context);
                 },
               ).animate().fadeIn(delay: 300.ms, duration: 400.ms),
               SizedBox(height: 10),
